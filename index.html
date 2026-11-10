@@ -9686,9 +9686,19 @@ window.onVideoAttached = async function(p){
         try{ localStorage.setItem(DRAFT_KEY, violation); }catch(e){}
         try{ await generate(true); }catch(e){}
         if(pendingVideo){
-          switchTab('gerar');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          toast('Confira a linha e toque em Gerar relatórios.');
+          try{
+            const entry = addManualEntryWithVideo(violation, pendingVideo);
+            pendingVideo = null;
+            try{ savePending(); }catch(e){}
+            renderPendingVideo();
+            switchTab('historico');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            toast('Relatório #' + entry.id + ' salvo no histórico');
+          }catch(e){
+            switchTab('gerar');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            toast('Confira a linha e toque em Gerar relatórios.');
+          }
         } else {
           switchTab('historico');
           window.scrollTo({ top: 0, behavior: 'smooth' });
