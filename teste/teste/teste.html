@@ -11205,7 +11205,9 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     show({ title:'Atualização disponível', version:'Online · nova versão', msg:'Uma nova versão do app está pronta.\nAtualize agora para usar as novidades.', btn:'Atualizar agora', icon:ICON_UPDATE, action:function(){
       try{ localStorage.setItem('alii_just_updated','1'); }catch(e){}
       if(window.onUpdateApplying) window.onUpdateApplying();
-      if(window.AndroidApp && window.AndroidApp.applyUpdate) window.AndroidApp.applyUpdate(); else location.reload();
+      setTimeout(function(){
+        if(window.AndroidApp && window.AndroidApp.applyUpdate) window.AndroidApp.applyUpdate(); else location.reload();
+      }, 3000);
     }});
   };
   window.onApkUpdateAvailable = function(version, url){
@@ -11222,13 +11224,13 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   window.onUpdateDone = function(){
     var w = $('updateWrap'); if(w) w.style.display = 'none';
     var c = $('updateDoneChip');
-    if(c){ var dv=$('updateDoneVersion'); if(dv) dv.textContent='Online · v'+(window.CONTENT_VERSION||'')+' aplicada'; var dm=$('updateDoneMsg'); if(dm) dm.textContent='Versão online v'+(window.CONTENT_VERSION||'')+' aplicada.\nSeus relatórios e vídeos continuam salvos.'; c.style.display = 'block'; setTimeout(function(){ c.style.display = 'none'; }, 5000); }
+    if(c){ var dv=$('updateDoneVersion'); if(dv) dv.textContent='Online · v'+(window.CONTENT_VERSION||'')+' aplicada'; var dm=$('updateDoneMsg'); if(dm) dm.textContent='Versão online v'+(window.CONTENT_VERSION||'')+' aplicada.\nSeus relatórios e vídeos continuam salvos.'; c.style.display = 'block'; }
   };
   try{
     if(localStorage.getItem('alii_just_updated') === '1'){
       localStorage.removeItem('alii_just_updated');
       var c = $('updateDoneChip');
-      if(c){ var dv2=$('updateDoneVersion'); if(dv2) dv2.textContent='Online · v'+(window.CONTENT_VERSION||'')+' aplicada'; var dm2=$('updateDoneMsg'); if(dm2) dm2.textContent='Versão online v'+(window.CONTENT_VERSION||'')+' aplicada.\nSeus relatórios e vídeos continuam salvos.'; c.style.display = 'block'; setTimeout(function(){ c.style.display = 'none'; }, 5000); }
+      if(c){ var dv2=$('updateDoneVersion'); if(dv2) dv2.textContent='Online · v'+(window.CONTENT_VERSION||'')+' aplicada'; var dm2=$('updateDoneMsg'); if(dm2) dm2.textContent='Versão online v'+(window.CONTENT_VERSION||'')+' aplicada.\nSeus relatórios e vídeos continuam salvos.'; c.style.display = 'block'; }
     }
   }catch(e){}
   var ok = $('updateDoneOk'); if(ok) ok.onclick = function(){ $('updateDoneChip').style.display = 'none'; };
