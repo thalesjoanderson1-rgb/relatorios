@@ -11077,5 +11077,42 @@ document.addEventListener('click', function(ev){
 </script>
 
 
+<div id="updateWrap" style="display:none;position:fixed;inset:0;z-index:100001;background:rgba(5,8,14,.72)">
+  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(360px,calc(100% - 40px));background:#121923;border:1px solid #273141;border-radius:18px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.55);font-family:-apple-system,'Segoe UI',Roboto,sans-serif">
+    <div id="updateTitle" style="font-size:17px;font-weight:700;color:#F4F8FC">Nova versão disponível</div>
+    <div id="updateMsg" style="margin-top:8px;font-size:13px;line-height:1.5;color:#9AA6B5;white-space:pre-line">Uma nova versão do app está pronta. Deseja atualizar agora?</div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
+      <button id="updateLater" type="button" style="height:38px;padding:0 16px;border-radius:10px;border:1px solid #273141;background:transparent;color:#9AA6B5;font-size:13px;font-weight:700;cursor:pointer">Depois</button>
+      <button id="updateNow" type="button" style="height:38px;padding:0 18px;border-radius:10px;border:0;background:linear-gradient(90deg,#6FA8DC,#4F8CFF);color:#04121F;font-size:13px;font-weight:700;cursor:pointer">Atualizar agora</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  function show(title, msg, btn, action){
+    const w = document.getElementById('updateWrap');
+    if(!w) return;
+    document.getElementById('updateTitle').textContent = title;
+    document.getElementById('updateMsg').textContent = msg;
+    const b = document.getElementById('updateNow');
+    b.textContent = btn;
+    b.onclick = function(){ w.style.display = 'none'; try{ action(); }catch(e){} };
+    w.style.display = 'block';
+  }
+  window.onUpdateAvailable = function(){
+    show('Nova versão disponível', 'Uma nova versão do app está pronta. Deseja atualizar agora?', 'Atualizar agora', function(){
+      if(window.AndroidApp && window.AndroidApp.applyUpdate) window.AndroidApp.applyUpdate();
+      else location.reload();
+    });
+  };
+  window.onApkUpdateAvailable = function(version, url){
+    show('Nova versão do app', 'Versão ' + version + ' disponível.\nBaixar e instalar agora?', 'Baixar e instalar', function(){
+      if(window.AndroidApp && window.AndroidApp.downloadApk) window.AndroidApp.downloadApk(url);
+    });
+  };
+  const later = document.getElementById('updateLater');
+  if(later) later.onclick = function(){ document.getElementById('updateWrap').style.display = 'none'; };
+})();
+</script>
 </body>
 </html>
