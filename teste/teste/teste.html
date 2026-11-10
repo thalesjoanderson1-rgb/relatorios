@@ -2894,6 +2894,7 @@ button.del[title="Remover"]:hover{background:rgba(255,90,90,.2)!important}
     <h2>Mais</h2>
     <div class="v7-more-list">
       <button class="v7-more-row" id="btnScreenRecord"><span>Gravar tela</span><small>gravar violação e gerar relatório na hora</small><em>›</em></button>
+      <button class="v7-more-row" id="btnPreviewUpdate"><span>Prévia da atualização</span><small>ver como a caixa vai aparecer</small><em>›</em></button>
       <button class="v7-more-row" data-tab="semana"><span>Semana</span><small>contador, gráfico e backup</small><em>›</em></button>
       <button class="v7-more-row" data-tab="organizador"><span>Vídeos apagados</span><small>relatórios agrupados por motivo</small><em>›</em></button>
       <button class="v7-more-row" data-tab="regras"><span>Regras</span><small>revisão de relatório e frases</small><em>›</em></button>
@@ -11084,43 +11085,66 @@ document.addEventListener('click', function(ev){
 </script>
 
 
-<div id="updateWrap" style="display:none;position:fixed;inset:0;z-index:100001;background:rgba(5,8,14,.72)">
-  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(360px,calc(100% - 40px));background:#121923;border:1px solid #273141;border-radius:18px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.55);font-family:-apple-system,'Segoe UI',Roboto,sans-serif">
-    <div id="updateTitle" style="font-size:17px;font-weight:700;color:#F4F8FC">Nova versão disponível</div>
-    <div id="updateMsg" style="margin-top:8px;font-size:13px;line-height:1.5;color:#9AA6B5;white-space:pre-line">Uma nova versão do app está pronta. Deseja atualizar agora?</div>
-    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
-      <button id="updateLater" type="button" style="height:38px;padding:0 16px;border-radius:10px;border:1px solid #273141;background:transparent;color:#9AA6B5;font-size:13px;font-weight:700;cursor:pointer">Depois</button>
-      <button id="updateNow" type="button" style="height:38px;padding:0 18px;border-radius:10px;border:0;background:linear-gradient(90deg,#6FA8DC,#4F8CFF);color:#04121F;font-size:13px;font-weight:700;cursor:pointer">Atualizar agora</button>
+<div id="updateWrap" style="display:none;position:fixed;inset:0;z-index:100001;background:rgba(5,8,14,.78);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)">
+  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(390px,calc(100% - 36px));background:linear-gradient(180deg,#141C28,#0E141D);border:1px solid #2A3547;border-radius:22px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.06);font-family:-apple-system,'Segoe UI',Roboto,sans-serif">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div id="updateIcon" style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#6FA8DC,#4F8CFF);display:grid;place-items:center;flex:0 0 auto;box-shadow:0 10px 22px rgba(79,140,255,.35)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 3v11m0 0 4-4m-4 4-4-4" stroke="#04121F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17v2.5h14V17" stroke="#04121F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="min-width:0">
+        <div id="updateTitle" style="font-size:17px;font-weight:800;color:#F4F8FC;letter-spacing:-.2px">Atualização disponível</div>
+        <div id="updateVersion" style="margin-top:3px;font-size:10.5px;font-weight:700;color:#6FA8DC;letter-spacing:.08em;text-transform:uppercase">Online · nova versão</div>
+      </div>
+    </div>
+    <div id="updateMsg" style="margin-top:14px;font-size:13px;line-height:1.55;color:#9AA6B5;white-space:pre-line">Uma nova versão do app está pronta. Atualize agora para usar as novidades.</div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button id="updateLater" type="button" style="flex:1;height:42px;border-radius:12px;border:1px solid #2A3547;background:rgba(255,255,255,.03);color:#9AA6B5;font-size:13px;font-weight:700;cursor:pointer">Agora não</button>
+      <button id="updateNow" type="button" style="flex:1.4;height:42px;border-radius:12px;border:0;background:linear-gradient(90deg,#6FA8DC,#4F8CFF);color:#04121F;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 10px 22px rgba(79,140,255,.28)">Atualizar agora</button>
     </div>
   </div>
 </div>
 <script>
 (function(){
-  function show(title, msg, btn, action){
-    const w = document.getElementById('updateWrap');
+  var ICON_UPDATE = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 3v11m0 0 4-4m-4 4-4-4" stroke="#04121F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17v2.5h14V17" stroke="#04121F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var ICON_APK = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5z" stroke="#04121F" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 4v16M4 8.5l8 4.5 8-4.5" stroke="#04121F" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+  function show(opts){
+    var w = document.getElementById('updateWrap');
     if(!w) return;
-    document.getElementById('updateTitle').textContent = title;
-    document.getElementById('updateMsg').textContent = msg;
-    const b = document.getElementById('updateNow');
-    b.textContent = btn;
-    b.onclick = function(){ w.style.display = 'none'; try{ action(); }catch(e){} };
+    document.getElementById('updateTitle').textContent = opts.title || 'Atualização disponível';
+    document.getElementById('updateVersion').textContent = opts.version || 'Online · nova versão';
+    document.getElementById('updateMsg').textContent = opts.msg || '';
+    var ic = document.getElementById('updateIcon');
+    if(ic) ic.innerHTML = opts.icon || ICON_UPDATE;
+    var b = document.getElementById('updateNow');
+    b.textContent = opts.btn || 'Atualizar agora';
+    b.onclick = function(){ w.style.display = 'none'; try{ opts.action(); }catch(e){} };
     w.style.display = 'block';
+    var card = w.firstElementChild;
+    if(card){
+      card.style.transform = 'translate(-50%,-50%) scale(.94)';
+      card.style.opacity = '0';
+      card.style.transition = 'transform .18s ease, opacity .18s ease';
+      requestAnimationFrame(function(){
+        card.style.transform = 'translate(-50%,-50%) scale(1)';
+        card.style.opacity = '1';
+      });
+    }
   }
   window.onUpdateAvailable = function(){
-    show('Nova versão disponível', 'Uma nova versão do app está pronta. Deseja atualizar agora?', 'Atualizar agora', function(){
-      if(window.AndroidApp && window.AndroidApp.applyUpdate) window.AndroidApp.applyUpdate();
-      else location.reload();
-    });
+    show({ title:'Atualização disponível', version:'Online · nova versão', msg:'Uma nova versão do app está pronta.\nAtualize agora para usar as novidades.', btn:'Atualizar agora', icon:ICON_UPDATE, action:function(){
+      if(window.AndroidApp && window.AndroidApp.applyUpdate) window.AndroidApp.applyUpdate(); else location.reload();
+    }});
   };
   window.onApkUpdateAvailable = function(version, url){
-    show('Nova versão do app', 'Versão ' + version + ' disponível.\nBaixar e instalar agora?', 'Baixar e instalar', function(){
+    show({ title:'Nova versão do app', version:'Versão ' + version, msg:'Baixe e instale o APK novo.\nSeus relatórios e vídeos continuam salvos.', btn:'Baixar e instalar', icon:ICON_APK, action:function(){
       if(window.AndroidApp && window.AndroidApp.downloadApk) window.AndroidApp.downloadApk(url);
-    });
+    }});
   };
-  const later = document.getElementById('updateLater');
+  var later = document.getElementById('updateLater');
   if(later) later.onclick = function(){ document.getElementById('updateWrap').style.display = 'none'; };
+  var bp = document.getElementById('btnPreviewUpdate');
+  if(bp) bp.addEventListener('click', function(){ if(window.onUpdateAvailable) window.onUpdateAvailable(); });
 })();
 </script>
-<div id="otaTestBanner" style="position:fixed;right:12px;top:12px;z-index:999999;background:#2EE6A6;color:#04121f;padding:8px 13px;border-radius:10px;font:700 12px -apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 8px 22px rgba(0,0,0,.4)">✅ OTA online · versão 3.30</div>
 </body>
 </html>
