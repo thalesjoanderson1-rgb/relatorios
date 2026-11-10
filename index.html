@@ -7724,7 +7724,7 @@ function parseVideoList(text){
   return { text: out.join('\n').trim(), count: blocks.length, groups: order.length };
 }
 
-async function generate(){
+async function generate(fast){
   const raw = $('#input').value;
   const info = $('#parseInfo');
 
@@ -7790,6 +7790,7 @@ async function generate(){
     });
   }
 
+  if(!fast){
   // tradução (online Google / offline)
   const btnG = $('#btnGenerate');
   const oldLabel = btnG.textContent;
@@ -7836,6 +7837,7 @@ async function generate(){
   } finally {
     btnG.disabled = false;
     btnG.textContent = oldLabel;
+  }
   }
 
   // marca duplicatas já na prévia (histórico + dentro do próprio lote)
@@ -9682,10 +9684,15 @@ window.onVideoAttached = async function(p){
         const ta = $('#input');
         if(ta) ta.value = violation;
         try{ localStorage.setItem(DRAFT_KEY, violation); }catch(e){}
-        switchTab('gerar');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        toast('Texto preenchido. Confira e toque em Gerar relatórios.');
-        setTimeout(()=>{ const ta2 = $('#input'); if(ta2) ta2.focus(); }, 400);
+        try{ await generate(true); }catch(e){}
+        if(pendingVideo){
+          switchTab('gerar');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          toast('Confira a linha e toque em Gerar relatórios.');
+        } else {
+          switchTab('historico');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       } else {
         toast('Vídeo pronto. Escreva a violação e gere o relatório.');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -11077,41 +11084,97 @@ document.addEventListener('click', function(ev){
 </script>
 
 
-<div id="updateWrap" style="display:none;position:fixed;inset:0;z-index:100001;background:rgba(5,8,14,.72)">
-  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(360px,calc(100% - 40px));background:#121923;border:1px solid #273141;border-radius:18px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.55);font-family:-apple-system,'Segoe UI',Roboto,sans-serif">
-    <div id="updateTitle" style="font-size:17px;font-weight:700;color:#F4F8FC">Nova versão disponível</div>
-    <div id="updateMsg" style="margin-top:8px;font-size:13px;line-height:1.5;color:#9AA6B5;white-space:pre-line">Uma nova versão do app está pronta. Deseja atualizar agora?</div>
-    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
-      <button id="updateLater" type="button" style="height:38px;padding:0 16px;border-radius:10px;border:1px solid #273141;background:transparent;color:#9AA6B5;font-size:13px;font-weight:700;cursor:pointer">Depois</button>
-      <button id="updateNow" type="button" style="height:38px;padding:0 18px;border-radius:10px;border:0;background:linear-gradient(90deg,#6FA8DC,#4F8CFF);color:#04121F;font-size:13px;font-weight:700;cursor:pointer">Atualizar agora</button>
+<div id="updateWrap" style="display:none;position:fixed;inset:0;z-index:100001;background:rgba(5,8,14,.78);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)">
+  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(390px,calc(100% - 36px));background:linear-gradient(180deg,#141C28,#0E141D);border:1px solid #2A3547;border-radius:22px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.06);font-family:-apple-system,'Segoe UI',Roboto,sans-serif">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div id="updateIcon" style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#6FA8DC,#4F8CFF);display:grid;place-items:center;flex:0 0 auto;box-shadow:0 10px 22px rgba(79,140,255,.35)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 3v11m0 0 4-4m-4 4-4-4" stroke="#04121F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17v2.5h14V17" stroke="#04121F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="min-width:0">
+        <div id="updateTitle" style="font-size:17px;font-weight:800;color:#F4F8FC;letter-spacing:-.2px">Atualização disponível</div>
+        <div id="updateVersion" style="margin-top:3px;font-size:10.5px;font-weight:700;color:#6FA8DC;letter-spacing:.08em;text-transform:uppercase">Online · nova versão</div>
+      </div>
+    </div>
+    <div id="updateMsg" style="margin-top:14px;font-size:13px;line-height:1.55;color:#9AA6B5;white-space:pre-line">Uma nova versão do app está pronta. Atualize agora para usar as novidades.</div>
+    <div id="updateProgressWrap" style="display:none;margin-top:16px">
+      <div style="height:6px;border-radius:999px;background:#1B2432;overflow:hidden">
+        <div style="height:100%;width:36%;border-radius:999px;background:linear-gradient(90deg,#6FA8DC,#4F8CFF);animation:upSlide 1.1s ease-in-out infinite"></div>
+      </div>
+      <div id="updateStatus" style="margin-top:8px;font-size:12px;color:#9AA6B5">Atualizando...</div>
+    </div>
+    <style>@keyframes upSlide{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}</style>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <div id="updateLater" role="button" tabindex="0" style="flex:1;height:42px;border-radius:12px;border:1px solid #2A3547;background:rgba(255,255,255,.03);color:#9AA6B5;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none">Agora não</div>
+      <div id="updateNow" role="button" tabindex="0" style="flex:1.4;height:42px;border-radius:12px;background:linear-gradient(90deg,#6FA8DC,#4F8CFF);color:#04121F;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;box-shadow:0 10px 22px rgba(79,140,255,.28)">Atualizar agora</div>
     </div>
   </div>
 </div>
 <script>
 (function(){
-  function show(title, msg, btn, action){
-    const w = document.getElementById('updateWrap');
-    if(!w) return;
-    document.getElementById('updateTitle').textContent = title;
-    document.getElementById('updateMsg').textContent = msg;
-    const b = document.getElementById('updateNow');
-    b.textContent = btn;
-    b.onclick = function(){ w.style.display = 'none'; try{ action(); }catch(e){} };
+  var ICON_UPDATE = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 3v11m0 0 4-4m-4 4-4-4" stroke="#04121F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17v2.5h14V17" stroke="#04121F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var ICON_APK = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5z" stroke="#04121F" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 4v16M4 8.5l8 4.5 8-4.5" stroke="#04121F" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+  function $(id){ return document.getElementById(id); }
+  function reset(){
+    var p = $('updateProgressWrap'); if(p) p.style.display = 'none';
+    var st = $('updateStatus'); if(st) st.textContent = '';
+    var b = $('updateNow'); if(b){ b.style.display = 'flex'; b.style.opacity = '1'; b.style.pointerEvents = 'auto'; }
+    var l = $('updateLater'); if(l){ l.style.display = 'flex'; l.style.opacity = '1'; l.style.pointerEvents = 'auto'; }
+  }
+  function show(opts){
+    var w = $('updateWrap'); if(!w) return;
+    reset();
+    $('updateTitle').textContent = opts.title || 'Atualização disponível';
+    $('updateVersion').textContent = opts.version || 'Online · nova versão';
+    $('updateMsg').textContent = opts.msg || '';
+    var ic = $('updateIcon'); if(ic) ic.innerHTML = opts.icon || ICON_UPDATE;
+    var b = $('updateNow'); b.textContent = opts.btn || 'Atualizar agora';
+    b.onclick = function(){ try{ opts.action(); }catch(e){} };
     w.style.display = 'block';
+    var card = w.firstElementChild;
+    if(card){
+      card.style.transform = 'translate(-50%,-50%) scale(.94)';
+      card.style.opacity = '0';
+      card.style.transition = 'transform .18s ease, opacity .18s ease';
+      requestAnimationFrame(function(){
+        card.style.transform = 'translate(-50%,-50%) scale(1)';
+        card.style.opacity = '1';
+      });
+    }
   }
   window.onUpdateAvailable = function(){
-    show('Nova versão disponível', 'Uma nova versão do app está pronta. Deseja atualizar agora?', 'Atualizar agora', function(){
-      if(window.AndroidApp && window.AndroidApp.applyUpdate) window.AndroidApp.applyUpdate();
-      else location.reload();
-    });
+    show({ title:'Atualização disponível', version:'Online · nova versão', msg:'Uma nova versão do app está pronta.\nAtualize agora para usar as novidades.', btn:'Atualizar agora', icon:ICON_UPDATE, action:function(){
+      try{ localStorage.setItem('alii_just_updated','1'); }catch(e){}
+      if(window.onUpdateApplying) window.onUpdateApplying();
+      if(window.AndroidApp && window.AndroidApp.applyUpdate) window.AndroidApp.applyUpdate(); else location.reload();
+    }});
   };
   window.onApkUpdateAvailable = function(version, url){
-    show('Nova versão do app', 'Versão ' + version + ' disponível.\nBaixar e instalar agora?', 'Baixar e instalar', function(){
+    show({ title:'Nova versão do app', version:'Versão ' + version, msg:'Baixe e instale o APK novo.\nSeus relatórios e vídeos continuam salvos.', btn:'Baixar e instalar', icon:ICON_APK, action:function(){
       if(window.AndroidApp && window.AndroidApp.downloadApk) window.AndroidApp.downloadApk(url);
-    });
+    }});
   };
-  const later = document.getElementById('updateLater');
-  if(later) later.onclick = function(){ document.getElementById('updateWrap').style.display = 'none'; };
+  window.onUpdateApplying = function(){
+    var p = $('updateProgressWrap'); if(p) p.style.display = 'block';
+    var st = $('updateStatus'); if(st) st.textContent = 'Atualizando...';
+    var b = $('updateNow'); if(b){ b.style.opacity = '.45'; b.style.pointerEvents = 'none'; }
+    var l = $('updateLater'); if(l){ l.style.opacity = '.45'; l.style.pointerEvents = 'none'; }
+  };
+  window.onUpdateDone = function(){
+    var w = $('updateWrap'); if(w) w.style.display = 'none';
+    var c = $('updateDoneChip');
+    if(c){ c.style.display = 'flex'; setTimeout(function(){ c.style.display = 'none'; }, 3500); }
+  };
+  try{
+    if(localStorage.getItem('alii_just_updated') === '1'){
+      localStorage.removeItem('alii_just_updated');
+      var c = $('updateDoneChip');
+      if(c){ c.style.display = 'flex'; setTimeout(function(){ c.style.display = 'none'; }, 3500); }
+    }
+  }catch(e){}
+  var later = $('updateLater');
+  if(later) later.onclick = function(){ $('updateWrap').style.display = 'none'; };
+  var bp = $('btnPreviewUpdate');
+  if(bp) bp.addEventListener('click', function(){ if(window.onUpdateAvailable) window.onUpdateAvailable(); });
 })();
 </script>
 </body>
