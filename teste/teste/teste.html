@@ -2229,8 +2229,8 @@ pre.report,.review-pre{background:#0A0E13!important;border-radius:3px!important;
 .nx-act-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .nx-act-title{font-size:12.5px;font-weight:600;letter-spacing:-.01em;color:var(--txt)}
 .nx-act-sub{font-size:10.5px;color:var(--dim);margin-top:2px}
-.nx-act-seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line-soft);border-radius:7px;padding:2px;gap:2px;flex:none}
-.nx-act-seg button{height:26px;padding:0 9px;border:0;border-radius:5px;background:transparent;color:var(--dim);font:inherit;font-size:10.5px;font-weight:600;cursor:pointer}
+.nx-act-seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line-soft);border-radius:999px;padding:2px;gap:2px;flex:none}
+.nx-act-seg button{height:26px;padding:0 11px;border:0;border-radius:999px !important;background:transparent;color:var(--dim);font:inherit;font-size:10.5px;font-weight:600;cursor:pointer}
 .nx-act-seg button.on{background:rgba(244,248,252,.12);color:var(--txt)}
 .nx-act-chart{position:relative;height:104px;margin-top:6px}
 .nx-act-chart canvas{width:100%!important;height:100%!important;display:block}
@@ -5974,6 +5974,8 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
+const CONTENT_VERSION = '3.34';
+try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
 const BK_KEY = 'alii_backup_v1';
@@ -10585,7 +10587,7 @@ try{
     if(window.AndroidApp && typeof AndroidApp.appVersion === 'function'){
       try{ v = AndroidApp.appVersion() || v; }catch(e){}
     }
-    verEl.textContent = 'Criação de relatórios · v' + v;
+    verEl.textContent = 'Criação de relatórios · v' + v + ' · online v' + CONTENT_VERSION;
   }
 }catch(e){}
 if(window.IS_TEST_BUILD){
@@ -11124,7 +11126,24 @@ document.addEventListener('click', function(ev){
 </script>
 
 
-<div id="updateDoneChip" style="display:none;position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:100002;background:#123B34;border:1px solid #2EE6A6;color:#2EE6A6;padding:9px 14px;border-radius:999px;font:700 12px -apple-system,'Segoe UI',Roboto,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.45);align-items:center;gap:6px">✅ Atualizado com sucesso</div>
+<div id="updateDoneChip" style="display:none;position:fixed;inset:0;z-index:100002;background:rgba(5,8,14,.55);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)">
+  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(390px,calc(100% - 36px));background:linear-gradient(180deg,#141C28,#0E141D);border:1px solid #2A3547;border-radius:22px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.06);font-family:-apple-system,'Segoe UI',Roboto,sans-serif">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#2EE6A6,#1FA36B);display:grid;place-items:center;flex:0 0 auto;box-shadow:0 10px 22px rgba(46,230,166,.35)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="m5 12.5 4.2 4.2L19 6.8" stroke="#04121F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="min-width:0">
+        <div style="font-size:17px;font-weight:800;color:#F4F8FC;letter-spacing:-.2px">Atualizado com sucesso</div>
+        <div style="margin-top:3px;font-size:10.5px;font-weight:700;color:#2EE6A6;letter-spacing:.08em;text-transform:uppercase"><span id="updateDoneVersion">Online · versão nova aplicada</span></div>
+      </div>
+    </div>
+    <div style="margin-top:14px;font-size:13px;line-height:1.55;color:#9AA6B5;white-space:pre-line"><span id="updateDoneMsg">O app já está na versão mais recente.
+Seus relatórios e vídeos continuam salvos.</span></div>
+    <div style="margin-top:20px">
+      <div id="updateDoneOk" role="button" tabindex="0" style="height:42px;border-radius:12px;background:linear-gradient(90deg,#2EE6A6,#1FA36B);color:#04121F;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none">Continuar</div>
+    </div>
+  </div>
+</div>
 <div id="updateWrap" style="display:none;position:fixed;inset:0;z-index:100001;background:rgba(5,8,14,.78);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)">
   <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(390px,calc(100% - 36px));background:linear-gradient(180deg,#141C28,#0E141D);border:1px solid #2A3547;border-radius:22px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.06);font-family:-apple-system,'Segoe UI',Roboto,sans-serif">
     <div style="display:flex;align-items:center;gap:14px">
@@ -11203,15 +11222,16 @@ document.addEventListener('click', function(ev){
   window.onUpdateDone = function(){
     var w = $('updateWrap'); if(w) w.style.display = 'none';
     var c = $('updateDoneChip');
-    if(c){ c.style.display = 'flex'; setTimeout(function(){ c.style.display = 'none'; }, 3500); }
+    if(c){ var dv=$('updateDoneVersion'); if(dv) dv.textContent='Online · v'+(window.CONTENT_VERSION||'')+' aplicada'; var dm=$('updateDoneMsg'); if(dm) dm.textContent='Versão online v'+(window.CONTENT_VERSION||'')+' aplicada.\nSeus relatórios e vídeos continuam salvos.'; c.style.display = 'block'; setTimeout(function(){ c.style.display = 'none'; }, 5000); }
   };
   try{
     if(localStorage.getItem('alii_just_updated') === '1'){
       localStorage.removeItem('alii_just_updated');
       var c = $('updateDoneChip');
-      if(c){ c.style.display = 'flex'; setTimeout(function(){ c.style.display = 'none'; }, 3500); }
+      if(c){ var dv2=$('updateDoneVersion'); if(dv2) dv2.textContent='Online · v'+(window.CONTENT_VERSION||'')+' aplicada'; var dm2=$('updateDoneMsg'); if(dm2) dm2.textContent='Versão online v'+(window.CONTENT_VERSION||'')+' aplicada.\nSeus relatórios e vídeos continuam salvos.'; c.style.display = 'block'; setTimeout(function(){ c.style.display = 'none'; }, 5000); }
     }
   }catch(e){}
+  var ok = $('updateDoneOk'); if(ok) ok.onclick = function(){ $('updateDoneChip').style.display = 'none'; };
   var later = $('updateLater');
   if(later) later.onclick = function(){ $('updateWrap').style.display = 'none'; };
   var bp = $('btnPreviewUpdate');
