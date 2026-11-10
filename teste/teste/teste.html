@@ -7725,7 +7725,7 @@ function parseVideoList(text){
   return { text: out.join('\n').trim(), count: blocks.length, groups: order.length };
 }
 
-async function generate(){
+async function generate(fast){
   const raw = $('#input').value;
   const info = $('#parseInfo');
 
@@ -7791,6 +7791,7 @@ async function generate(){
     });
   }
 
+  if(!fast){
   // tradução (online Google / offline)
   const btnG = $('#btnGenerate');
   const oldLabel = btnG.textContent;
@@ -7837,6 +7838,7 @@ async function generate(){
   } finally {
     btnG.disabled = false;
     btnG.textContent = oldLabel;
+  }
   }
 
   // marca duplicatas já na prévia (histórico + dentro do próprio lote)
@@ -9712,10 +9714,15 @@ window.onVideoAttached = async function(p){
         const ta = $('#input');
         if(ta) ta.value = violation;
         try{ localStorage.setItem(DRAFT_KEY, violation); }catch(e){}
-        switchTab('gerar');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        toast('Texto preenchido. Confira e toque em Gerar relatórios.');
-        setTimeout(()=>{ const ta2 = $('#input'); if(ta2) ta2.focus(); }, 400);
+        try{ await generate(true); }catch(e){}
+        if(pendingVideo){
+          switchTab('gerar');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          toast('Confira a linha e toque em Gerar relatórios.');
+        } else {
+          switchTab('historico');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       } else {
         toast('Vídeo pronto. Escreva a violação e gere o relatório.');
         window.scrollTo({ top: 0, behavior: 'smooth' });
