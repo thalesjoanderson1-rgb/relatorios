@@ -2244,7 +2244,6 @@ pre.report,.review-pre{background:#0A0E13!important;border-radius:3px!important;
 .stat-row .n{font-family:var(--mono);font-size:8.5px;color:var(--txt);text-align:right}
 .stats-empty{font-size:10px;color:var(--muted);padding:4px 0}
 @media(max-width:520px){.stat-row{grid-template-columns:minmax(0,1fr) 62px 26px}}
-.test-badge{display:inline-block;margin-left:8px;padding:1px 5px;border:1px solid var(--warn);color:var(--warn);font-family:var(--mono);font-size:7px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px;line-height:1.2}
 </style>
 
 <style id="nx-three-components">
@@ -8932,8 +8931,10 @@ function renderHistory(){
     if(sh) sh.addEventListener('click', ()=> shareReport(e));
     const pl = item.querySelector('[data-play]');
     if(pl) pl.addEventListener('click', ()=> showHistView(e));
-    if(totalVids && vids[0] && window.AndroidApp && typeof window.AndroidApp.requestVideoThumb === 'function'){
-      queueHistThumb(item.querySelector('.hist-thumb'), vids[0]);
+    if(totalVids && window.AndroidApp && typeof window.AndroidApp.requestVideoThumb === 'function'){
+      const v0 = vids[0];
+      const src = v0 ? (typeof v0 === 'string' ? v0 : (v0.uri || '')) : '';
+      if(src) queueHistThumb(item.querySelector('.hist-thumb'), src);
     }
     const at = item.querySelector('[data-attach]');
     if(at) at.addEventListener('click', ()=>{
