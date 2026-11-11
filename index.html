@@ -7811,6 +7811,19 @@ function showSharedUndo(prev){
   toast._t = setTimeout(() => t.classList.remove('show', 'undo'), 8000);
 }
 
+/* O arquivo local pode ter sido apagado depois do envio pro Drive. Nesse caso o
+   "uri" guardado no histórico não abre mais, e compartilhar só com ele faria o
+   vídeo sumir. Aqui perguntamos ao app se o arquivo ainda existe. */
+function localVideoOk(uri){
+  if(!uri) return false;
+  try{
+    if(window.AndroidApp && typeof AndroidApp.videoExists === 'function'){
+      return !!AndroidApp.videoExists(String(uri));
+    }
+  }catch(e){}
+  return true;
+}
+
 function shareVideos(x){
   if(!window.AndroidApp){
     toast('Compartilhar com vídeo está disponível no app Android');
@@ -7826,12 +7839,13 @@ function shareVideos(x){
   const local = [];
   const cloud = [];
   vids.forEach((v, i) => {
-    if(v.uri && !v.remote){
-      local.push(v.uri);
-    } else {
-      const fid = String(v.fileId || cloudIds[i] || '');
-      if(fid) cloud.push(fid);
-    }
+    const uri = v.uri ? String(v.uri) : '';
+    // usa o arquivo do celular só se ele ainda existir; senão cai pro Drive
+    const okLocal = !!uri && !v.remote && localVideoOk(uri);
+    if(okLocal){ local.push(uri); return; }
+    const fid = String(v.fileId || cloudIds[i] || '');
+    if(fid){ cloud.push(fid); return; }
+    if(uri) local.push(uri);
   });
   if(!vids.length){
     cloudIds.forEach(fid => { if(fid) cloud.push(String(fid)); });
@@ -9589,7 +9603,7 @@ function cloudPayload(e){
     ? e.cloud.videoFileIds
     : ((e.cloud && e.cloud.videoFileId) ? [e.cloud.videoFileId] : []);
   const videos = vids.map((v, i) => ({
-    uri: v.uri || '',
+    uri: (v.uri && !v.remote && localVideoOk(v.uri)) ? v.uri : '',
     name: v.name || '',
     size: v.size || 0,
     duration: v.duration || 0,
@@ -9650,6 +9664,7 @@ function applyCloudStatuses(){
   const h = loadHistory();
   let changed = false;
   let completed = false;
+  let repaired = false;
   for(const e of h){
     const s = st[String(e.id)];
     if(!s) continue;
@@ -9681,12 +9696,44 @@ function applyCloudStatuses(){
         const deleted = flags[i] || (s.deletedLocal && !flags.length && i === 0);
         if(deleted) v.uri = '';
         if(deleted || (!v.uri && ids[i])) v.remote = true;
+        // reparo: relatório antigo guardou um "uri" que já foi apagado do celular
+        // (e o flag veio errado do envio). Se o Drive tem o vídeo, usa o Drive.
+        if(v.uri && ids[i] && !localVideoOk(v.uri)){
+          v.uri = '';
+          v.remote = true;
+          repaired = true;
+        }
       });
       setEntryVideos(e, vids);
       if(cur.status !== s.status && s.status === 'uploaded') completed = true;
       changed = true;
     }
   }
+
+  // Reparo independente do status: relatórios antigos ficaram com um "uri" que
+  // já foi apagado do celular guardado no 2º vídeo. Se o Drive tem o arquivo,
+  // troca para o Drive para o compartilhamento não perder o vídeo.
+  for(const e of h){
+    const s = st[String(e.id)];
+    if(!s) continue;
+    const ids = Array.isArray(s.videoFileIds)
+      ? s.videoFileIds
+      : (s.videoFileId ? [s.videoFileId] : []);
+    if(!ids.length) continue;
+    const vids = entryVideos(e);
+    let hit = false;
+    vids.forEach((v, i) => {
+      if(!v.uri || !ids[i]) return;
+      if(localVideoOk(v.uri)) return;
+      v.uri = '';
+      v.remote = true;
+      if(!v.fileId) v.fileId = ids[i];
+      hit = true;
+    });
+    if(hit){ setEntryVideos(e, vids); repaired = true; }
+  }
+
+  if(repaired) changed = true;
   if(changed) saveHistory(h, { noSync: !completed });
   if(completed) scheduleSync(1800);
   return changed;
