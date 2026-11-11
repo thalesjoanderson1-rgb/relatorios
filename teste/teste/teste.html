@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="theme-color" content="#07090D"/>
 <meta name="color-scheme" content="dark"/>
 <title>Criação de relatórios</title>
@@ -2871,6 +2871,20 @@ textarea{resize:none!important}
 .v7-top{display:none!important}
 
 @media(max-width:520px){.week-split{grid-template-columns:1fr}}
+
+/* ===== celular: respeita notch e barra de gestos ===== */
+@media (max-width: 899px){
+  body{padding-bottom:calc(142px + env(safe-area-inset-bottom, 0px)) !important}
+  .bottom-nav{bottom:calc(12px + env(safe-area-inset-bottom, 0px)) !important}
+  .hist-selbar{bottom:calc(88px + env(safe-area-inset-bottom, 0px)) !important}
+  .toast{bottom:calc(20px + env(safe-area-inset-bottom, 0px)) !important}
+  .share-busy{padding-bottom:env(safe-area-inset-bottom, 0px)}
+}
+@media (max-width: 380px){
+  .v7-pagehead h2{font-size:20px}
+  .bottom-nav a{font-size:9.5px}
+  .hist-item{padding:11px 12px}
+}
 </style>
 </head>
 <body>
@@ -3039,6 +3053,15 @@ textarea{resize:none!important}
   </section>
 
   <div class="rules-sechead" id="sec-regras-frases" data-panel="regras">Frases e regras</div>
+
+  <section class="card" id="sec-ai" data-panel="regras">
+    <details id="aiBox" open>
+      <summary><span class="rule-sum"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.7"/></svg><span><b>Sugestão automática</b> — aponta a regra quando o texto não bate</span></span></summary>
+      <label class="switch-row" style="margin:10px 2px 0"><span class="switch"><input type="checkbox" id="aiSuggest"><i></i></span><span>Sugerir regra automaticamente</span></label>
+      <p class="hint" style="margin:8px 0 0">Usa os relatórios já feitos como exemplos (aprende no aparelho, sem internet). Só sugere — não altera regras, nem o formato do relatório.</p>
+      <p class="hint" id="aiSuggestHint" style="margin:6px 0 0">—</p>
+    </details>
+  </section>
 
   <section class="card" id="sec-regras2" data-panel="regras">
     <details id="rulesBox">
@@ -4987,6 +5010,7 @@ function toast(msg, kind){
   clearTimeout(toast._t);
   toast._t = setTimeout(()=>t.classList.remove('show'), 1900);
 }
+try{ window.__toast = toast; }catch(e){}
 
 /** Contador animado (0 → valor) sem rebuild de layout. */
 function animateNum(el, value){
@@ -5259,11 +5283,6 @@ function switchTab(name, noStack){
     b.classList.toggle('active', bt === activeTab);
   });
   const info = TAB_INFO[tab];
-  const titleEl = $('#appTitle'), subEl = $('#appSub');
-  if(info && titleEl){
-    titleEl.textContent = info[0];
-    if(subEl) subEl.textContent = info[1];
-  }
   document.body.classList.toggle('tab-inicio', tab === 'inicio');
   const selBar = document.getElementById('histSelBar');
   if(selBar) selBar.style.display = (histSelectMode && tab === 'historico') ? 'flex' : 'none';
@@ -5288,36 +5307,109 @@ document.addEventListener('click', (e) => {
 /* Botão Voltar do Android: fecha o que estiver aberto e volta de aba antes
    de sair do app. Devolve true quando o app tratou o toque. */
 window.onAndroidBack = function(){
-  const picker = $('#picker');
-  if(picker && !picker.hidden){
-    closePicker();
-    return true;
-  }
+  try{
+    const mostrando = el => !!el && getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden';
 
-  const dlg = $('#dlg');
-  if(dlg && !dlg.hidden){
-    dialogClose(false);
-    return true;
-  }
+    // ---- camadas por cima de tudo (ordem: de cima para baixo) ----
 
-  const editWrap = $('#editEntryWrap');
-  if(editWrap && editWrap.style.display !== 'none'){
-    closeEditEntry();
-    return true;
-  }
+    // aviso "versão online aplicada"
+    const doneChip = $('#updateDoneChip');
+    if(mostrando(doneChip)){
+      const ok = $('#updateDoneOk');
+      if(ok) ok.click(); else doneChip.style.display = 'none';
+      return true;
+    }
 
-  const wrap = $('#histViewWrap');
-  if(wrap && wrap.style.display !== 'none'){
-    wrap.style.display = 'none';
-    return true;
-  }
+    // caixa de atualização
+    const upd = $('#updateWrap');
+    if(mostrando(upd)){
+      const later = $('#updateLater');
+      if(later) later.click(); else upd.style.display = 'none';
+      return true;
+    }
 
-  // Voltar não refaz o caminho das abas: sempre cai no Início.
-  if(activeTab !== 'inicio'){
-    switchTab('inicio', true);
-    window.scrollTo({ top: 0 });
-    return true;
-  }
+    // edição de relatório do histórico
+    const editWrap = $('#editEntryWrap');
+    if(mostrando(editWrap)){
+      closeEditEntry();
+      return true;
+    }
+
+    // calendário da semana
+    const weekCal = $('#weekCalWrap');
+    if(mostrando(weekCal)){
+      try{ closeWeekCalendar(); }catch(e){ weekCal.style.display = 'none'; }
+      return true;
+    }
+
+    // relatório aberto do histórico
+    const histView = $('#histViewWrap');
+    if(mostrando(histView)){
+      histView.style.display = 'none';
+      return true;
+    }
+
+    // compartilhando: não deixa o voltar atrapalhar o envio
+    const busy = $('#shareBusy');
+    if(mostrando(busy)){
+      return true;
+    }
+
+    // onboarding
+    const onboard = $('#onboard');
+    if(onboard && !onboard.hidden){
+      const skip = $('#onboardSkip');
+      if(skip) skip.click();
+      onboard.hidden = true;            // garantia (mesmo sem listener)
+      try{ localStorage.setItem('alii_onboard_v1', '1'); }catch(e){}
+      return true;
+    }
+
+    // seletor de regra / violação
+    const picker = $('#picker');
+    if(picker && !picker.hidden){
+      closePicker();
+      return true;
+    }
+
+    // diálogos do app (confirmar, aviso, importar…)
+    const dlg = $('#dlg');
+    if(dlg && !dlg.hidden){
+      dialogClose(false);
+      return true;
+    }
+
+    // ---- estados da tela ----
+
+    // seleção em lote no histórico
+    if(histSelectMode){
+      toggleHistSelectMode(false);
+      return true;
+    }
+
+    // painel de filtros aberto
+    const fp = $('#histFilterPanel'), fb = $('#btnHistFilters');
+    if(fp && fp.classList.contains('open')){
+      fp.classList.remove('open');
+      if(fb) fb.classList.remove('open');
+      return true;
+    }
+
+    // resultado do organizador
+    const orgWrap = $('#orgResultWrap');
+    if(mostrando(orgWrap)){
+      orgWrap.style.display = 'none';
+      const pre = $('#orgResult'); if(pre) pre.textContent = '';
+      return true;
+    }
+
+    // aba: sempre volta para o Início
+    if(activeTab !== 'inicio'){
+      switchTab('inicio', true);
+      window.scrollTo({ top: 0 });
+      return true;
+    }
+  }catch(e){ /* o voltar nunca pode quebrar o app */ }
 
   return false; // no Início: deixa o Android sair
 };
@@ -6613,11 +6705,19 @@ function seedHistoryOnce(){
 const PHRASE_STOP = new Set([
   'the','a','an','of','during','in','on','with','and','for','to','at','was','were','is','are',
   'broadcast','streamer','more','than','minute','his','her','their','this','that','appear',
-  'performing','other','activities','activity','such'
+  'performing','other','activities','activity','such',
+  // português (ligações que não ajudam a distinguir regra)
+  'de','da','do','das','dos','na','no','nas','nos','em','num','numa','ao','aos','as','os',
+  'um','uma','uns','umas','que','se','com','por','pelo','pela','para','pra','pro','e','ou',
+  'foi','era','estava','estavam','seu','sua','seus','suas','ele','ela','eles','elas',
+  'muito','mais','ja','la','ai','ali','aqui','entao','tipo','sobre','entre',
+  // aparecem em quase toda regra — não ajudam a distinguir
+  'live','online','transmitindo','transmissao','transmitir','fazendo','fazer','durante','enquanto'
 ]);
 
 function phraseTokens(s){
   return String(s || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // tira acento (moça → moca)
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, ' ')
     .split(/\s+/)
@@ -6682,9 +6782,247 @@ function bestHistoryPhrase(violation, details, minScore){
   return best;
 }
 
-function suggestViolations(details, limit){
-  const a = new Set(phraseTokens(details));
-  if(!a.size) return [];
+/* ============================ sugestão automática (motor local) ============================ */
+/* Aprende com o histórico do próprio aparelho e só SUGERE a regra quando o
+   texto não bate com nenhuma. Não altera regras, nem o formato do relatório. */
+const AI_SUG_KEY = 'alii_ai_suggest_v1';
+
+function aiSuggestOn(){
+  try{
+    const v = localStorage.getItem(AI_SUG_KEY);
+    if(v === null) return !!window.IS_TEST_BUILD; // teste: ligada; oficial: só depois de aprovar
+    return v === '1';
+  }catch(e){ return false; }
+}
+function setAiSuggest(on){
+  try{ localStorage.setItem(AI_SUG_KEY, on ? '1' : '0'); }catch(e){}
+}
+function aiStats(){
+  const h = loadHistory();
+  let n = 0;
+  for(const e of h){ if(e && e.violation && cleanEnd(e.details)) n++; }
+  const bank = historyPhraseBank();
+  let frases = 0;
+  for(const [,m] of bank) frases += m.size;
+  return { relatorios:n, frases };
+}
+function aiRefreshUi(){
+  const sw = $('#aiSuggest');
+  if(sw) sw.checked = aiSuggestOn();
+  const hint = $('#aiSuggestHint');
+  if(hint){
+    const s = aiStats();
+    hint.textContent = aiSuggestOn()
+      ? 'Aprendendo com ' + s.relatorios + ' relatório(s) · ' + s.frases + ' frase(s) do histórico.'
+      : 'Desligada — o app continua exatamente como antes.';
+    hint.style.color = 'var(--dim)';
+  }
+}
+
+/* Termos que não são texto de regra (vêm do código da função de teste). */
+const AI_CODE_WORDS = new Set([
+  'test','ctx','return','function','length','desc','ids','src','true','false','type','index',
+  'value','name','build','match','replace','check','regex','tolowercase','normalize','string',
+  'includes','const','let','var','null','undefined','map','filter','foreach','push','slice',
+  'teste','pat','rst','ests'
+]);
+
+/* Palavras-chave de cada regra, tiradas do próprio teste da regra.
+   Assim a sugestão funciona mesmo com histórico vazio. */
+function ruleKeywordIndex(){
+  if(ruleKeywordIndex.cache) return ruleKeywordIndex.cache;
+  const map = new Map();
+  for(const d of DETECTORS){
+    try{
+      const src = String(d.test).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const words = src
+        .replace(/\\[a-z]/g, ' ')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length >= 3 && !PHRASE_STOP.has(w) && !AI_CODE_WORDS.has(w));
+      const set = new Set(words);
+      if(set.size) map.set(d, set);
+    }catch(e){}
+  }
+  ruleKeywordIndex.cache = map;
+  return map;
+}
+
+/* Distância de edição (pequena, para tolerar erro de digitação). */
+function editDistance(a, b){
+  const m = a.length, n = b.length;
+  if(Math.abs(m - n) > 2) return 9;
+  let prev = new Array(n + 1), cur = new Array(n + 1);
+  for(let j = 0; j <= n; j++) prev[j] = j;
+  for(let i = 1; i <= m; i++){
+    cur[0] = i;
+    for(let j = 1; j <= n; j++){
+      const cost = a[i-1] === b[j-1] ? 0 : 1;
+      cur[j] = Math.min(prev[j] + 1, cur[j-1] + 1, prev[j-1] + cost);
+    }
+    const t = prev; prev = cur; cur = t;
+  }
+  return prev[n];
+}
+
+/* Terminação aceitável: só flexões (crianc→crianca, politic→politica).
+   Evita casar palavra parecida mas diferente (pessoa ≠ pessoal). */
+const AI_SUFFIX = ['s','es','a','as','o','os','e','ar','er','ir','ando','endo','indo','ado','ada','ido','ida','cao','coes','mente','nha','nho','vel','veis'];
+
+function inflectionMatch(a, b){
+  if(a === b) return 0;
+  const [long, short] = a.length >= b.length ? [a, b] : [b, a];
+  if(short.length < 4) return 0;
+  if(!long.startsWith(short)) return 0;
+  const rest = long.slice(short.length);
+  return AI_SUFFIX.includes(rest) ? 0.85 : 0;
+}
+
+/* Quanto duas palavras "são a mesma": igual, flexão (crianc/crianca) ou 1 erro. */
+function wordMatch(a, b){
+  if(!a || !b) return 0;
+  if(a === b) return 1;
+  const infl = inflectionMatch(a, b);
+  if(infl) return infl;
+  // sem "chute" por letra parecida: evita pessoal≈pessoas (falso positivo)
+  return 0;
+}
+
+/* Cobertura: quanto do texto do usuário é reconhecido pelo conjunto de palavras. */
+function tokenCover(tokens, words){
+  let sum = 0;
+  for(const t of tokens){
+    let best = 0;
+    for(const w of words){
+      const m = wordMatch(t, w);
+      if(m > best) best = m;
+      if(best === 1) break;
+    }
+    sum += best;
+  }
+  return tokens.size ? (sum / tokens.size) : 0;
+}
+
+/* Frequência das palavras entre as regras: palavra rara vale mais. */
+function keywordIdf(){
+  if(keywordIdf.cache) return keywordIdf.cache;
+  const df = new Map();
+  let N = 0;
+  for(const [, words] of ruleKeywordIndex()){
+    N++;
+    for(const w of words) df.set(w, (df.get(w) || 0) + 1);
+  }
+  keywordIdf.cache = { df, N: Math.max(1, N) };
+  return keywordIdf.cache;
+}
+
+/* Cobertura ponderada: palavra rara (só de uma regra) pesa mais que palavra comum. */
+function weightedCover(tokens, words){
+  const { df, N } = keywordIdf();
+  let num = 0, matchedIdf = 0, unknownIdf = 0, unique = 0;
+  for(const t of tokens){
+    let best = 0, bestWord = null;
+    for(const w of words){
+      const m = wordMatch(t, w);
+      if(m > best){ best = m; bestWord = w; if(m === 1) break; }
+    }
+    if(bestWord){
+      if(best >= 0.7 && (df.get(bestWord) || 1) === 1) unique++;
+      const idf = Math.log(1 + N / Math.max(1, df.get(bestWord) || 1));
+      num += best * idf;
+      matchedIdf += idf;
+    } else {
+      // palavra desconhecida pesa, mas pela metade (não derruba a sugestão sozinha)
+      unknownIdf += Math.log(1 + N);
+    }
+  }
+  const den = matchedIdf + unknownIdf * 0.5;
+  const base = den ? (num / den) : 0;
+  // palavra que só existe numa regra (criança, fumo, álcool…) puxa a sugestão
+  return Math.min(0.99, base + Math.min(0.12, unique * 0.06));
+}
+
+/* Termos que praticamente definem uma regra (reforço na sugestão). */
+const AI_STRONG = {
+  children: /crianc|menor de idade|filho|filha|bebe|nenem|adolescente|infantil/,
+  alcohol: /bebad|alcool|cerveja|vinho|whisky|cachaca|bebendo/,
+  smoking: /fum|cigarro|vape|narguile/,
+  'bare-torso': /sem camisa|torso nu|sem blusa|topless|peito nu/,
+  sexual: /gemend|gemid|masturb|sexo|nudez|pelad|orgasmo|seios/,
+  drugs: /drog|maconha|cocaina|entorpecente/,
+  gambling: /aposta|apostando|rifa|sorteio|roleta|bet\b/,
+  simulcast: /simulcast|simucast|multiplataforma|ao mesmo tempo/,
+  lying: /deitad|cama|deitada/,
+  devices: /celular|telefone|tablet|videogame|jogando/,
+  political: /politic|religia|igreja|deus|culto/,
+  violence: /violent|arma|agress|briga|sangue/,
+  commerce: /vendendo|venda|produto|promovendo|link/,
+  solicitation: /whatsapp|telegram|instagram|contato|chama no/,
+  inactive: /dormindo|parada|sem interacao|travada/,
+  'body-markings': /tatuagem|tatuada|piercing|marcacao/,
+  unrelated: /ignorando|nao responde|sem interagir/
+};
+
+/* Sinônimos do domínio: ajudam a reconhecer o que o usuário quis dizer. */
+const AI_SYNONYMS = {
+  perfil: ['conta'],
+  conta: ['perfil'],
+  namorado: ['pessoa'], namorada: ['pessoa'], marido: ['pessoa'], esposa: ['pessoa'],
+  amigo: ['pessoa'], amiga: ['pessoa'], primo: ['pessoa'], prima: ['pessoa'],
+  irmao: ['pessoa'], irma: ['pessoa'], vizinho: ['pessoa'],
+  emprestou: ['emprestando'], emprestar: ['emprestando'], emprestada: ['emprestando'],
+  biquini: ['traje'], bikini: ['traje'],
+  pelada: ['nudez'], pelado: ['nudez'],
+  crianca: ['menor'], menor: ['crianca']
+};
+
+function aiExpandTokens(set){
+  const out = new Set(set);
+  for(const t of set){
+    const syn = AI_SYNONYMS[t];
+    if(syn) for(const s of syn) out.add(s);
+  }
+  return out;
+}
+
+function suggestFromRules(ctx, limit){
+  const tokens = aiExpandTokens(new Set(phraseTokens(ctx.desc || '')));
+  if(!tokens.size) return [];
+  const official = new Set(VIOLATIONS.map(v => v[0]));
+  const out = [];
+
+  for(const [d, words] of ruleKeywordIndex()){
+    let cover = weightedCover(tokens, words);
+    const base = cover;
+    // termos que praticamente definem a regra (reforço determinístico)
+    const strong = !!(AI_STRONG[d.id] && AI_STRONG[d.id].test(ctx.desc || ''));
+    if(strong) cover = Math.max(cover, 0.55) + 0.3 * base;
+    if(cover < 0.30) continue;
+
+    let name = '';
+    try{
+      const r = d.build(norm(ctx.desc || ''), ctx);
+      name = cleanEnd(r && r.name);
+    }catch(e){ name = ''; }
+    if(!name || !official.has(name)) continue;
+
+    out.push({ name, cover, base, score: cover, count: 0, from: 'rules', strong });
+  }
+
+  out.sort((x, y) => ((y.strong?1:0) - (x.strong?1:0)) || (y.cover - x.cover));
+  const seen = new Set();
+  const unique = [];
+  for(const s of out){
+    if(seen.has(s.name)) continue;
+    seen.add(s.name);
+    unique.push(s);
+  }
+  return unique.slice(0, limit || 3);
+}
+
+function suggestViolations(details, limit, ctx){
+  const tokens = new Set(phraseTokens(details));
+  if(!tokens.size) return [];
 
   const official = new Set(VIOLATIONS.map(v => v[0]));
   const bank = historyPhraseBank();
@@ -6694,16 +7032,36 @@ function suggestViolations(details, limit){
     if(!official.has(v)) continue;
     let best = null;
     for(const [d, count] of variants){
-      const m = phraseMatchScore(a, d);
-      if(!best || m.score > best.score || (m.score === best.score && count > best.count)){
-        best = { name: v, phrase: d, count, score: m.score, inter: m.inter };
+      const cover = tokenCover(tokens, new Set(phraseTokens(d)));
+      if(!best || cover > best.cover || (cover === best.cover && count > best.count)){
+        best = { name: v, phrase: d, count, cover, score: cover };
       }
     }
-    if(best && best.inter >= 1 && best.score >= 0.24) out.push(best);
+    if(best && best.cover >= 0.34){
+      best.from = 'history';
+      out.push(best);
+    }
   }
 
-  out.sort((x,y) => y.score - x.score || y.count - x.count);
-  return out.slice(0, limit || 3);
+  out.sort((x,y) => y.cover - x.cover || y.count - x.count);
+  const result = out.slice(0, limit || 3);
+
+  // completa com as regras do app (sem histórico, ou pouca coisa no histórico)
+  if(result.length < (limit || 3) && ctx){
+    const known = new Set(result.map(s => s.name));
+    for(const s of suggestFromRules(ctx, limit || 3)){
+      if(known.has(s.name)) continue;
+      known.add(s.name);
+      result.push(s);
+      if(result.length >= (limit || 3)) break;
+    }
+  }
+
+  if(result.length > 1){
+    result.sort((x, y) => ((y.strong?1:0) - (x.strong?1:0)) || (y.cover - x.cover));
+  }
+
+  return result;
 }
 
 function historyActionFor(violation){
@@ -6721,6 +7079,13 @@ function historyActionFor(violation){
   const sev = sevFor(v);
   return (sev === '🔴' || sev === '🟠') ? 'Live closed.' : 'Warning sent to the streamer.';
 }
+
+/* atalho de diagnóstico (só no app de teste) */
+try{
+  if(window.IS_TEST_BUILD){
+    window.__aiDebug = { suggestViolations, suggestFromRules, aiSuggestOn, phraseTokens, historyPhraseBank, ruleKeywordIndex, tokenCover, wordMatch, weightedCover, keywordIdf, getResults: () => results };
+  }
+}catch(e){}
 
 function applyHistoryPhrase(r){
   if(!r || !r.name || r.fallback || r.blocked) return;
@@ -7202,10 +7567,11 @@ function makeCard(r, i){
     if(sug){
       if(r.fallback && r.suggestions && r.suggestions.length){
         sug.style.display = 'block';
-        sug.innerHTML = '<div class="suggest-title">Não reconhecido — sugestões pelo histórico:</div>' +
-          r.suggestions.map((s, idx) =>
-            `<button type="button" class="suggest-btn" data-sug="${idx}">${esc(ptFor(s.name))}</button>`
-          ).join('');
+        sug.innerHTML = '<div class="suggest-title">Não reconhecido — sugestões (histórico + regras):</div>' +
+          r.suggestions.map((s, idx) => {
+            const pct = (s.cover != null) ? ' · ' + Math.round(Math.min(0.99, s.cover) * 100) + '%' : '';
+            return `<button type="button" class="suggest-btn" data-sug="${idx}">${esc(ptFor(s.name))}${pct}</button>`;
+          }).join('');
         sug.querySelectorAll('[data-sug]').forEach(b => {
           b.addEventListener('click', () => applySuggestion(+b.getAttribute('data-sug')));
         });
@@ -7280,6 +7646,20 @@ function makeCard(r, i){
       r.trSource = 'history';
     } else {
       r.historyPhrase = false;
+      // sem frase do histórico: usa a frase padrão da regra (em inglês),
+      // igual à classificação normal — não deixa o português no relatório
+      try{
+        const built = buildForName(s.name, norm(r.desc || ''), r._ctx || { ids: [], desc: r.desc });
+        if(built && built.details){
+          r.details = built.details;
+          r.canonical = built.details;
+          r.action = built.action || r.action;
+          r.sev = built.sev || r.sev;
+          r.trSource = 'canonical';
+          r.usedTranslation = false;
+          r.translationMissing = [];
+        }
+      }catch(e){}
     }
 
     wrap.classList.remove('warn', 'sev-grave', 'sev-alta', 'sev-leve');
@@ -7454,9 +7834,10 @@ function makeCard(r, i){
     refresh();
   });
 
-  wrap.querySelector('[data-act="copy"]').addEventListener('click', () => copyText(r.name ? buildTemplate(r) : '', ev => {
-    ev.target.textContent = 'Copiado ✓';
-    setTimeout(()=>{ ev.target.textContent = 'Copiar'; }, 1200);
+  const btnCopy = wrap.querySelector('[data-act="copy"]');
+  btnCopy.addEventListener('click', () => copyText(r.name ? buildTemplate(r) : '', () => {
+    btnCopy.textContent = 'Copiado ✓';
+    setTimeout(()=>{ btnCopy.textContent = 'Copiar'; }, 1200);
   }, 'Relatório copiado'));
 
   wrap.querySelector('[data-act="share"]').addEventListener('click', () => shareReport(r));
@@ -7810,6 +8191,33 @@ function showSharedUndo(prev){
   toast._t = setTimeout(() => t.classList.remove('show', 'undo'), 8000);
 }
 
+/* O arquivo local pode ter sido apagado depois do envio pro Drive. Nesse caso o
+   "uri" guardado no histórico não abre mais, e compartilhar só com ele faria o
+   vídeo sumir. true = existe, false = sumiu, null = app antigo (não sei).
+   Resultado fica em cache por 60s (evita consultar o sistema toda hora). */
+const videoOkCache = Object.create(null);
+function localVideoOk(uri){
+  if(!uri) return false;
+  const key = String(uri);
+  const now = Date.now();
+  const hit = videoOkCache[key];
+  if(hit && (now - hit.t) < 60000) return hit.v;
+
+  let result = null;
+  try{
+    if(window.AndroidApp && typeof AndroidApp.videoExists === 'function'){
+      result = !!AndroidApp.videoExists(key);
+    }
+  }catch(e){ result = null; }
+
+  // cache pequeno: se crescer, zera
+  if(Object.keys(videoOkCache).length > 80){
+    for(const k in videoOkCache) delete videoOkCache[k];
+  }
+  videoOkCache[key] = { v: result, t: now };
+  return result;
+}
+
 function shareVideos(x){
   if(!window.AndroidApp){
     toast('Compartilhar com vídeo está disponível no app Android');
@@ -7820,24 +8228,41 @@ function shareVideos(x){
   const cloudIds = entryCloudVideoIds(entry || x);
   if(!vids.length && !cloudIds.length){ toast('Sem vídeo'); return; }
 
-  // Junta os vídeos locais com os que só existem no Drive. O app baixa os do
-  // Drive e compartilha TODOS juntos (1 ou 2 vídeos + relatório).
+  // Um item por vídeo, na ordem do relatório: arquivo do celular + id no Drive.
+  const shareId = entry ? entry.id : (x.registeredId || x.id);
+  const pairs = [];
+  vids.forEach((v, i) => {
+    const uri = v.uri ? String(v.uri) : '';
+    const fid = String(v.fileId || cloudIds[i] || '');
+    // manda o item mesmo sem referência: o app tenta achar na galeria (pelo nome)
+    // e na pasta #número do Drive antes de desistir
+    pairs.push({ uri: uri, fileId: fid, name: v.name || '', reportId: String(shareId) });
+  });
+  if(!pairs.length){
+    cloudIds.forEach(fid => { if(fid) pairs.push({ uri:'', fileId:String(fid), name:'', reportId:String(shareId) }); });
+  }
+  if(!pairs.length){ toast('Sem vídeo'); return; }
+
+  const canPairs = typeof window.AndroidApp.shareReportVideos === 'function';
+
   const local = [];
   const cloud = [];
-  vids.forEach((v, i) => {
-    if(v.uri && !v.remote){
-      local.push(v.uri);
-    } else {
-      const fid = String(v.fileId || cloudIds[i] || '');
-      if(fid) cloud.push(fid);
-    }
-  });
-  if(!vids.length){
-    cloudIds.forEach(fid => { if(fid) cloud.push(String(fid)); });
+  if(!canPairs){
+    // App antigo: sem como perguntar se o arquivo existe. Se o vídeo tem cópia
+    // no Drive, manda pelo Drive (mais lento, mas nunca perde o vídeo).
+    pairs.forEach(p => {
+      const ok = p.uri ? localVideoOk(p.uri) : false;
+      if(p.uri && (ok === true || (ok === null && !p.fileId))) local.push(p.uri);
+      else if(p.fileId) cloud.push(p.fileId);
+      else if(p.uri) local.push(p.uri);
+    });
+    if(!local.length && !cloud.length){ toast('Vídeos ainda não estão prontos'); return; }
   }
 
   const id = entry ? entry.id : (x.registeredId || x.id);
-  const needsCloud = cloud.length > 0;
+  const needsCloud = canPairs
+    ? pairs.some(p => !p.uri || localVideoOk(p.uri) !== true)
+    : cloud.length > 0;
 
   if(!beginShare(needsCloud)) return;
   if(window.AndroidApp && entry && entry.id != null) markShared(entry.id);
@@ -7848,7 +8273,9 @@ function shareVideos(x){
   copyText(text);
 
   try{
-    if(window.AndroidApp.shareMixedVideos && (local.length || cloud.length)){
+    if(canPairs){
+      window.AndroidApp.shareReportVideos(JSON.stringify(pairs), text);
+    } else if(window.AndroidApp.shareMixedVideos && (local.length || cloud.length)){
       window.AndroidApp.shareMixedVideos(JSON.stringify(local), JSON.stringify(cloud), text);
     } else if(local.length === 1 && window.AndroidApp.shareVideoReport){
       window.AndroidApp.shareVideoReport(local[0], text);
@@ -8174,11 +8601,19 @@ async function generate(fast){
     const dt = resolveDate(p.time);
     const ctx = { id:p.id, ids:p.ids, desc:p.desc };
     const c = classify(ctx);
+    // sugestão calculada aqui: não depende da tradução nem de como o botão chamou
+    let sugestoes = [];
+    try{
+      if(c.fallback && ctx.desc && aiSuggestOn()){
+        sugestoes = suggestViolations(ctx.desc, 3, ctx);
+      }
+    }catch(e){ sugestoes = []; }
 
     out.push({
       id:p.id,
       ids:p.ids,
       desc:p.desc,
+      _ctx:ctx,
       detailsPT:p.desc,
       date:dt.date,
       time:dt.time,
@@ -8190,7 +8625,7 @@ async function generate(fast){
       trSource:'',
       historyPhrase:false,
       phraseCount:0,
-      suggestions:[],
+      suggestions:sugestoes,
       dirty:false,
       sev:c.sev || '',
       name:c.name || '',
@@ -8245,8 +8680,8 @@ async function generate(fast){
         r.translationMissing = [];
         r.edited = false;
       }
-      if(r.fallback && r.details){
-        r.suggestions = suggestViolations(r.details, 3);
+      if(r.fallback && r.details && aiSuggestOn() && !(r.suggestions && r.suggestions.length)){
+        r.suggestions = suggestViolations(r.details, 3, r._ctx || null);
       }
     });
   } finally {
@@ -8449,12 +8884,6 @@ function renderHome(){
       : (total ? 'sem dados na semana passada' : 'nenhum relatório ainda');
   }
 
-  const mini = $('#homeMini');
-  if(mini){
-    mini.innerHTML = dayList.map(d =>
-      `<div class="v7-col${d.date === todayStr ? ' today' : ''}"><i class="${d.n ? '' : 'zero'}" style="height:${d.n ? Math.max(12, Math.round(d.n / max * 100)) : 4}%"></i></div>`
-    ).join('');
-  }
   const days = $('#homeDays');
   if(days){
     days.innerHTML = dayList.map((d,i) => {
@@ -9524,17 +9953,6 @@ window.onShareReady = function(){
 };
 
 function refreshDriveStatus(){
-  if(window.IS_TEST_BUILD){
-    const st = $('#driveStatusText'); if(st) st.textContent = 'Desligado no modo teste';
-    const badge = $('#driveBadge'); if(badge) badge.textContent = 'teste';
-    ['#btnDriveConnect', '#btnDriveDisconnect', '#btnDriveSync', '#btnDriveBackup'].forEach(sel => {
-      const el = $(sel); if(el) el.style.display = 'none';
-    });
-    const hint = $('#driveHint');
-    if(hint) hint.textContent = 'Modo teste: Google Drive e sincronização desligados.';
-    if(typeof updateDriveUsage === 'function') updateDriveUsage(false, !!(driveInfo && driveInfo.connected));
-    return;
-  }
   if(window.AndroidApp && typeof AndroidApp.driveStatus === 'function'){
     try{ driveInfo = JSON.parse(AndroidApp.driveStatus()); }catch(e){}
   } else {
@@ -9588,7 +10006,8 @@ function cloudPayload(e){
     ? e.cloud.videoFileIds
     : ((e.cloud && e.cloud.videoFileId) ? [e.cloud.videoFileId] : []);
   const videos = vids.map((v, i) => ({
-    uri: v.uri || '',
+    // manda sempre o arquivo que o relatório tem; quem decide apagar é o envio
+    uri: (v.uri && !v.remote) ? v.uri : '',
     name: v.name || '',
     size: v.size || 0,
     duration: v.duration || 0,
@@ -9599,6 +10018,8 @@ function cloudPayload(e){
   return JSON.stringify({
     reportId: String(e.id),
     reportText: entryTemplate(e),
+    // id do .txt que já está no Drive (permite mover para a pasta do relatório)
+    reportFileId: (e.cloud && e.cloud.reportFileId) || '',
     date: e.date,
     streamer: e.streamer,
     violation: e.violation,
@@ -9618,7 +10039,6 @@ function setEntryCloud(id, cloud){
 }
 
 function cloudUploadEntry(e){
-  if(window.IS_TEST_BUILD) return;
   if(!e || e.id == null) return;
   if(!window.AndroidApp || typeof AndroidApp.cloudUpload !== 'function'){
     setEntryCloud(e.id, { status:'pending', reason:'sem_app' });
@@ -9641,6 +10061,38 @@ function cloudUploadEntry(e){
   }
 }
 
+/* Organiza o Drive uma vez: cada relatório ganha a pasta "#número" com o seu
+   texto e os seus vídeos (serve também para os relatórios antigos). */
+const ORG_TRY_KEY = 'alii_org_try';
+function organizeDriveOnce(force){
+  try{
+    if(!window.AndroidApp || typeof AndroidApp.cloudOrganize !== 'function') return;
+    if(!driveInfo || !driveInfo.connected) return;
+
+    // o próprio app guarda quando terminou; enquanto não terminou, tenta de novo
+    let done = false;
+    try{ if(typeof AndroidApp.cloudOrganizeDone === 'function') done = !!AndroidApp.cloudOrganizeDone(); }catch(e){}
+    if(done && !force) return;
+
+    // não fica tentando pra sempre se o Drive estiver barrando
+    let tries = 0;
+    try{ tries = +(localStorage.getItem(ORG_TRY_KEY) || 0); }catch(e){}
+    if(!force && tries >= 5){ return; }
+
+    const list = [];
+    for(const e of loadHistory()){
+      const ids = entryCloudVideoIds(e);
+      const fid = (e.cloud && e.cloud.reportFileId) || '';
+      if(!ids.length && !fid) continue;
+      list.push({ id: String(e.id), reportFileId: fid, videoFileIds: ids });
+    }
+
+    window.AndroidApp.cloudOrganize(JSON.stringify(list));
+    try{ localStorage.setItem(ORG_TRY_KEY, String(tries + 1)); }catch(e){}
+    if(list.length) toast('Organizando as pastas do Drive por relatório…');
+  }catch(err){}
+}
+
 function applyCloudStatuses(){
   if(!window.AndroidApp || typeof AndroidApp.cloudStatuses !== 'function') return false;
   let st = {};
@@ -9649,6 +10101,7 @@ function applyCloudStatuses(){
   const h = loadHistory();
   let changed = false;
   let completed = false;
+  let repaired = false;
   for(const e of h){
     const s = st[String(e.id)];
     if(!s) continue;
@@ -9678,14 +10131,48 @@ function applyCloudStatuses(){
       vids.forEach((v, i) => {
         if(ids[i]) v.fileId = ids[i];
         const deleted = flags[i] || (s.deletedLocal && !flags.length && i === 0);
-        if(deleted) v.uri = '';
+        // só apaga o caminho local se existir cópia no Drive (senão o vídeo
+        // ficaria sem arquivo e sem id — era o que sumia do compartilhamento)
+        if(deleted && (ids[i] || v.fileId)) v.uri = '';
         if(deleted || (!v.uri && ids[i])) v.remote = true;
+        // reparo: relatório antigo guardou um "uri" que já foi apagado do celular
+        // (e o flag veio errado do envio). Se o Drive tem o vídeo, usa o Drive.
+        if(v.uri && ids[i] && localVideoOk(v.uri) === false){
+          v.uri = '';
+          v.remote = true;
+          repaired = true;
+        }
       });
       setEntryVideos(e, vids);
       if(cur.status !== s.status && s.status === 'uploaded') completed = true;
       changed = true;
     }
   }
+
+  // Reparo independente do status: relatórios antigos ficaram com um "uri" que
+  // já foi apagado do celular guardado no 2º vídeo. Se o Drive tem o arquivo,
+  // troca para o Drive para o compartilhamento não perder o vídeo.
+  for(const e of h){
+    const s = st[String(e.id)];
+    if(!s) continue;
+    const ids = Array.isArray(s.videoFileIds)
+      ? s.videoFileIds
+      : (s.videoFileId ? [s.videoFileId] : []);
+    if(!ids.length) continue;
+    const vids = entryVideos(e);
+    let hit = false;
+    vids.forEach((v, i) => {
+      if(!v.uri || !ids[i]) return;
+      if(localVideoOk(v.uri) !== false) return;
+      v.uri = '';
+      v.remote = true;
+      if(!v.fileId) v.fileId = ids[i];
+      hit = true;
+    });
+    if(hit){ setEntryVideos(e, vids); repaired = true; }
+  }
+
+  if(repaired) changed = true;
   if(changed) saveHistory(h, { noSync: !completed });
   if(completed) scheduleSync(1800);
   return changed;
@@ -10001,19 +10488,8 @@ function bind(){
     });
   }
 
-  // agrupar por data
-  const btnHistGroup = $('#btnHistGroup');
-  if(btnHistGroup){
-    try{ histGroup = localStorage.getItem('alii_hist_group_v1') !== '0'; }catch(e){}
-    btnHistGroup.classList.toggle('active', histGroup);
-    btnHistGroup.addEventListener('click', ()=>{
-      histGroup = !histGroup;
-      try{ localStorage.setItem('alii_hist_group_v1', histGroup ? '1' : '0'); }catch(e){}
-      btnHistGroup.classList.toggle('active', histGroup);
-      histLimit = 100;
-      renderHistory();
-    });
-  }
+  // agrupar por data (padrão ligado; o botão antigo saiu da tela)
+  try{ histGroup = localStorage.getItem('alii_hist_group_v1') !== '0'; }catch(e){}
 
   // seleção em lote
   const btnHistSelect = $('#btnHistSelect');
@@ -10136,6 +10612,17 @@ function bind(){
   if(driveDelete) driveDelete.addEventListener('change', driveSetOptions);
   const driveWifi = $('#driveWifi');
   if(driveWifi) driveWifi.addEventListener('change', driveSetOptions);
+
+  // sugestão automática
+  const aiSw = $('#aiSuggest');
+  if(aiSw){
+    aiSw.addEventListener('change', ()=>{
+      setAiSuggest(!!aiSw.checked);
+      aiRefreshUi();
+      toast(aiSw.checked ? 'Sugestão automática ligada' : 'Sugestão automática desligada');
+    });
+    aiRefreshUi();
+  }
 
   // organizador de mensagens
   const orgInput = $('#orgInput');
@@ -10355,6 +10842,11 @@ window.onVideoAttached = async function(p){
         if(pendingVideo){
           try{
             const entry = addManualEntryWithVideo(violation, pendingVideo);
+            try{
+              if(window.AndroidApp && AndroidApp.notifySaved){
+                AndroidApp.notifySaved(String(entry.id), '#' + entry.id + ' ' + (entry.streamer || '') + ' · ' + (entry.violation || ''));
+              }
+            }catch(e){}
             pendingVideo = null;
             try{ savePending(); }catch(e){}
             renderPendingVideo();
@@ -10409,6 +10901,11 @@ window.onVideoAttached = async function(p){
 
     renderResults();
     renderHistory();
+    try{
+      if(window.AndroidApp && AndroidApp.notifySaved){
+        AndroidApp.notifySaved(String(h[i].id), '#' + h[i].id + ' ' + (h[i].streamer || '') + ' · ' + (h[i].violation || ''));
+      }
+    }catch(e){}
     toast('Vídeo ' + list.length + ' anexado ao relatório #' + p.id);
   }catch(e){}
 };
@@ -10750,7 +11247,40 @@ async function syncNow(interactive){
       if(!cur){ map.set(id, r); continue; }
       const tr = Date.parse(r.updated_at || '') || reportTs(r);
       const tc = Date.parse(cur.updated_at || '') || reportTs(cur);
-      if(tr > tc) map.set(id, r);
+      if(tr > tc){
+        // a versão do servidor venceu, mas nunca perde vídeo anexado aqui:
+        // junta os vídeos (e os ids do Drive) que só existem no aparelho
+        const rv = Array.isArray(r.videos) ? r.videos : (r.video ? [r.video] : []);
+        const cv = Array.isArray(cur.videos) ? cur.videos : (cur.video ? [cur.video] : []);
+        const faltaVideo = cv.some(v => v && (v.uri || v.fileId) &&
+          !rv.some(w => w && String(w.uri || '') === String(v.uri || '') &&
+                        String(w.fileId || '') === String(v.fileId || '')));
+
+        if(faltaVideo){
+          const juntos = rv.slice(0, 2);
+          for(const v of cv){
+            if(juntos.length >= 2) break;
+            if(!v || !(v.uri || v.fileId)) continue;
+            if(juntos.some(w => w && String(w.uri || '') === String(v.uri || '') &&
+                                 String(w.fileId || '') === String(v.fileId || ''))) continue;
+            juntos.push(v);
+          }
+          const merged = Object.assign({}, r);
+          merged.videos = juntos.slice(0, 2);
+          merged.video = merged.videos[0] || null;
+          const rCloud = (r.cloud && r.cloud.videoFileIds) || [];
+          const cCloud = (cur.cloud && cur.cloud.videoFileIds) || [];
+          const cloud = r.cloud ? Object.assign({}, r.cloud) : {};
+          const ids = rCloud.slice();
+          for(const fid of cCloud){ if(fid && !ids.includes(fid)) ids.push(fid); }
+          if(ids.length) cloud.videoFileIds = ids.slice(0, 2);
+          if(!cloud.reportFileId && cur.cloud && cur.cloud.reportFileId) cloud.reportFileId = cur.cloud.reportFileId;
+          merged.cloud = cloud;
+          map.set(id, merged);
+        } else {
+          map.set(id, r);
+        }
+      }
       else if(tr === tc && !hasAnyVideo(cur) && hasAnyVideo(r)) map.set(id, r);
     }
 
@@ -11096,6 +11626,7 @@ window.onAppResume = function(){
     clearGenerateState();
   }
   if(cloudPollActive()) startCloudPoll();
+  organizeDriveOnce();
   scheduleSync(700);
   flushPendingTranslations();
 };
@@ -11105,6 +11636,8 @@ window.onDriveConnected = function(o){
   driveInfo.email = (o && o.email) || '';
   refreshDriveStatus();
   syncPendingCloud();
+  try{ localStorage.removeItem('alii_org_try'); }catch(e){}
+  organizeDriveOnce(true);
   toast('Google Drive conectado');
 };
 window.onDriveError = function(o){
@@ -11716,11 +12249,6 @@ function nxRenderUsage(o){
 function updateDriveUsage(force, connected){
   const el = document.getElementById('driveUsageLine');
   if(!el) return;
-  if(window.IS_TEST_BUILD){
-    el.style.display = '';
-    nxRenderUsage({bytes:1331439862, files:37, videoBytes:1267000000, videos:12, textBytes:64439862, texts:25});
-    return;
-  }
   const can = !!connected && window.AndroidApp && typeof AndroidApp.driveUsage === 'function';
   if(!can){ el.style.display = 'none'; return; }
   el.style.display = '';
@@ -11872,16 +12400,34 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   var later = $('updateLater');
   if(later) later.onclick = function(){ $('updateWrap').style.display = 'none'; };
   var bp = $('btnPreviewUpdate');
-  if(bp) bp.addEventListener('click', function(){
+  function checkNow(){
     if(window.AndroidApp && window.AndroidApp.checkUpdates){
-      toast('Verificando atualizações…');
+      try{ if(window.__toast) window.__toast('Verificando atualizações…'); }catch(e){}
       try{ window.AndroidApp.checkUpdates(); }catch(e){ if(window.onNoUpdate) window.onNoUpdate(); }
     } else if(window.onUpdateAvailable){
       window.onUpdateAvailable();
     }
-  });
+  }
+  // delegação: funciona mesmo se a tela "Mais" for remontada
+  document.addEventListener('click', function(ev){
+    var b = ev.target && ev.target.closest ? ev.target.closest('#btnPreviewUpdate') : null;
+    if(!b) return;
+    ev.preventDefault();
+    checkNow();
+  }, true);
   window.onNoUpdate = function(){
-    toast('Você já está na versão mais recente');
+    try{ if(window.__toast) window.__toast('Você já está na versão mais recente'); }catch(e){}
+  };
+  window.openHistory = function(){
+    try{ switchTab('historico'); window.scrollTo({ top: 0, behavior: 'smooth' }); }catch(e){}
+  };
+  window.openReportById = function(id){
+    try{
+      switchTab('historico');
+      const e = loadHistory().find(x => String(x.id) === String(id));
+      if(e) showHistView(e);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }catch(e){}
   };
 })();
 </script>
