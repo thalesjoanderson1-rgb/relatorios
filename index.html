@@ -9624,7 +9624,8 @@ function cloudPayload(e){
     ? e.cloud.videoFileIds
     : ((e.cloud && e.cloud.videoFileId) ? [e.cloud.videoFileId] : []);
   const videos = vids.map((v, i) => ({
-    uri: (v.uri && !v.remote && localVideoOk(v.uri) !== false) ? v.uri : '',
+    // manda sempre o arquivo que o relatório tem; quem decide apagar é o envio
+    uri: (v.uri && !v.remote) ? v.uri : '',
     name: v.name || '',
     size: v.size || 0,
     duration: v.duration || 0,
@@ -9715,7 +9716,9 @@ function applyCloudStatuses(){
       vids.forEach((v, i) => {
         if(ids[i]) v.fileId = ids[i];
         const deleted = flags[i] || (s.deletedLocal && !flags.length && i === 0);
-        if(deleted) v.uri = '';
+        // só apaga o caminho local se existir cópia no Drive (senão o vídeo
+        // ficaria sem arquivo e sem id — era o que sumia do compartilhamento)
+        if(deleted && (ids[i] || v.fileId)) v.uri = '';
         if(deleted || (!v.uri && ids[i])) v.remote = true;
         // reparo: relatório antigo guardou um "uri" que já foi apagado do celular
         // (e o flag veio errado do envio). Se o Drive tem o vídeo, usa o Drive.
