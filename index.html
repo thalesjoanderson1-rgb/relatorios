@@ -2244,6 +2244,7 @@ pre.report,.review-pre{background:#0A0E13!important;border-radius:3px!important;
 .stat-row .n{font-family:var(--mono);font-size:8.5px;color:var(--txt);text-align:right}
 .stats-empty{font-size:10px;color:var(--muted);padding:4px 0}
 @media(max-width:520px){.stat-row{grid-template-columns:minmax(0,1fr) 62px 26px}}
+.test-badge{display:inline-block;margin-left:8px;padding:1px 5px;border:1px solid var(--warn);color:var(--warn);font-family:var(--mono);font-size:7px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px;line-height:1.2}
 </style>
 
 <style id="nx-three-components">
@@ -2866,6 +2867,9 @@ textarea{resize:none!important}
 .hist-thumb.has-img::after{content:none!important}
 @media(max-width:420px){.hist-thumb{width:44px;height:34px}}
 
+/* remove a barra superior (logo + "Criação de relatórios") */
+.v7-top{display:none!important}
+
 @media(max-width:520px){.week-split{grid-template-columns:1fr}}
 </style>
 </head>
@@ -3264,7 +3268,7 @@ textarea{resize:none!important}
     <h2>Mais</h2>
     <div class="v7-more-list">
       <button class="v7-more-row" id="btnScreenRecord"><span class="bento-ic"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="3"/><path d="M15 10.5 21 7v10l-6-3.5z"/><circle cx="9" cy="12" r="2.4" class="rec-dot"/></svg></span><span class="bento-tb"><span class="bento-t">Gravar tela</span><span class="bento-s">gravar violação e gerar relatório na hora</span></span><em>›</em></button>
-      <button class="v7-more-row" id="btnPreviewUpdate"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4"/><path d="M5 17v2.5h14V17"/></svg></span><span class="bento-tb"><span class="bento-t">Prévia da atualização</span><span class="bento-s">ver como a caixa vai aparecer</span></span><em>›</em></button>
+      <button class="v7-more-row" id="btnPreviewUpdate"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4"/><path d="M5 17v2.5h14V17"/></svg></span><span class="bento-tb"><span class="bento-t">Atualização</span><span class="bento-s">verificar se existem novas atualizações</span></span><em>›</em></button>
       <button class="v7-more-row" data-tab="semana"><span class="bento-ic"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></span><span class="bento-tb"><span class="bento-t">Semana</span><span class="bento-s">contador, gráfico e backup</span></span><em>›</em></button>
       <button class="v7-more-row" data-tab="organizador"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13"/></svg></span><span class="bento-tb"><span class="bento-t">Vídeos apagados</span><span class="bento-s">relatório de vídeo apagado agrupado por motivos</span></span><em>›</em></button>
       <button class="v7-more-row" data-tab="regras"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M7 4h10v16H7z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><span class="bento-tb"><span class="bento-t">Regras</span><span class="bento-s">revisão de relatório e frases</span></span><em>›</em></button>
@@ -8968,6 +8972,13 @@ function renderHistory(){
     });
 
     if(list) list.appendChild(item);
+    if(totalVids){
+      try{
+        const v0 = entryVideos(e)[0];
+        const src = v0 ? (typeof v0 === 'string' ? v0 : (v0.uri || '')) : '';
+        if(src) queueHistThumb(item.querySelector('.hist-thumb'), src);
+      }catch(err){}
+    }
   }
 
   const filteredVideo = filtered.filter(hasAnyVideo).length;
@@ -11807,7 +11818,17 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   var later = $('updateLater');
   if(later) later.onclick = function(){ $('updateWrap').style.display = 'none'; };
   var bp = $('btnPreviewUpdate');
-  if(bp) bp.addEventListener('click', function(){ if(window.onUpdateAvailable) window.onUpdateAvailable(); });
+  if(bp) bp.addEventListener('click', function(){
+    if(window.AndroidApp && window.AndroidApp.checkUpdates){
+      toast('Verificando atualizações…');
+      try{ window.AndroidApp.checkUpdates(); }catch(e){ if(window.onNoUpdate) window.onNoUpdate(); }
+    } else if(window.onUpdateAvailable){
+      window.onUpdateAvailable();
+    }
+  });
+  window.onNoUpdate = function(){
+    toast('Você já está na versão mais recente');
+  };
 })();
 </script>
 <script>
