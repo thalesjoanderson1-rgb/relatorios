@@ -2044,6 +2044,9 @@ pre.report,.review-pre{background:#0A0E13!important;border-radius:3px!important;
 #shareBusyText{display:block;font-size:11px!important;color:var(--dim)!important;margin-top:4px;line-height:1.5;text-align:left}
 .sb-bar{height:3px;background:var(--line);margin-top:14px;position:relative;overflow:hidden;border-radius:2px}
 .sb-bar i{position:absolute;left:0;top:0;bottom:0;width:33.33%;background:var(--accent);border-radius:2px;transition:width .25s ease}
+/* quando o tamanho é desconhecido: barra correndo em vez de porcentagem falsa */
+.sb-bar.indet i{width:35%!important;transition:none;animation:sbIndet 1.3s ease-in-out infinite}
+@keyframes sbIndet{0%{left:-35%}100%{left:100%}}
 .sb-steps{display:flex;gap:13px;margin-top:9px;font-family:var(--mono);font-size:7.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 .sb-steps span{display:flex;align-items:center;gap:4px}
 .sb-steps i{width:5px;height:5px;border-radius:50%;background:var(--line)}
@@ -6491,7 +6494,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.37';
+const CONTENT_VERSION = '3.38';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -9955,6 +9958,8 @@ function showShareBusy(msg){
   if(el) el.style.display = 'grid';
   const t = $('#shareBusyText');
   if(t && msg) t.textContent = msg;
+  const barra = el && el.querySelector('.sb-bar');
+  if(barra) barra.classList.remove('indet');
   setShareStage('download');
   manterTelaLigada();
 }
@@ -9987,14 +9992,14 @@ function endShare(){
   hideShareBusy();
 }
 
-/* --- vigia: 5 min sem nenhum progresso = conexão travada de verdade --- */
+/* --- vigia: NÃO fecha a tela; só avisa que está sem resposta --- */
 let shareWatchdog = null;
 function armShareWatchdog(ms){
   clearTimeout(shareWatchdog);
   shareWatchdog = setTimeout(function(){
     if(!sharing) return;
-    endShare();
-    toast('A conexão parou de responder. Tente compartilhar de novo.');
+    const t = $('#shareBusyText');
+    if(t) t.textContent = 'Sem resposta há 5 min. Toque em Cancelar se quiser parar.';
   }, ms || 300000);
 }
 function stopShareWatchdog(){
@@ -10012,14 +10017,26 @@ function cancelShare(){
 }
 window.cancelShare = cancelShare;
 
+/* --- conversão (não informa progresso): avisa e espera sem fechar a tela --- */
+window.onShareConverting = function(idx, total){
+  if(!sharing) return;
+  armShareWatchdog(1200000);   // 20 min: conversão de vídeo grande é lenta
+  const t = $('#shareBusyText');
+  if(t) t.textContent = 'Convertendo vídeo ' + idx + ' de ' + total + ' para MP4 (H.264). Pode demorar.';
+  const el = $('#shareBusy');
+  const barra = el && el.querySelector('.sb-bar');
+  if(barra) barra.classList.add('indet');
+};
+
 /* --- progresso real: % do vídeo atual, MB e % no total --- */
 function shareMb(v){ return (v / 1048576).toFixed(1).replace('.', ','); }
 window.onShareProgress = function(idx, total, read, bytes, etapa){
   if(!sharing) return;
   armShareWatchdog(300000);   // chegou byte: renova o vigia
   const verbo = (etapa === 'copiando') ? 'Copiando' : 'Baixando';
-  const frac = (bytes > 0) ? Math.min(1, read / bytes) : 0;
-  const pct = (bytes > 0) ? Math.round(frac * 100) : null;
+  const conhecido = bytes > 0;
+  const frac = conhecido ? Math.min(1, read / bytes) : 0;
+  const pct = conhecido ? Math.round(frac * 100) : null;
   const geral = (total > 0) ? Math.round((((idx - 1) + frac) / total) * 100) : 0;
 
   const t = $('#shareBusyText');
@@ -10027,14 +10044,16 @@ window.onShareProgress = function(idx, total, read, bytes, etapa){
     let s = verbo + ' ' + idx + ' de ' + total;
     if(pct !== null) s += ' · ' + pct + '%';
     s += ' · ' + shareMb(read) + ' MB';
-    if(bytes > 0) s += ' de ' + shareMb(bytes) + ' MB';
-    if(total > 1) s += ' · total ' + geral + '%';
+    if(conhecido) s += ' de ' + shareMb(bytes) + ' MB';
+    if(total > 1 && conhecido) s += ' · total ' + geral + '%';
     t.textContent = s;
   }
 
   const el = $('#shareBusy');
-  const bar = el && el.querySelector('.sb-bar i');
-  if(bar){
+  const barra = el && el.querySelector('.sb-bar');
+  if(barra) barra.classList.toggle('indet', !conhecido);
+  const bar = barra && barra.querySelector('i');
+  if(bar && conhecido){
     const altura = (total > 0) ? (((idx - 1) + frac) / total) * 100 : (pct || 0);
     bar.style.width = Math.min(99, Math.max(2, altura)).toFixed(1) + '%';
   }
