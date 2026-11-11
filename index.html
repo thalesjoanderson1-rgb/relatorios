@@ -7813,7 +7813,7 @@ function showSharedUndo(prev){
 
 /* O arquivo local pode ter sido apagado depois do envio pro Drive. Nesse caso o
    "uri" guardado no histórico não abre mais, e compartilhar só com ele faria o
-   vídeo sumir. Aqui perguntamos ao app se o arquivo ainda existe. */
+   vídeo sumir. true = existe, false = sumiu, null = app antigo (não sei). */
 function localVideoOk(uri){
   if(!uri) return false;
   try{
@@ -7821,7 +7821,7 @@ function localVideoOk(uri){
       return !!AndroidApp.videoExists(String(uri));
     }
   }catch(e){}
-  return true;
+  return null;
 }
 
 function shareVideos(x){
@@ -7834,25 +7834,40 @@ function shareVideos(x){
   const cloudIds = entryCloudVideoIds(entry || x);
   if(!vids.length && !cloudIds.length){ toast('Sem vídeo'); return; }
 
-  // Junta os vídeos locais com os que só existem no Drive. O app baixa os do
-  // Drive e compartilha TODOS juntos (1 ou 2 vídeos + relatório).
-  const local = [];
-  const cloud = [];
+  // Um item por vídeo, na ordem do relatório: arquivo do celular + id no Drive.
+  const pairs = [];
+  let missing = 0;
   vids.forEach((v, i) => {
     const uri = v.uri ? String(v.uri) : '';
-    // usa o arquivo do celular só se ele ainda existir; senão cai pro Drive
-    const okLocal = !!uri && !v.remote && localVideoOk(uri);
-    if(okLocal){ local.push(uri); return; }
     const fid = String(v.fileId || cloudIds[i] || '');
-    if(fid){ cloud.push(fid); return; }
-    if(uri) local.push(uri);
+    if(!uri && !fid){ missing++; return; }
+    pairs.push({ uri: uri, fileId: fid });
   });
-  if(!vids.length){
-    cloudIds.forEach(fid => { if(fid) cloud.push(String(fid)); });
+  if(!pairs.length){
+    cloudIds.forEach(fid => { if(fid) pairs.push({ uri:'', fileId:String(fid) }); });
+  }
+  if(!pairs.length){ toast('Sem vídeo'); return; }
+
+  const canPairs = typeof window.AndroidApp.shareReportVideos === 'function';
+
+  const local = [];
+  const cloud = [];
+  if(!canPairs){
+    // App antigo: sem como perguntar se o arquivo existe. Se o vídeo tem cópia
+    // no Drive, manda pelo Drive (mais lento, mas nunca perde o vídeo).
+    pairs.forEach(p => {
+      const ok = p.uri ? localVideoOk(p.uri) : false;
+      if(p.uri && (ok === true || (ok === null && !p.fileId))) local.push(p.uri);
+      else if(p.fileId) cloud.push(p.fileId);
+      else if(p.uri) local.push(p.uri);
+    });
+    if(!local.length && !cloud.length){ toast('Vídeos ainda não estão prontos'); return; }
   }
 
   const id = entry ? entry.id : (x.registeredId || x.id);
-  const needsCloud = cloud.length > 0;
+  const needsCloud = canPairs
+    ? pairs.some(p => !p.uri || localVideoOk(p.uri) !== true)
+    : cloud.length > 0;
 
   if(!beginShare(needsCloud)) return;
   if(window.AndroidApp && entry && entry.id != null) markShared(entry.id);
@@ -7862,8 +7877,14 @@ function shareVideos(x){
     : (entry && entry.violation ? entryTemplate(entry) : buildTemplate(x));
   copyText(text);
 
+  if(missing){
+    toast('Atenção: ' + missing + ' vídeo do relatório não tem arquivo nem cópia no Drive');
+  }
+
   try{
-    if(window.AndroidApp.shareMixedVideos && (local.length || cloud.length)){
+    if(canPairs){
+      window.AndroidApp.shareReportVideos(JSON.stringify(pairs), text);
+    } else if(window.AndroidApp.shareMixedVideos && (local.length || cloud.length)){
       window.AndroidApp.shareMixedVideos(JSON.stringify(local), JSON.stringify(cloud), text);
     } else if(local.length === 1 && window.AndroidApp.shareVideoReport){
       window.AndroidApp.shareVideoReport(local[0], text);
@@ -9603,7 +9624,7 @@ function cloudPayload(e){
     ? e.cloud.videoFileIds
     : ((e.cloud && e.cloud.videoFileId) ? [e.cloud.videoFileId] : []);
   const videos = vids.map((v, i) => ({
-    uri: (v.uri && !v.remote && localVideoOk(v.uri)) ? v.uri : '',
+    uri: (v.uri && !v.remote && localVideoOk(v.uri) !== false) ? v.uri : '',
     name: v.name || '',
     size: v.size || 0,
     duration: v.duration || 0,
@@ -9698,7 +9719,7 @@ function applyCloudStatuses(){
         if(deleted || (!v.uri && ids[i])) v.remote = true;
         // reparo: relatório antigo guardou um "uri" que já foi apagado do celular
         // (e o flag veio errado do envio). Se o Drive tem o vídeo, usa o Drive.
-        if(v.uri && ids[i] && !localVideoOk(v.uri)){
+        if(v.uri && ids[i] && localVideoOk(v.uri) === false){
           v.uri = '';
           v.remote = true;
           repaired = true;
@@ -9724,7 +9745,7 @@ function applyCloudStatuses(){
     let hit = false;
     vids.forEach((v, i) => {
       if(!v.uri || !ids[i]) return;
-      if(localVideoOk(v.uri)) return;
+      if(localVideoOk(v.uri) !== false) return;
       v.uri = '';
       v.remote = true;
       if(!v.fileId) v.fileId = ids[i];
