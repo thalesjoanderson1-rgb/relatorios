@@ -6483,7 +6483,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.34';
+const CONTENT_VERSION = '3.35';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -9928,16 +9928,33 @@ function setShareStage(stage){
 }
 window.onShareStage = function(stage){ setShareStage(stage); };
 
+let shareWakeLock = null;
+async function manterTelaLigada(){
+  // na versão online (navegador) segura a tela para o download não parar
+  try{
+    if(!('wakeLock' in navigator) || shareWakeLock) return;
+    shareWakeLock = await navigator.wakeLock.request('screen');
+    shareWakeLock.addEventListener('release', () => { shareWakeLock = null; });
+  }catch(e){ shareWakeLock = null; }
+}
+async function liberarTela(){
+  try{
+    if(shareWakeLock){ const l = shareWakeLock; shareWakeLock = null; await l.release(); }
+  }catch(e){}
+}
+
 function showShareBusy(msg){
   const el = $('#shareBusy');
   if(el) el.style.display = 'grid';
   const t = $('#shareBusyText');
   if(t && msg) t.textContent = msg;
   setShareStage('download');
+  manterTelaLigada();
 }
 function hideShareBusy(){
   const el = $('#shareBusy');
   if(el) el.style.display = 'none';
+  liberarTela();
 }
 function beginShare(busy){
   if(sharing){
