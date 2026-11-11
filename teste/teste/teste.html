@@ -907,6 +907,13 @@
   .phrase-item span{flex:1;min-width:0}
   .phrase-item em{font-style:normal;color:var(--dim);font-size:10px;white-space:nowrap}
   .phrase-item:hover{border-color:rgba(245,165,36,.35);background:rgba(245,165,36,.06);color:var(--txt);transform:none}
+  .phrase-head{width:100%;background:transparent;border:0;padding:0;margin:0;font-family:inherit;text-align:left;flex-wrap:nowrap;cursor:pointer}
+  .phrase-head b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .phrase-head .chip{flex:0 0 auto}
+  .pb-chev{width:14px;height:14px;color:var(--dim);flex:0 0 auto;transition:transform .18s ease}
+  .phrase-group.open .pb-chev{transform:rotate(180deg)}
+  .phrase-body{display:none;margin-top:8px}
+  .phrase-group.open .phrase-body{display:block}
 
   /* ===================== Início em Bento ===================== */
   #sec-inicio{padding:0;margin:0}
@@ -1373,7 +1380,8 @@
   #sec-frases details[open] summary::after{transform:translateY(-50%) rotate(90deg)}
   #sec-regras details> *:not(summary),
   #sec-regras2 details> *:not(summary),
-  #sec-frases details> *:not(summary){margin-left:16px;margin-right:16px}
+  #sec-frases details> *:not(summary){margin-left:16px;margin-right:16px;box-sizing:border-box;max-width:calc(100% - 32px)}
+  #reviewBox textarea{resize:none}
   #sec-regras details[open],
   #sec-regras2 details[open],
   #sec-frases details[open]{padding-bottom:16px}
@@ -2384,7 +2392,7 @@ pre.report,.review-pre{background:#0A0E13!important;border-radius:3px!important;
 .picker[hidden]{display:none!important}
 .picker-card{position:fixed!important;left:12px;top:12px;bottom:auto!important;width:240px;max-width:calc(100vw - 24px);max-height:60vh;overflow:auto;background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:12px!important;padding:8px!important;box-shadow:0 24px 60px -12px rgba(0,0,0,.65)!important;transform:none!important;opacity:1!important}
 .picker-handle{display:none!important}
-.picker-card h3{font-family:var(--sans)!important;font-size:11px!important;font-weight:600!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:var(--muted)!important;margin:6px 8px 4px!important}
+.picker-card h3{font-family:var(--sans)!important;font-size:11px!important;font-weight:600!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:var(--muted)!important;margin:6px 8px 4px!important;position:sticky!important;top:-8px!important;background:var(--surface)!important;padding:6px 0 4px!important;z-index:2}
 .picker-opt{height:38px!important;padding:0 10px!important;border-radius:8px!important;font-size:12px!important;color:var(--dim)!important;border:0!important;background:transparent!important}
 .picker-opt:hover{background:rgba(244,248,252,.06)!important}
 .picker-opt.on{background:rgba(111,168,220,.14)!important;color:var(--txt)!important}
@@ -2573,6 +2581,25 @@ body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
 .weekcal-day i{position:absolute;bottom:5px;width:3px;height:3px;border-radius:50%;background:#2EE6A6}
 .weekcal-day.today i{background:#0B0D12}
 .weekcal-day.empty{pointer-events:none}
+.rules-sechead{font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin:14px 4px 6px;font-weight:700}
+.rules-sechead:first-of-type{margin-top:4px}
+.rev-labelrow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0 6px}
+.rev-label{font-size:8.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.rev-right{display:flex;align-items:center;gap:8px}
+.rev-count{font-size:8.5px;color:var(--dim)}
+.rev-paste{font-family:inherit;font-size:8.5px;color:#C9D4E2;border:1px solid var(--line);border-radius:7px;padding:3px 8px;background:var(--surface2);cursor:pointer}
+.rev-paste:active{transform:scale(.97)}
+.cr-form{display:grid;grid-template-columns:1.3fr 1fr;gap:7px}
+.cr-form input,.cr-form select{width:100%;min-width:0}
+.cr-add{width:100%;justify-content:center;margin-top:8px}
+.cr-card{display:flex;align-items:center;gap:9px;background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:9px 10px;margin-bottom:6px}
+.cr-card:last-child{margin-bottom:0}
+.cr-dot{width:7px;height:7px;border-radius:50%;background:#2EE6A6;flex:0 0 auto}
+.cr-body{flex:1;min-width:0}
+.cr-phrase{font-size:10.5px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cr-viol{font-size:8.5px;color:var(--accent);margin-top:2px}
+.cr-del{font-size:11px;color:#FF8A8A;padding:4px 7px;border:1px solid rgba(255,107,107,.22);border-radius:7px;background:rgba(255,107,107,.06);cursor:pointer;flex:0 0 auto}
+.cr-del:active{transform:scale(.97)}
 .week-split{display:grid;grid-template-columns:.9fr 1.25fr;gap:8px;align-items:stretch;margin-top:10px}
 .week-box{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}
 #sec-contador .week-count{font-size:42px!important;font-weight:800!important;line-height:1!important;letter-spacing:-.04em;margin-top:6px}
@@ -2589,6 +2616,260 @@ body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
   border-radius:0!important;padding:4px 0!important;font-size:9px!important;color:#98A2B3!important;gap:8px!important}
 .week-left #chartSummary .chip b{color:#E9EEF5!important;font-size:9.5px!important;font-weight:800!important;white-space:nowrap!important}
 .week-left #chartSummary .chip:last-child{border-bottom:0!important}
+/* Início — parte 1: semana + atividade no mesmo card */
+#sec-inicio .v7-hero{
+  display:grid!important;
+  grid-template-columns:1fr 1.05fr;
+  grid-template-areas:"left act" "days days";
+  align-items:center;
+  gap:6px 12px;
+  padding:15px!important;
+  border-radius:20px!important;
+  border:1px solid rgba(139,157,255,.22)!important;
+  background:
+    radial-gradient(120% 90% at 88% -10%, rgba(139,157,255,.22), transparent 60%),
+    linear-gradient(165deg,#161D28 0%,#0E1219 45%,#0A0D12 100%)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    inset 0 -18px 30px -22px rgba(0,0,0,.9),
+    0 22px 44px -22px rgba(0,0,0,.95),
+    0 10px 30px -18px rgba(139,157,255,.45)!important;
+  position:relative;
+  overflow:hidden;
+}
+#sec-inicio .v7-hero .hero-left{grid-area:left;min-width:0;position:relative;z-index:1}
+#sec-inicio .v7-hero .hero-right{grid-area:act;min-width:0;position:relative;z-index:1}
+#sec-inicio .v7-hero .nx-in-hero{background:transparent!important;border:0!important;padding:0!important;margin:0!important;border-radius:0!important;box-shadow:none!important}
+#sec-inicio .v7-hero .nx-act-head{align-items:center;gap:6px!important}
+#sec-inicio .v7-hero .nx-act-title{font-size:8px!important;letter-spacing:.12em!important;text-transform:uppercase!important;color:#8A93A3!important;font-weight:700!important}
+#sec-inicio .v7-hero .nx-act-seg{padding:1px!important}
+#sec-inicio .v7-hero .nx-act-seg button{height:20px!important;padding:0 7px!important;font-size:8px!important}
+#sec-inicio .v7-hero .nx-act-chart{height:76px!important;margin-top:7px!important}
+#sec-inicio .v7-hero .v7-bignum{font-size:46px!important;line-height:.92!important;margin:5px 0 2px!important;
+  text-shadow:0 2px 0 rgba(0,0,0,.55), 0 12px 26px rgba(139,157,255,.45)}
+#sec-inicio .v7-hero #homeWeekSub{display:block!important;font-size:10px!important;color:#94A0B2!important;margin-top:2px}
+#sec-inicio .v7-hero #homeTrend{margin-top:9px;display:inline-flex!important;align-self:flex-start;position:relative;z-index:1}
+#sec-inicio .v7-hero .v7-days{grid-area:days;display:grid!important;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:13px!important;position:relative;z-index:1}
+#sec-inicio .v7-hero .v7-days .hb{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:8px;color:#6F7683;flex:none!important;text-align:center!important}
+#sec-inicio .v7-hero .v7-days .track{width:100%;height:15px!important;flex:0 0 15px!important;border-radius:6px;display:block;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#1B2230,#111722);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 2px 0 rgba(0,0,0,.5)}
+#sec-inicio .v7-hero .v7-days .track i{position:absolute;left:0;right:0;bottom:0;display:block;
+  background:linear-gradient(180deg,#C4CFFF,#8296F5 55%,#5F72D6);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 0 12px -2px rgba(139,157,255,.8)}
+#sec-inicio .v7-hero .v7-days .hb.today{color:#DCE3F5!important;font-weight:800}
+#sec-inicio .v7-hero .v7-days .hb.today .track{box-shadow:inset 0 1px 0 rgba(255,255,255,.09), 0 0 0 1px rgba(139,157,255,.55)}
+@media(max-width:380px){#sec-inicio .v7-hero{grid-template-columns:1fr;grid-template-areas:"left" "act" "days"}}
+
+/* Parte 2 — ações em cards (opção L) */
+#sec-inicio .v7-actions{grid-template-columns:1fr 1fr!important;gap:8px!important}
+#sec-inicio .v7-actions .v7-btn.v7-act{
+  height:66px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+  padding:10px 12px!important;
+  border-radius:13px!important;
+  text-align:left;
+  background:linear-gradient(165deg,#141A24,#0B0D12)!important;
+  border:1px solid #232A35!important;
+  color:#F6F7F9!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;
+  font-weight:800!important;
+  letter-spacing:0!important;
+  position:relative;
+  overflow:hidden;
+}
+#sec-inicio .v7-actions .v7-btn.primary.v7-act{
+  border-color:rgba(139,157,255,.38)!important;
+  background:linear-gradient(160deg,rgba(139,157,255,.16),#0B0D12 62%)!important}
+#sec-inicio .v7-actions .v7-act-txt{display:flex;flex-direction:column;gap:3px;min-width:0}
+#sec-inicio .v7-actions .v7-act-txt b{font-size:11px;font-weight:800;color:#F6F7F9;line-height:1.15}
+#sec-inicio .v7-actions .v7-act-txt small{font-size:8px;color:#7C8698;font-weight:500;line-height:1.2;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#sec-inicio .v7-actions .v7-act svg{width:18px!important;height:18px!important;flex:0 0 auto;color:#8B9DFF}
+@media(max-width:380px){#sec-inicio .v7-actions{grid-template-columns:1fr!important}}
+
+/* Parte 3 — números com ícone (I1) */
+#sec-inicio .v7-stats{margin:14px 0 12px!important}
+#sec-inicio .v7-stats .vs-ico{width:15px;height:15px;display:block;margin:0 auto 4px;
+  fill:none;stroke:#8B9DFF;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#sec-inicio .v7-stats .v7-stat b{margin-top:0}
+/* Parte 3 — Recentes (H2): bolinha = compartilhado, etiqueta = gravidade */
+#homeRecent .v7-dot.sh-on{background:#2EE6A6!important;box-shadow:0 0 8px rgba(46,230,166,.6)!important}
+#homeRecent .v7-dot.sh-off{background:#FF6B6B!important;box-shadow:0 0 8px rgba(255,107,107,.6)!important}
+#homeRecent .rs-sev{font-size:7px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  padding:2px 6px;border-radius:999px;flex:0 0 auto;line-height:1.5}
+#homeRecent .rs-sev.leve{color:#2EE6A6;background:rgba(46,230,166,.10);border:1px solid rgba(46,230,166,.28)}
+#homeRecent .rs-sev.alta{color:#FFB020;background:rgba(255,176,32,.10);border:1px solid rgba(255,176,32,.30)}
+#homeRecent .rs-sev.grave{color:#FF6B6B;background:rgba(255,107,107,.10);border:1px solid rgba(255,107,107,.30)}
+/* linhas planas com divisória (padrão H2) */
+#homeRecent .v7-row{
+  margin:0!important;
+  padding:9px 13px!important;
+  background:transparent!important;
+  border:0!important;
+  border-top:1px solid #171D26!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  gap:9px;
+}
+#homeRecent .v7-row:first-child{border-top:0!important;padding-top:6px!important}
+#homeRecent .v7-row:last-child{margin-bottom:0!important;padding-bottom:16px!important}
+#homeRecent .v7-row:hover{background:rgba(139,157,255,.04)!important}
+#homeRecent .v7-id{font-size:8px!important}
+#homeRecent .v7-v{font-size:10.5px!important;font-weight:700!important}
+#homeRecent .v7-m{font-size:8px!important;margin-top:1px!important}
+/* Parte 4 — barra inferior: pílula ativa (opção 2) */
+.bottom-nav a{border-radius:13px!important;padding:6px 0!important;margin:0 2px!important}
+.bottom-nav a.active{
+  background:linear-gradient(180deg,rgba(139,157,255,.22),rgba(139,157,255,.10))!important;
+  color:#DCE3FF!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 8px 18px -12px rgba(139,157,255,.85)!important;
+}
+.bottom-nav a.active::before{display:none!important}
+.bottom-nav a.active svg{color:#DCE3FF!important}
+
+/* sem alça de redimensionar nos campos */
+textarea{resize:none!important}
+#editEntryWrap textarea{resize:vertical!important}
+
+/* Gerar — barra de ferramentas (idioma segmented + ações em ícone) */
+#sec-gerar .gen-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;flex-wrap:wrap}
+#sec-gerar .seg-wrap{display:inline-flex;align-items:center;gap:2px;background:#0E1013!important;border:1px solid #232A35!important;border-radius:9px!important;padding:2px!important;flex-wrap:nowrap!important}
+#sec-gerar .seg-wrap .seg{display:flex;margin:0!important}
+#sec-gerar .seg-wrap .seg input{display:none!important}
+#sec-gerar .seg-wrap .seg span{display:inline-flex!important;align-items:center;gap:4px;font-size:8.5px!important;font-weight:700!important;
+  padding:6px 9px!important;border-radius:7px!important;border:0!important;background:transparent!important;color:#8A93A3!important;white-space:nowrap!important}
+#sec-gerar .seg-wrap .seg input:checked + span{background:rgba(139,157,255,.16)!important;color:#D6DDFF!important;box-shadow:none!important}
+#sec-gerar .seg-wrap .seg svg{width:10px!important;height:10px!important;flex:0 0 auto}
+#sec-gerar .gen-icons{display:flex;gap:6px}
+#sec-gerar .nx-editor-bar{justify-content:flex-start!important;gap:6px!important;padding:9px 12px!important;background:transparent!important}
+#sec-gerar .nx-editor-bar .gen-tools{margin:0!important;flex:1 1 auto!important;min-width:0}
+#sec-gerar #btnSample{margin-left:auto!important}
+#sec-gerar #btnSample,#sec-gerar #btnClear{width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;
+  padding:0!important;font-size:0!important;line-height:0!important;display:block!important;position:relative!important;border-radius:8px!important;align-self:center!important}
+#sec-gerar #btnSample svg,#sec-gerar #btnClear svg{position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;margin:0!important}
+#sec-gerar #btnSample svg,#sec-gerar #btnClear svg{width:13px!important;height:13px!important}
+#sec-gerar #btnClear{color:#FF8A8A!important;border-color:rgba(255,107,107,.3)!important;background:rgba(255,107,107,.07)!important}
+#sec-gerar .gen-cta{width:calc(100% - 24px)!important;height:46px!important;margin:10px 12px 0!important;border-radius:12px!important;
+  font-size:12.5px!important;font-weight:800!important;
+  background:linear-gradient(180deg,#8CBEEC,#6FA8DC 60%,#5C94C8)!important;color:#071018!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 12px 24px -12px rgba(111,168,220,.9)!important}
+#sec-gerar #trModeNote{display:block;margin:20px 12px 4px!important}
+#sec-gerar #parseInfo{margin:8px 12px 12px!important}
+
+/* Vídeos apagados — CTA + ações (opção D) */
+#sec-organizador .org-cta{width:100%!important;height:42px!important;border-radius:10px!important;margin-top:10px!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;
+  font-size:12px!important;font-weight:800!important}
+#sec-organizador .org-cta svg{width:14px!important;height:14px!important;flex:0 0 auto}
+#sec-organizador .org-actions{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin-top:8px!important}
+#sec-organizador .org-actions button{height:30px!important;padding:0 11px!important;font-size:10px!important;border-radius:9px!important;
+  display:inline-flex!important;align-items:center!important;gap:6px!important}
+#sec-organizador #btnOrgClear{color:#FF8A8A!important;border-color:rgba(255,107,107,.3)!important;background:rgba(255,107,107,.07)!important}
+#sec-organizador .org-actions button svg{width:12px!important;height:12px!important}
+#sec-organizador #orgInfo{display:block!important;margin-top:8px!important;text-align:center!important;font-size:9px!important}
+
+/* Vídeos apagados — ordem fixa em mono (opção F) */
+#sec-organizador .org-order ol{counter-reset:orgc;margin:9px 0 0!important;padding:0!important;list-style:none!important;
+  display:flex;flex-direction:column;gap:6px!important;font-size:10.5px!important;line-height:1.4!important}
+#sec-organizador .org-order li{display:flex;align-items:center;gap:8px;color:#C7CED9}
+#sec-organizador .org-order li::before{counter-increment:orgc;content:counter(orgc,decimal-leading-zero);
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9px;font-weight:700;color:#8B9DFF;min-width:16px}
+#sec-organizador .org-order li:last-child{font-style:italic;color:#8A93A3}
+#sec-organizador .org-order li:last-child::before{color:#6F7683;font-style:normal}
+
+/* Vídeos apagados — resultado (opção B) */
+#sec-organizador .og-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
+#sec-organizador .og-head b{font-size:11px;color:#F6F7F9}
+#sec-organizador #orgCount{font-size:8.5px;color:#6F7683}
+#sec-organizador .og-acts{display:flex;gap:8px;margin-bottom:9px}
+#sec-organizador .og-acts button{height:34px!important;border-radius:9px!important;padding:0 12px!important;
+  font-size:10.5px!important;font-weight:800!important;display:inline-flex!important;align-items:center!important;gap:6px!important}
+#sec-organizador .og-acts button svg{width:13px!important;height:13px!important;flex:0 0 auto}
+
+/* Interruptores com 3D (modelo 1) */
+.switch i{
+  background:linear-gradient(180deg,#2A3546,#16202C)!important;
+  border:1px solid rgba(255,255,255,.07)!important;
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.75), inset 0 -1px 0 rgba(255,255,255,.08)!important;
+  border-radius:999px!important;
+}
+.switch i::after{
+  background:linear-gradient(180deg,#96A3B6,#5C6675)!important;
+  box-shadow:0 3px 6px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.45)!important;
+}
+.switch input:checked + i{
+  background:linear-gradient(180deg,#8EC1EE,#4F86BC)!important;
+  border-color:rgba(255,255,255,.20)!important;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.35), inset 0 -1px 0 rgba(255,255,255,.35),
+    0 4px 10px -6px rgba(111,168,220,.9)!important;
+}
+.switch input:checked + i::after{
+  background:linear-gradient(180deg,#FFFFFF,#CBD6E8)!important;
+  box-shadow:0 3px 7px rgba(0,0,0,.5), inset 0 1px 0 #fff!important;
+}
+
+/* Estatísticas — cada seção num card (opção 3) */
+#statsCard .stats-body{display:flex!important;flex-direction:column!important;gap:8px!important;padding-top:14px!important}
+#statsCard .stats-kpis{margin:0 0 4px!important}
+#statsCard .stats-block{
+  margin:0!important;
+  background:var(--surface2)!important;
+  border:1px solid var(--line)!important;
+  border-radius:12px!important;
+  padding:11px 12px!important;
+}
+#statsCard .stats-block h3{margin:0 0 8px!important}
+#statsCard .stats-block:last-child{padding-bottom:12px!important}
+
+/* Cabeçalho das estatísticas (opção 5B) */
+#statsCard summary{display:flex!important;align-items:center!important;gap:9px!important;padding:12px 15px!important}
+#statsCard summary::after{content:none!important;display:none!important}
+#statsCard .stats-ico{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto;
+  background:rgba(111,168,220,.12);border:1px solid rgba(111,168,220,.25)}
+#statsCard .stats-ico svg{width:18px;height:18px;fill:none;stroke:#6FA8DC;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#statsCard .stats-tt{flex:1;min-width:0}
+#statsCard .stats-tt b{display:block;font-size:13.5px;font-weight:700;color:var(--txt);letter-spacing:-.01em}
+#statsCard .stats-tt small{display:block;font-size:9px;color:#7C8698;margin-top:1px}
+#statsCard .stats-chev{color:#8A93A3;font-size:11px;transition:transform .15s}
+#statsCard[open] .stats-chev{transform:rotate(180deg)}
+
+/* Filtros do histórico — painel recolhível (opção 8) */
+#sec-historico .hist-filters{display:flex!important;flex-direction:column!important;gap:8px!important}
+#sec-historico .hist-filters #histSearch{grid-column:auto!important;width:100%!important}
+#sec-historico .hf-toggle{
+  display:flex;align-items:center;gap:7px;height:36px;padding:0 12px;border-radius:9px;
+  border:1px solid #232A35;background:#0E1013;color:#DDE3EC;font-family:inherit;font-size:10px;
+  font-weight:700;cursor:pointer;width:100%}
+#sec-historico .hf-toggle svg{width:13px;height:13px;stroke:#8A93A3}
+#sec-historico .hf-toggle .hf-count{
+  font-size:9px;font-weight:800;color:#C9D4FF;background:rgba(139,157,255,.14);
+  border:1px solid rgba(139,157,255,.3);border-radius:999px;padding:1px 7px;min-width:18px;text-align:center}
+#sec-historico .hf-toggle .hf-chev{margin-left:auto;color:#8A93A3;font-size:10px;transition:transform .15s}
+#sec-historico .hf-toggle.open .hf-chev{transform:rotate(180deg)}
+#sec-historico .hist-filter-panel{display:none;grid-template-columns:1fr 1fr;gap:8px}
+#sec-historico .hist-filter-panel.open{display:grid}
+#sec-historico .hist-filter-panel #btnHistClear{grid-column:1/-1}
+
+/* Miniatura nos itens do histórico (opção 7A) */
+#sec-historico .hist-item{align-items:flex-start!important}
+.hist-thumb{
+  width:56px;height:40px;border-radius:8px;flex:0 0 auto;align-self:flex-start;margin-top:2px;
+  background:linear-gradient(135deg,#3A2A20,#1A1420);
+  border:1px solid var(--line);display:grid;place-items:center;color:#8FA0B4;font-size:12px;overflow:hidden}
+.hist-thumb svg{width:14px;height:14px}
+.hist-thumb.has{background:linear-gradient(135deg,#3A2A20,#1A1420);color:#DCE3EC;border-color:rgba(255,255,255,.12)}
+#sec-historico .hist-side{align-self:flex-start!important;padding-top:2px}
+.hist-thumb.has-img{background-color:#0B0D12;color:transparent}
+.hist-thumb.has-img::after{content:none!important}
+@media(max-width:420px){.hist-thumb{width:44px;height:34px}}
+
+/* remove a barra superior (logo + "Criação de relatórios") */
+.v7-top{display:none!important}
+
 @media(max-width:520px){.week-split{grid-template-columns:1fr}}
 </style>
 </head>
@@ -2652,38 +2933,33 @@ body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
     </div>
 
     <section class="v7-hero" data-tab="semana" title="Abrir contador da semana">
-      <div class="v7-hero-top">
+      <div class="hero-left">
         <span class="v7-eyebrow">Relatórios na semana</span>
+        <div class="v7-bignum" id="homeWeekCount">0</div>
+        <div class="v7-herosub" id="homeWeekSub">vs — na semana passada</div>
         <span class="v7-trend" id="homeTrend">—</span>
       </div>
-      <div class="v7-bignum" id="homeWeekCount">0</div>
-      <div class="v7-herosub" id="homeWeekSub">vs — na semana passada</div>
-      <div class="v7-chart" id="homeMini"></div>
+      <div class="hero-right nx-activity nx-in-hero">
+        <div class="nx-act-head">
+          <div class="nx-act-title">Atividade</div>
+          <div class="nx-act-seg">
+            <button type="button" data-nx-range="7" class="on">7 dias</button>
+            <button type="button" data-nx-range="30">30 dias</button>
+          </div>
+        </div>
+        <div class="nx-act-chart"><canvas id="nxActivityChart"></canvas></div>
+      </div>
       <div class="v7-days" id="homeDays"></div>
     </section>
 
-    <section class="nx-activity">
-      <div class="nx-act-head">
-        <div>
-          <div class="nx-act-title">Atividade</div>
-          <div class="nx-act-sub">Relatórios por dia</div>
-        </div>
-        <div class="nx-act-seg">
-          <button type="button" data-nx-range="7" class="on">7 dias</button>
-          <button type="button" data-nx-range="30">30 dias</button>
-        </div>
-      </div>
-      <div class="nx-act-chart"><canvas id="nxActivityChart"></canvas></div>
-    </section>
-
     <div class="v7-actions">
-      <button class="v7-btn primary" data-tab="gerar">
+      <button class="v7-btn primary v7-act" data-tab="gerar">
+        <span class="v7-act-txt"><b>Novo relatório</b><small>relatório escrito, uma violação por linha</small></span>
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
-        Novo relatório
       </button>
-      <button class="v7-btn secondary" id="homeNewVideo">
+      <button class="v7-btn secondary v7-act" id="homeNewVideo">
+        <span class="v7-act-txt"><b>Relatório com vídeo</b><small>gravar e anexar ao relatório</small></span>
         <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="m10 9 5 3-5 3z" fill="currentColor"/></svg>
-        Com vídeo
       </button>
     </div>
 
@@ -2701,11 +2977,20 @@ body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
     </section>
 
     <div class="v7-stats">
-      <div class="v7-stat"><small>Total</small><b id="homeTotal">0</b></div>
-      <div class="v7-stat"><small>Com vídeo</small><b id="homeVideoCount">0</b></div>
+      <div class="v7-stat">
+        <svg class="vs-ico" viewBox="0 0 24 24"><path d="M6.5 3h7L18 7.5V21h-11z"/><path d="M9 12h6M9 16h4"/></svg>
+        <b id="homeTotal">0</b>
+        <small>Total</small>
+      </div>
+      <div class="v7-stat">
+        <svg class="vs-ico" viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="3"/><path d="m15 10 5-3v10l-5-3"/></svg>
+        <b id="homeVideoCount">0</b>
+        <small>Com vídeo</small>
+      </div>
       <button class="v7-stat v7-stat-cloud" id="homeCloudCard" data-tab="mais" title="Abrir sincronização e backup">
-        <small>Nuvem</small>
+        <svg class="vs-ico" viewBox="0 0 24 24"><path d="M7 18a4 4 0 0 1 .6-8A5.5 5.5 0 0 1 18 9.5 3.5 3.5 0 0 1 17.5 18Z"/></svg>
         <b id="homeSync">—</b>
+        <small>Nuvem</small>
         <span id="homeSyncMeta">backup: —</span>
       </button>
     </div>
@@ -2715,21 +3000,17 @@ body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
     <h2>Novo relatório <span class="subhead">— uma violação por linha</span></h2>
     <div id="pendingVideo" class="pending" style="display:none"></div>
     <textarea id="input" spellcheck="false" placeholder="Streame ausente durante pk em andamento,10:37,id:10518889&#10;Streame realizando transmissão com criança aparecendo,10:36,id:10470193&#10;Streame realizando transmissão no alii e no tiktok ao mesmo tempo,22:06,id:10486830p"></textarea>
-    <div class="row gen-actions">
-      <button class="primary" id="btnGenerate">Gerar relatórios</button>
-      <button class="ghost" id="btnSample"><svg viewBox="0 0 24 24" fill="none"><path d="M8 5.5v13l10-6.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg> Ver exemplo</button>
-      <button class="ghost" id="btnClear"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V4.8h6V7M6.5 7l.8 12.2h9.4L17.5 7M10 10.5v5M14 10.5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Limpar</button>
-      <span class="hint">Ctrl+Enter para gerar · aceita lote · aceita lista de vídeo removido</span>
-    </div>
-    <div style="margin-top:12px">
-      <span class="hint">Tradução</span>
+    <div class="gen-tools">
       <div class="seg-wrap" role="radiogroup" aria-label="Modo de tradução">
-        <label class="seg"><input type="radio" name="trmode" value="online"/><span>Online (Google)</span></label>
-        <label class="seg"><input type="radio" name="trmode" value="auto"/><span>Automática</span></label>
-        <label class="seg"><input type="radio" name="trmode" value="offline"/><span>Só offline</span></label>
+        <label class="seg"><input type="radio" name="trmode" value="online"/><span><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.9"/><path d="M4 12h16M12 4c2.5 3 2.5 13 0 16M12 4c-2.5 3-2.5 13 0 16" stroke="currentColor" stroke-width="1.7"/></svg> Online (Google)</span></label>
+        <label class="seg"><input type="radio" name="trmode" value="auto"/><span><svg viewBox="0 0 24 24" fill="none"><path d="m13 3-8 10h6l-1 8 8-10h-6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg> Automática</span></label>
+        <label class="seg"><input type="radio" name="trmode" value="offline"/><span><svg viewBox="0 0 24 24" fill="none"><path d="M5 12a7 7 0 0 0 11 5.7M19 12a7 7 0 0 0-11-5.7" stroke="currentColor" stroke-width="1.7"/><path d="M4 4l16 16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg> Só offline</span></label>
       </div>
-      <span class="hint" id="trModeNote"></span>
+      <button class="ghost" id="btnSample" title="Ver exemplo" aria-label="Ver exemplo"><svg viewBox="0 0 24 24" fill="none"><path d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.7"/></svg></button>
+      <button class="ghost" id="btnClear" title="Limpar" aria-label="Limpar"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V4.8h6V7M6.5 7l.8 12.2h9.4L17.5 7M10 10.5v5M14 10.5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </div>
+    <button class="primary gen-cta" id="btnGenerate">Criar relatório</button>
+    <span class="hint" id="trModeNote"></span>
     <div id="parseInfo" class="hint" style="margin-top:8px"></div>
   </section>
 
@@ -2738,10 +3019,16 @@ body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
     <span class="v7-weekchip">revisão e frases</span>
   </div>
 
+  <div class="rules-sechead" id="sec-regras-revisao" data-panel="regras">Revisão</div>
+
   <section class="card" id="sec-regras" data-panel="regras">
     <details id="reviewBox">
       <summary><span class="rule-sum"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="m9 12 2.2 2.2L15.5 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Revisar relatório colado</b> — confere um relatório pronto antes de enviar</span></span></summary>
-      <textarea id="reviewInput" spellcheck="false" style="margin-top:10px;min-height:130px" placeholder="Cole aqui o relatório completo (ex.: feito por outra IA)..."></textarea>
+      <div class="rev-labelrow">
+        <span class="rev-label">Relatório colado</span>
+        <span class="rev-right"><span class="rev-count" id="reviewCount">0 caracteres</span><button type="button" class="rev-paste" id="btnReviewPaste">Colar</button></span>
+      </div>
+      <textarea id="reviewInput" spellcheck="false" style="min-height:130px" placeholder="Cole aqui o relatório completo (ex.: feito por outra IA)..."></textarea>
       <div class="row">
         <button class="primary" id="btnReview">Revisar</button>
         <button class="ghost" id="btnReviewClear"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V4.8h6V7M6.5 7l.8 12.2h9.4L17.5 7M10 10.5v5M14 10.5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Limpar</button>
@@ -2751,15 +3038,17 @@ body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
     </details>
   </section>
 
+  <div class="rules-sechead" id="sec-regras-frases" data-panel="regras">Frases e regras</div>
+
   <section class="card" id="sec-regras2" data-panel="regras">
     <details id="rulesBox">
       <summary><span class="rule-sum"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="7" r="2.2" stroke="currentColor" stroke-width="1.7"/><circle cx="8" cy="17" r="2.2" stroke="currentColor" stroke-width="1.7"/></svg><span><b>Regras personalizadas</b> — ensinar frases novas</span></span></summary>
       <p class="hint" style="margin:10px 0">Se a descrição contiver a frase, o app classifica como a violação escolhida. Fica salvo no navegador.</p>
-      <div class="row">
-        <input id="rulePhrase" placeholder="ex.: se exibindo de biquíni" style="flex:1;min-width:220px"/>
-        <select id="ruleViolation" style="max-width:320px"></select>
-        <button class="primary" id="btnAddRule"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg> Adicionar</button>
+      <div class="cr-form">
+        <input id="rulePhrase" placeholder="ex.: se exibindo de biquíni"/>
+        <select id="ruleViolation" title="Escolher violação"></select>
       </div>
+      <button class="primary cr-add" id="btnAddRule"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg> Adicionar</button>
       <div id="customRulesList" style="margin-top:10px"></div>
     </details>
   </section>
@@ -2819,8 +3108,9 @@ body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
     <button class="primary" id="btnSyncLogin2" style="display:none;margin:-4px 0 14px;width:100%">Entrar com Google para sincronizar</button>
     <details class="stats-card" id="statsCard">
       <summary>
-        <span class="stats-kicker">Estatísticas</span>
-        <span class="stats-sub">todo o histórico</span>
+        <span class="stats-ico"><svg viewBox="0 0 24 24"><path d="M5 19V11M10 19V6M15 19v-5M20 19V9"/></svg></span>
+        <span class="stats-tt"><b>Estatísticas</b><small>todo o histórico</small></span>
+        <span class="stats-chev">▾</span>
       </summary>
       <div class="stats-body">
         <div class="stats-kpis">
@@ -2844,26 +3134,34 @@ body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
     </details>
     <div class="hist-filters">
       <input type="text" id="histSearch" placeholder="Buscar por ID, violação ou data…"/>
-      <select id="histViolation" title="Filtrar por violação"></select>
-      <select id="histSeverity" title="Filtrar por gravidade">
-        <option value="">Todas as gravidades</option>
-        <option value="🔴">Grave 🔴</option>
-        <option value="🟠">Alta 🟠</option>
-        <option value="🟡">Leve 🟡</option>
-      </select>
-      <select id="histVideo" title="Filtrar por vídeo">
-        <option value="">Com ou sem vídeo</option>
-        <option value="yes">Só com vídeo</option>
-        <option value="no">Só sem vídeo</option>
-      </select>
-      <select id="histPeriod" title="Filtrar por período">
-        <option value="">Todo o período</option>
-        <option value="today">Hoje</option>
-        <option value="7">Últimos 7 dias</option>
-        <option value="30">Últimos 30 dias</option>
-        <option value="month">Este mês</option>
-      </select>
-      <button class="tool-btn" id="btnHistClear" type="button"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Limpar filtros</button>
+      <button class="hf-toggle" id="btnHistFilters" type="button">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Filtros
+        <span class="hf-count" id="histFilterCount">0</span>
+        <span class="hf-chev">▾</span>
+      </button>
+      <div class="hist-filter-panel" id="histFilterPanel">
+        <select id="histViolation" title="Filtrar por violação"></select>
+        <select id="histSeverity" title="Filtrar por gravidade">
+          <option value="">Todas as gravidades</option>
+          <option value="🔴">Grave 🔴</option>
+          <option value="🟠">Alta 🟠</option>
+          <option value="🟡">Leve 🟡</option>
+        </select>
+        <select id="histVideo" title="Filtrar por vídeo">
+          <option value="">Com ou sem vídeo</option>
+          <option value="yes">Só com vídeo</option>
+          <option value="no">Só sem vídeo</option>
+        </select>
+        <select id="histPeriod" title="Filtrar por período">
+          <option value="">Todo o período</option>
+          <option value="today">Hoje</option>
+          <option value="7">Últimos 7 dias</option>
+          <option value="30">Últimos 30 dias</option>
+          <option value="month">Este mês</option>
+        </select>
+        <button class="tool-btn" id="btnHistClear" type="button"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Limpar filtros</button>
+      </div>
     </div>
     <div class="hist-tools">
       <select id="histSort" title="Ordenar histórico">
@@ -2912,11 +3210,11 @@ body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
         </div>
         <h3 id="editEntryTitle" style="font-size:16px;margin:12px 0 10px;color:var(--txt)">Relatório</h3>
         <div class="edit-grid">
-          <label>Streamer<select id="edStreamer"></select></label>
+          <label>Streamer<select id="edStreamer" title="Escolher streamer"></select></label>
           <label>Data<input id="edDate" type="date"></label>
-          <label>Hora<span class="time-row"><select id="edHour"></select><span>:</span><select id="edMin"></select><select id="edAmPm"><option>AM</option><option>PM</option></select></span></label>
-          <label>Action<select id="edAction"></select></label>
-          <label class="full">Violation Type<select id="edViolation"></select></label>
+          <label>Hora<span class="time-row"><select id="edHour" title="Hora"></select><span>:</span><select id="edMin" title="Minuto"></select><select id="edAmPm" title="AM ou PM"><option>AM</option><option>PM</option></select></span></label>
+          <label>Action<select id="edAction" title="Action"></select></label>
+          <label class="full">Violation Type<select id="edViolation" title="Tipo de violação"></select></label>
           <label class="full">Details<textarea id="edDetails"></textarea></label>
         </div>
         <div class="btns" style="display:flex;gap:8px;margin-top:12px">
@@ -2938,12 +3236,12 @@ body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
       agrupados por <b>Reason</b> na ordem fixa e as duplicatas continuam.
     </p>
     <textarea id="orgInput" spellcheck="false" placeholder="👤 User ID: 12345&#10;🚫 Reason: deep necklines&#10;🗑 Action: Video removed&#10;&#10;👤 User ID: 67890&#10;🚫 Reason: bikini vídeos&#10;🗑 Action: Video removed"></textarea>
-    <div class="row" style="margin-top:10px">
-      <button class="primary" id="btnOrganize">Agrupar</button>
+    <button class="primary org-cta" id="btnOrganize"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4 3 8l9 4 9-4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m3 13 9 4 9-4" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg> Organizar</button>
+    <div class="org-actions">
       <button class="ghost" id="btnOrgSample"><svg viewBox="0 0 24 24" fill="none"><path d="M8 5.5v13l10-6.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg> Ver exemplo</button>
       <button class="ghost" id="btnOrgClear"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V4.8h6V7M6.5 7l.8 12.2h9.4L17.5 7M10 10.5v5M14 10.5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Limpar</button>
-      <span class="hint" id="orgInfo"></span>
     </div>
+    <span class="hint" id="orgInfo"></span>
     <details class="org-order">
       <summary>Ordem fixa das categorias</summary>
       <ol>
@@ -2957,8 +3255,9 @@ body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
       </ol>
     </details>
     <div id="orgResultWrap" style="display:none;margin-top:12px">
-      <div class="row" style="margin:0 0 8px">
-        <button class="primary" id="btnOrgCopy">Copiar organizado</button>
+      <div class="og-head"><b>Organizado</b><span id="orgCount"></span></div>
+      <div class="og-acts">
+        <button class="primary" id="btnOrgCopy"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M5 15V5h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg> Copiar</button>
         <button class="ghost" id="btnOrgDownload"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v11M8 10l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17v2.5h14V17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg> Baixar .txt</button>
       </div>
       <pre class="report" id="orgResult"></pre>
@@ -2969,7 +3268,7 @@ body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
     <h2>Mais</h2>
     <div class="v7-more-list">
       <button class="v7-more-row" id="btnScreenRecord"><span class="bento-ic"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="3"/><path d="M15 10.5 21 7v10l-6-3.5z"/><circle cx="9" cy="12" r="2.4" class="rec-dot"/></svg></span><span class="bento-tb"><span class="bento-t">Gravar tela</span><span class="bento-s">gravar violação e gerar relatório na hora</span></span><em>›</em></button>
-      <button class="v7-more-row" id="btnPreviewUpdate"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4"/><path d="M5 17v2.5h14V17"/></svg></span><span class="bento-tb"><span class="bento-t">Prévia da atualização</span><span class="bento-s">ver como a caixa vai aparecer</span></span><em>›</em></button>
+      <button class="v7-more-row" id="btnPreviewUpdate"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4"/><path d="M5 17v2.5h14V17"/></svg></span><span class="bento-tb"><span class="bento-t">Atualização</span><span class="bento-s">verificar se existem novas atualizações</span></span><em>›</em></button>
       <button class="v7-more-row" data-tab="semana"><span class="bento-ic"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></span><span class="bento-tb"><span class="bento-t">Semana</span><span class="bento-s">contador, gráfico e backup</span></span><em>›</em></button>
       <button class="v7-more-row" data-tab="organizador"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13"/></svg></span><span class="bento-tb"><span class="bento-t">Vídeos apagados</span><span class="bento-s">relatório de vídeo apagado agrupado por motivos</span></span><em>›</em></button>
       <button class="v7-more-row" data-tab="regras"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M7 4h10v16H7z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><span class="bento-tb"><span class="bento-t">Regras</span><span class="bento-s">revisão de relatório e frases</span></span><em>›</em></button>
@@ -4836,6 +5135,8 @@ function openPicker(sel){
   }));
   pickerSel = sel;
   w.hidden = false;
+  const pc = w.querySelector('.picker-card');
+  if(pc) pc.scrollTop = 0;
   requestAnimationFrame(()=>w.classList.add('open'));
 }
 (function bindPicker(){
@@ -4903,7 +5204,7 @@ const PANELS = {
   semana: ['sec-contador'],
   historico: ['sec-historico'],
   organizador: ['sec-organizador'],
-  regras: ['sec-regras-head', 'sec-regras', 'sec-regras2', 'sec-frases'],
+  regras: ['sec-regras-head', 'sec-regras-revisao', 'sec-regras', 'sec-regras-frases', 'sec-regras2', 'sec-frases'],
   mais: ['sec-mais']
 };
 
@@ -6599,7 +6900,9 @@ function renderOrganizer(){
   const parts = [`${res.blocks} bloco(s)`, `${res.categories} categoria(s)`];
   if(res.duplicates) parts.push(`${res.duplicates} duplicata(s) mantida(s)`);
   if(res.ignored) parts.push(`${res.ignored} incompleto(s)`);
-  if(info) info.textContent = parts.join(' · ');
+  const cnt = $('#orgCount');
+  if(cnt) cnt.textContent = parts.join(' · ');
+  if(info) info.textContent = '';
 }
 
 function organizeAndScroll(){
@@ -7262,6 +7565,13 @@ window.onThumbReady = function(key, data){
       els[i].style.backgroundImage = "url('" + data + "')";
     }
   }
+  const ths = document.querySelectorAll('.hist-thumb[data-thumb-key]');
+  for(let i = 0; i < ths.length; i++){
+    if(ths[i].getAttribute('data-thumb-key') === key){
+      applyHistThumb(ths[i], data);
+    }
+  }
+  pumpHistThumbs();
 };
 
 function renderHistVideos(e){
@@ -8147,9 +8457,13 @@ function renderHome(){
   }
   const days = $('#homeDays');
   if(days){
-    days.innerHTML = dayList.map((d,i) =>
-      `<span class="${d.date === todayStr ? 'today' : ''}">${dayNames[i]}</span>`
-    ).join('');
+    days.innerHTML = dayList.map((d,i) => {
+      const pct = d.n ? Math.max(20, Math.round(d.n / max * 100)) : 0;
+      const today = d.date === todayStr;
+      return `<span class="hb${today ? ' today' : ''}">` +
+        `<span class="track"><i style="height:${pct}%"></i></span>` +
+        `<b>${dayNames[i]}</b></span>`;
+    }).join('');
   }
 
   const withVideo = h.filter(hasAnyVideo).length;
@@ -8180,6 +8494,8 @@ function renderHome(){
   for(const e of sorted.slice(0, 3)){
     const sev = sevFor(e.violation);
     const cls = sev === '🔴' ? 'r' : (sev === '🟠' ? '' : 'g');
+    const sevName = sev === '🔴' ? 'grave' : (sev === '🟠' ? 'alta' : 'leve');
+    const shared = !!e.shared_at;
     const rel = homeRel(e.logged_at);
     const vids = entryVideos(e);
     const cloudIds = entryCloudVideoIds(e);
@@ -8188,12 +8504,13 @@ function renderHome(){
     const row = document.createElement('div');
     row.className = 'v7-row';
     row.innerHTML = `
-      <span class="v7-dot ${cls}"></span>
+      <span class="v7-dot ${cls} ${shared ? 'sh-on' : 'sh-off'}" title="${shared ? 'Já compartilhado' : 'Ainda não compartilhado'}"></span>
       <div class="v7-main">
         <div class="v7-id">#${esc(e.id)} · ${esc(e.streamer)}</div>
         <div class="v7-v">${esc(cleanEnd(e.violation))}</div>
         <div class="v7-m">${esc(e.date)} · ${esc(e.time)}${rel ? ' · ' + esc(rel) : ''}</div>
       </div>
+      <span class="rs-sev ${sevName}">${sevName}</span>
       ${window.AndroidApp ? `<button class="v7-cam ${totalVids ? 'video' : ''}" data-cam title="${totalVids ? 'Compartilhar vídeos + relatório' : 'Compartilhar relatório'}">${totalVids ? HICONS.play : HICONS.share}</button>` : ''}
       <span class="v7-chev">›</span>
     `;
@@ -8394,6 +8711,61 @@ function renderStats(){
   if(card) card.addEventListener('toggle', () => { if(card.open) renderStats(); });
 })();
 
+/* Miniaturas reais dos vídeos do histórico (só quando aparecem na tela) */
+let histThumbIO = null;
+let histThumbQueue2 = [];
+
+function applyHistThumb(el, data){
+  if(!el || !data) return;
+  el.textContent = '';
+  el.style.backgroundImage = "url('" + data + "')";
+  el.style.backgroundSize = 'cover';
+  el.style.backgroundPosition = 'center';
+}
+
+function pumpHistThumbs(){
+  if(!histThumbQueue2.length) return;
+  var item = histThumbQueue2.shift();
+  var el = item[0], key = item[1], v = item[2], fid = item[3];
+  if(!el || !el.isConnected) { setTimeout(pumpHistThumbs, 10); return; }
+  if(thumbMem[key]){ applyHistThumb(el, thumbMem[key]); setTimeout(pumpHistThumbs, 10); return; }
+  try{
+    if(v && v.uri && typeof AndroidApp.requestVideoThumb === 'function'){
+      AndroidApp.requestVideoThumb(v.uri);
+    } else if(key.indexOf('cloud:') === 0 && typeof AndroidApp.requestCloudThumb === 'function'){
+      AndroidApp.requestCloudThumb(fid || key.slice(6));
+    }
+  }catch(e){}
+  setTimeout(pumpHistThumbs, 60);
+}
+
+function queueHistThumb(el, key, v, fid, immediate){
+  if(!el || !key) return;
+  el.setAttribute('data-thumb-key', key);
+  if(thumbMem[key]){ applyHistThumb(el, thumbMem[key]); return; }
+  if(v && v.uri) el.setAttribute('data-thumb-src', v.uri);
+  if(fid) el.setAttribute('data-thumb-fid', fid);
+  if(immediate){
+    histThumbQueue2.push([el, key, v, fid]);
+    pumpHistThumbs();
+    return;
+  }
+  if(!histThumbIO && 'IntersectionObserver' in window){
+    histThumbIO = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(!en.isIntersecting) return;
+        histThumbIO.unobserve(en.target);
+        var k = en.target.getAttribute('data-thumb-key');
+        var src = en.target.getAttribute('data-thumb-src');
+        if(k) histThumbQueue2.push([en.target, k, src ? { uri: src } : null, en.target.getAttribute('data-thumb-fid')]);
+        pumpHistThumbs();
+      });
+    }, { rootMargin: '250px' });
+  }
+  if(histThumbIO) histThumbIO.observe(el);
+  else { histThumbQueue2.push([el, key, v, fid]); pumpHistThumbs(); }
+}
+
 function renderHistory(){
   const statsEl = $('#statsCard');
   if(statsEl && statsEl.open) renderStats();
@@ -8529,6 +8901,7 @@ function renderHistory(){
 
   const shown = filtered.slice(0, histLimit);
 
+  let histThumbSeq = 0;
   let lastDay = null;
   for(const e of shown){
     if(histGroup && (histSortMode === 'new' || histSortMode === 'old') && e.date !== lastDay){
@@ -8553,9 +8926,10 @@ function renderHistory(){
     const item = document.createElement('div');
     item.className = `hist-item ${sevCls}${histSelectMode ? ' selecting' : ''}${selected ? ' selected' : ''}`;
     item.innerHTML = `
-      ${histSelectMode ? `<span class="hist-check">${selected ? '✓' : ''}</span>` : `<div class="hist-dot ${e.shared_at ? 'shared-yes' : 'shared-no'}"></div>`}
+      <div class="hist-thumb">▶</div>
       <div class="hist-main">
         <div class="hist-top">
+          ${histSelectMode ? `<span class="hist-check">${selected ? '✓' : ''}</span>` : `<div class="hist-dot ${e.shared_at ? 'shared-yes' : 'shared-no'}"></div>`}
           <span class="hist-id">${totalVids ? `<span class="hist-vbadge" title="${totalVids} vídeo(s)">${HICONS.video}${totalVids > 1 ? '<b>2</b>' : ''}</span>` : ''}#${esc(e.id)}</span>
           <span class="hist-streamer">${esc(e.streamer)}</span>
           <span class="hist-week">Sem. ${wk ? wk.week : '—'}</span>
@@ -8596,6 +8970,11 @@ function renderHistory(){
     if(sh) sh.addEventListener('click', ()=> shareReport(e));
     const pl = item.querySelector('[data-play]');
     if(pl) pl.addEventListener('click', ()=> showHistView(e));
+    if(totalVids && window.AndroidApp && typeof window.AndroidApp.requestVideoThumb === 'function'){
+      const v0 = vids[0];
+      const src = v0 ? (typeof v0 === 'string' ? v0 : (v0.uri || '')) : '';
+      if(src) queueHistThumb(item.querySelector('.hist-thumb'), src);
+    }
     const at = item.querySelector('[data-attach]');
     if(at) at.addEventListener('click', ()=>{
       try{ window.AndroidApp.openVideoEditor(JSON.stringify({ id: String(e.id), text: entryTemplate(e) })); }
@@ -8628,6 +9007,30 @@ function renderHistory(){
     });
 
     if(list) list.appendChild(item);
+    if(totalVids){
+      try{
+        const el = item.querySelector('.hist-thumb');
+        const v0 = entryVideos(e)[0];
+        const fid = (entryCloudVideoIds(e)[0] || '');
+        const key = thumbKeyFor(v0, fid);
+        const stored = (v0 && typeof v0 === 'object') ? (v0.thumb || '') : '';
+        const cached = (key && thumbMem[key]) || stored;
+        if(cached) applyHistThumb(el, cached);
+        else if(key) queueHistThumb(el, key, v0, fid, histThumbSeq++ < 8);
+        if(el) el.addEventListener('click', (ev) => {
+          ev.stopPropagation(); ev.preventDefault();
+          try{
+            const uri = (v0 && v0.uri) || '';
+            let info = 'chave: ' + (el.getAttribute('data-thumb-key') || '—');
+            info += ' · uri: ' + (uri ? 'ok' : 'vazia');
+            if(uri && window.AndroidApp && AndroidApp.videoThumb){
+              info += ' · img: ' + ((AndroidApp.videoThumb(uri) || '').length) + 'b';
+            }
+            toast(info);
+          }catch(err){ toast('erro miniatura: ' + err); }
+        });
+      }catch(err){}
+    }
   }
 
   const filteredVideo = filtered.filter(hasAnyVideo).length;
@@ -9014,20 +9417,32 @@ function renderPhraseBank(){
     return { v, total, top };
   }).sort((a,b) => b.total - a.total);
 
-  box.innerHTML = groups.map(g => `
-    <div class="phrase-group">
-      <div class="phrase-head">
+  box.innerHTML = groups.map((g,gi) => `
+    <div class="phrase-group${gi === 0 ? ' open' : ''}">
+      <button type="button" class="phrase-head">
         <b>${esc(ptFor(g.v))}</b>
-        <span class="chip">${g.total} relatório(s)</span>
-      </div>
-      <div class="phrase-list">
-        ${g.top.map(([d,n]) => `
-          <button type="button" class="phrase-item" data-phrase="${esc(d)}" title="Copiar esta frase">
-            <span>${esc(d)}</span><em>${n}x</em>
-          </button>`).join('')}
+        <span class="chip">${g.total}</span>
+        <svg class="pb-chev" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="phrase-body">
+        <div class="phrase-list">
+          ${g.top.map(([d,n]) => `
+            <button type="button" class="phrase-item" data-phrase="${esc(d)}" title="Copiar esta frase">
+              <span>${esc(d)}</span><em>${n}x</em>
+            </button>`).join('')}
+        </div>
       </div>
     </div>
   `).join('');
+
+  box.querySelectorAll('.phrase-head').forEach(h => {
+    h.addEventListener('click', () => {
+      const grp = h.closest('.phrase-group');
+      const wasOpen = grp.classList.contains('open');
+      box.querySelectorAll('.phrase-group').forEach(g => g.classList.remove('open'));
+      if(!wasOpen) grp.classList.add('open');
+    });
+  });
 
   box.querySelectorAll('[data-phrase]').forEach(b => {
     b.addEventListener('click', () => {
@@ -9377,15 +9792,44 @@ function renderCustomRules(){
   if(!list.length){
     box.innerHTML =
       '<div class="empty-state compact">' +
-      '<svg viewBox="0 0 24 24" fill="none"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="7" r="2.2" stroke="currentColor" stroke-width="1.7"/><circle cx="8" cy="17" r="2.2" stroke="currentColor" stroke-width="1.7"/></svg>' +
+      '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>' +
       '<b>Nenhuma regra personalizada</b><span>Use o campo acima para ensinar uma frase nova.</span></div>';
     return;
   }
-  box.innerHTML = list.map((cr,i) =>
-    `<span class="chip" style="display:inline-flex;gap:8px;align-items:center;margin:0 6px 6px 0">` +
-    `"${esc(cr.phrase)}" → ${esc(cr.name)}` +
-    `<button class="del" data-i="${i}" title="Remover" style="padding:0 4px">✕</button></span>`
-  ).join('');
+  const groups = [];
+  const byName = new Map();
+  list.forEach((cr, i) => {
+    const key = cr.name || '—';
+    let g = byName.get(key);
+    if(!g){ g = { name:key, items:[] }; byName.set(key, g); groups.push(g); }
+    g.items.push({ cr, i });
+  });
+  box.innerHTML = groups.map((g,gi) => `
+    <div class="phrase-group${gi === 0 ? ' open' : ''}">
+      <button type="button" class="phrase-head">
+        <b>${esc(g.name)}</b>
+        <span class="chip">${g.items.length}</span>
+        <svg class="pb-chev" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="phrase-body">
+        <div class="phrase-list">
+          ${g.items.map(o => `
+            <div class="phrase-item" style="cursor:default">
+              <span>"${esc(o.cr.phrase)}"</span>
+              <button type="button" class="cr-del" data-i="${o.i}" title="Remover">✕</button>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  `).join('');
+  box.querySelectorAll('.phrase-head').forEach(h => {
+    h.addEventListener('click', () => {
+      const grp = h.closest('.phrase-group');
+      const wasOpen = grp.classList.contains('open');
+      box.querySelectorAll('.phrase-group').forEach(g => g.classList.remove('open'));
+      if(!wasOpen) grp.classList.add('open');
+    });
+  });
   box.querySelectorAll('button[data-i]').forEach(b => {
     b.addEventListener('click', ()=>{
       const i = +b.getAttribute('data-i');
@@ -9625,6 +10069,25 @@ function bind(){
   $('#btnReviewClear').addEventListener('click', ()=>{
     $('#reviewInput').value = '';
     $('#reviewResult').innerHTML = '';
+    updateReviewCount();
+  });
+  const revInput = $('#reviewInput');
+  const revCount = $('#reviewCount');
+  function updateReviewCount(){
+    if(!revInput || !revCount) return;
+    const n = revInput.value.length;
+    revCount.textContent = n + (n === 1 ? ' caractere' : ' caracteres');
+  }
+  if(revInput){
+    revInput.addEventListener('input', updateReviewCount);
+    updateReviewCount();
+  }
+  const revPaste = $('#btnReviewPaste');
+  if(revPaste) revPaste.addEventListener('click', async ()=>{
+    try{
+      const t = await navigator.clipboard.readText();
+      if(t){ revInput.value = t; updateReviewCount(); revInput.focus(); }
+    }catch(e){ toast('Não foi possível colar'); }
   });
 
   const ruleSel = $('#ruleViolation');
@@ -9878,6 +10341,7 @@ window.onVideoAttached = async function(p){
         size: +p.size || 0,
         name: p.name || '',
         caption: '',
+        thumb: p.thumb || '',
         source: !!p.source
       };
       savePending();
@@ -9925,6 +10389,7 @@ window.onVideoAttached = async function(p){
       size: +p.size || 0,
       name: p.name || '',
       caption: p.caption || '',
+      thumb: p.thumb || '',
       source: !!p.source
     };
 
@@ -10762,13 +11227,6 @@ try{
   }
 }catch(e){}
 if(window.IS_TEST_BUILD){
-  const brand = document.querySelector('.v7-brand');
-  if(brand){
-    const b = document.createElement('span');
-    b.className = 'test-badge';
-    b.textContent = 'TESTE';
-    brand.appendChild(b);
-  }
   const login = $('#btnSyncLogin2');
   if(login) login.style.display = 'none';
   const line = $('#histSyncText');
@@ -10991,6 +11449,7 @@ function drawActivity(range){
 function initActivity(){
   var card = document.querySelector('.nx-activity');
   if(!card || !window.Chart) return;
+  card.addEventListener('click', function(e){ e.stopPropagation(); });
   var buttons = card.querySelectorAll('[data-nx-range]');
   Array.prototype.forEach.call(buttons, function(b){
     b.addEventListener('click', function(){
@@ -10999,7 +11458,7 @@ function initActivity(){
     });
   });
   drawActivity(7);
-  var mini = document.getElementById('homeMini');
+  var mini = document.getElementById('homeMini') || document.getElementById('homeDays');
   if(mini && window.MutationObserver){
     new MutationObserver(function(){
       var on = card.querySelector('[data-nx-range].on');
@@ -11136,9 +11595,14 @@ ready(function(){
     card.style.left = Math.max(12, Math.min(r.left, window.innerWidth - cw - 12)) + 'px';
     card.style.bottom = 'auto';
     card.style.top = '0px';
+    var below = window.innerHeight - r.bottom - 18;
+    var above = r.top - 18;
+    var useBelow = below >= 200 ? true : (below >= above);
+    var space = Math.max(160, useBelow ? below : above);
+    card.style.maxHeight = Math.min(space, window.innerHeight - 24) + 'px';
     var ch = card.offsetHeight;
-    var top = r.bottom + 6;
-    if(top + ch > window.innerHeight - 10) top = Math.max(10, r.top - ch - 6);
+    var top = useBelow ? (r.bottom + 6) : (r.top - ch - 6);
+    top = Math.max(10, Math.min(top, window.innerHeight - ch - 10));
     card.style.top = top + 'px';
   }
   function watch(){
@@ -11408,7 +11872,47 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   var later = $('updateLater');
   if(later) later.onclick = function(){ $('updateWrap').style.display = 'none'; };
   var bp = $('btnPreviewUpdate');
-  if(bp) bp.addEventListener('click', function(){ if(window.onUpdateAvailable) window.onUpdateAvailable(); });
+  if(bp) bp.addEventListener('click', function(){
+    if(window.AndroidApp && window.AndroidApp.checkUpdates){
+      toast('Verificando atualizações…');
+      try{ window.AndroidApp.checkUpdates(); }catch(e){ if(window.onNoUpdate) window.onNoUpdate(); }
+    } else if(window.onUpdateAvailable){
+      window.onUpdateAvailable();
+    }
+  });
+  window.onNoUpdate = function(){
+    toast('Você já está na versão mais recente');
+  };
+})();
+</script>
+<script>
+/* Filtros do histórico: painel recolhível (opção 8) */
+(function(){
+  var btn = document.getElementById('btnHistFilters');
+  var panel = document.getElementById('histFilterPanel');
+  if(!btn || !panel) return;
+  function count(){
+    var ids = ['histViolation','histSeverity','histVideo','histPeriod'], n = 0;
+    ids.forEach(function(id){
+      var el = document.getElementById(id);
+      if(el && el.value) n++;
+    });
+    var c = document.getElementById('histFilterCount');
+    if(c) c.textContent = n;
+    btn.classList.toggle('has', n > 0);
+  }
+  btn.addEventListener('click', function(){
+    var open = panel.classList.toggle('open');
+    btn.classList.toggle('open', open);
+  });
+  ['histViolation','histSeverity','histVideo','histPeriod'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('change', count);
+  });
+  var clear = document.getElementById('btnHistClear');
+  if(clear) clear.addEventListener('click', function(){ setTimeout(count, 60); });
+  count();
+  window.__histFilterCount = count;
 })();
 </script>
 </body>
