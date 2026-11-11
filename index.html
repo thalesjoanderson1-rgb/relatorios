@@ -7571,7 +7571,6 @@ window.onThumbReady = function(key, data){
       applyHistThumb(ths[i], data);
     }
   }
-  histThumbInFlight = Math.max(0, histThumbInFlight - 1);
   pumpHistThumbs();
 };
 
@@ -8715,7 +8714,6 @@ function renderStats(){
 /* Miniaturas reais dos vídeos do histórico (só quando aparecem na tela) */
 let histThumbIO = null;
 let histThumbQueue2 = [];
-let histThumbInFlight = 0;
 
 function applyHistThumb(el, data){
   if(!el || !data) return;
@@ -8726,46 +8724,46 @@ function applyHistThumb(el, data){
 }
 
 function pumpHistThumbs(){
-  while(histThumbInFlight < 2 && histThumbQueue2.length){
-    var item = histThumbQueue2.shift();
-    var el = item[0], src = item[1];
-    var key = 'uri:' + src;
-    el.setAttribute('data-thumb-key', key);
-    if(thumbMem[key]){ applyHistThumb(el, thumbMem[key]); continue; }
-    histThumbInFlight++;
-    (function(k){
-      setTimeout(function(){ if(histThumbInFlight > 0) { histThumbInFlight--; pumpHistThumbs(); } }, 5000);
-    })(key);
-    try{
-      window.AndroidApp.requestVideoThumb(src);
-    }catch(e){
-      histThumbInFlight--;
+  if(!histThumbQueue2.length) return;
+  var item = histThumbQueue2.shift();
+  var el = item[0], key = item[1], v = item[2], fid = item[3];
+  if(!el || !el.isConnected) { setTimeout(pumpHistThumbs, 10); return; }
+  if(thumbMem[key]){ applyHistThumb(el, thumbMem[key]); setTimeout(pumpHistThumbs, 10); return; }
+  try{
+    if(v && v.uri && typeof AndroidApp.requestVideoThumb === 'function'){
+      AndroidApp.requestVideoThumb(v.uri);
+    } else if(key.indexOf('cloud:') === 0 && typeof AndroidApp.requestCloudThumb === 'function'){
+      AndroidApp.requestCloudThumb(fid || key.slice(6));
     }
-  }
+  }catch(e){}
+  setTimeout(pumpHistThumbs, 60);
 }
 
-function queueHistThumb(el, src){
-  if(!el || !src) return;
-  const key = 'uri:' + src;
-  if(thumbMem[key]){ el.setAttribute('data-thumb-key', key); applyHistThumb(el, thumbMem[key]); return; }
-  el.setAttribute('data-thumb-src', src);
+function queueHistThumb(el, key, v, fid, immediate){
+  if(!el || !key) return;
+  el.setAttribute('data-thumb-key', key);
+  if(thumbMem[key]){ applyHistThumb(el, thumbMem[key]); return; }
+  if(v && v.uri) el.setAttribute('data-thumb-src', v.uri);
+  if(fid) el.setAttribute('data-thumb-fid', fid);
+  if(immediate){
+    histThumbQueue2.push([el, key, v, fid]);
+    pumpHistThumbs();
+    return;
+  }
   if(!histThumbIO && 'IntersectionObserver' in window){
     histThumbIO = new IntersectionObserver(function(entries){
       entries.forEach(function(en){
         if(!en.isIntersecting) return;
         histThumbIO.unobserve(en.target);
-        var s = en.target.getAttribute('data-thumb-src');
-        if(s) histThumbQueue2.push([en.target, s]);
+        var k = en.target.getAttribute('data-thumb-key');
+        var src = en.target.getAttribute('data-thumb-src');
+        if(k) histThumbQueue2.push([en.target, k, src ? { uri: src } : null, en.target.getAttribute('data-thumb-fid')]);
         pumpHistThumbs();
       });
     }, { rootMargin: '250px' });
   }
-  if(histThumbIO){
-    histThumbIO.observe(el);
-  } else {
-    histThumbQueue2.push([el, src]);
-    pumpHistThumbs();
-  }
+  if(histThumbIO) histThumbIO.observe(el);
+  else { histThumbQueue2.push([el, key, v, fid]); pumpHistThumbs(); }
 }
 
 function renderHistory(){
@@ -8903,6 +8901,7 @@ function renderHistory(){
 
   const shown = filtered.slice(0, histLimit);
 
+  let histThumbSeq = 0;
   let lastDay = null;
   for(const e of shown){
     if(histGroup && (histSortMode === 'new' || histSortMode === 'old') && e.date !== lastDay){
@@ -9010,9 +9009,26 @@ function renderHistory(){
     if(list) list.appendChild(item);
     if(totalVids){
       try{
+        const el = item.querySelector('.hist-thumb');
         const v0 = entryVideos(e)[0];
-        const src = v0 ? (typeof v0 === 'string' ? v0 : (v0.uri || '')) : '';
-        if(src) queueHistThumb(item.querySelector('.hist-thumb'), src);
+        const fid = (entryCloudVideoIds(e)[0] || '');
+        const key = thumbKeyFor(v0, fid);
+        const stored = (v0 && typeof v0 === 'object') ? (v0.thumb || '') : '';
+        const cached = (key && thumbMem[key]) || stored;
+        if(cached) applyHistThumb(el, cached);
+        else if(key) queueHistThumb(el, key, v0, fid, histThumbSeq++ < 8);
+        if(el) el.addEventListener('click', (ev) => {
+          ev.stopPropagation(); ev.preventDefault();
+          try{
+            const uri = (v0 && v0.uri) || '';
+            let info = 'chave: ' + (el.getAttribute('data-thumb-key') || '—');
+            info += ' · uri: ' + (uri ? 'ok' : 'vazia');
+            if(uri && window.AndroidApp && AndroidApp.videoThumb){
+              info += ' · img: ' + ((AndroidApp.videoThumb(uri) || '').length) + 'b';
+            }
+            toast(info);
+          }catch(err){ toast('erro miniatura: ' + err); }
+        });
       }catch(err){}
     }
   }
@@ -10325,6 +10341,7 @@ window.onVideoAttached = async function(p){
         size: +p.size || 0,
         name: p.name || '',
         caption: '',
+        thumb: p.thumb || '',
         source: !!p.source
       };
       savePending();
@@ -10372,6 +10389,7 @@ window.onVideoAttached = async function(p){
       size: +p.size || 0,
       name: p.name || '',
       caption: p.caption || '',
+      thumb: p.thumb || '',
       source: !!p.source
     };
 
