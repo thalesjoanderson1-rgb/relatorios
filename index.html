@@ -2872,12 +2872,29 @@ textarea{resize:none!important}
 
 @media(max-width:520px){.week-split{grid-template-columns:1fr}}
 
-/* ===== celular: respeita notch e barra de gestos ===== */
+/* ===== celular/tablet: barra colada embaixo + area segura ===== */
 @media (max-width: 899px){
-  body{padding-bottom:calc(142px + env(safe-area-inset-bottom, 0px)) !important}
-  .bottom-nav{bottom:calc(12px + env(safe-area-inset-bottom, 0px)) !important}
-  .hist-selbar{bottom:calc(88px + env(safe-area-inset-bottom, 0px)) !important}
-  .toast{bottom:calc(20px + env(safe-area-inset-bottom, 0px)) !important}
+  body{padding-bottom:calc(112px + env(safe-area-inset-bottom, 0px)) !important}
+
+  /* menu encostado na barra do celular (ocupa a largura toda) */
+  .bottom-nav{
+    left:0 !important;
+    right:0 !important;
+    bottom:0 !important;
+    border-radius:18px 18px 0 0 !important;
+    border-left:0 !important;
+    border-right:0 !important;
+    border-bottom:0 !important;
+    padding:8px 8px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    background:rgba(12,14,18,.97) !important;
+    box-shadow:0 -10px 26px rgba(0,0,0,.45) !important;
+  }
+
+  /* a barra de atalhos solta não aparece junto com o menu */
+  .quick{display:none !important}
+
+  .hist-selbar{bottom:calc(84px + env(safe-area-inset-bottom, 0px)) !important}
+  .toast{bottom:calc(78px + env(safe-area-inset-bottom, 0px)) !important}
   .share-busy{padding-bottom:env(safe-area-inset-bottom, 0px)}
 }
 @media (max-width: 380px){
