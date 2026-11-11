@@ -12374,9 +12374,39 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     }});
   };
   window.onApkUpdateAvailable = function(version, url){
-    show({ title:'Nova versão do app', version:'Versão ' + version, msg:'Baixe e instale o APK novo.\nSeus relatórios e vídeos continuam salvos.', btn:'Baixar e instalar', icon:ICON_APK, action:function(){
-      if(window.AndroidApp && window.AndroidApp.downloadApk) window.AndroidApp.downloadApk(url);
-    }});
+    window.__apkUpdate = { version: String(version || ''), url: String(url || '') };
+    var pronto = false;
+    try{ pronto = !!(window.AndroidApp && AndroidApp.isApkReady && AndroidApp.isApkReady()); }catch(e){}
+    show({
+      title:'Nova versão do app',
+      version:'Versão ' + version,
+      msg: pronto ? 'A atualização já foi baixada.\nToque em Instalar e confirme.' : 'Baixando a atualização em segundo plano…\nAssim que terminar, é só tocar em Instalar.',
+      btn: pronto ? 'Instalar agora' : 'Baixar e instalar',
+      icon:ICON_APK,
+      action:function(){
+        if(window.AndroidApp && AndroidApp.installReadyApk && AndroidApp.isApkReady()){
+          try{ AndroidApp.installReadyApk(); return; }catch(e){}
+        }
+        if(window.AndroidApp && window.AndroidApp.downloadApk) window.AndroidApp.downloadApk(url);
+      }
+    });
+    // já baixado? mostra o botão certo desde o começo
+    if(pronto){
+      var b = $('updateNow'); if(b) b.textContent = 'Instalar agora';
+    }
+  };
+
+  // o app terminou de baixar o APK sozinho → troca o botão para "Instalar agora"
+  window.onApkDownloaded = function(){
+    try{
+      var info = window.__apkUpdate || {};
+      var w = $('updateWrap');
+      var aberto = w && getComputedStyle(w).display !== 'none';
+      if(aberto && info.version){
+        window.onApkUpdateAvailable(info.version, info.url || '');
+        var st = $('updateStatus'); if(st) st.textContent = 'Download concluído';
+      }
+    }catch(e){}
   };
   window.onUpdateApplying = function(){
     var p = $('updateProgressWrap'); if(p) p.style.display = 'block';
