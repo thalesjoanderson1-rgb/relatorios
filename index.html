@@ -2051,6 +2051,13 @@ pre.report,.review-pre{background:#0A0E13!important;border-radius:3px!important;
 .sb-steps .done i{background:var(--accent);opacity:.55}
 .sb-steps .on{color:var(--accent)}
 .sb-steps .on i{background:var(--accent)}
+/* cancelar: usa exatamente as cores do card (mesmas variáveis) */
+.sb-cancel{
+  display:block;width:100%;margin-top:16px;padding:10px 14px;cursor:pointer;
+  background:transparent;border:1px solid var(--line);border-radius:10px;
+  color:var(--txt);font:inherit;font-size:12px;font-weight:600;letter-spacing:.01em;
+}
+.sb-cancel:hover,.sb-cancel:active{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.16)}
 
 /* detalhes */
 .v7-stat span{font-family:var(--mono)!important;font-size:8px!important;color:var(--muted)!important}
@@ -3434,6 +3441,7 @@ textarea{resize:none!important}
     </div>
     <div class="sb-bar"><i></i></div>
     <div class="sb-steps"><span class="on"><i></i>Baixando</span><span><i></i>Anexando</span><span><i></i>Abrindo</span></div>
+    <button class="sb-cancel" id="btnShareCancel" type="button" onclick="cancelShare()">Cancelar</button>
   </div>
 </div>
 
@@ -6483,7 +6491,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.35';
+const CONTENT_VERSION = '3.37';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -9903,7 +9911,6 @@ let driveInfo = { connected:false, email:'', autoUpload:true, deleteLocal:true, 
 let cloudPoll = null;
 let histViewEntry = null;
 let sharing = false;
-let shareLockTimer = null;
 
 const SHARE_STEPS = ['download', 'attach', 'open'];
 
@@ -9966,19 +9973,72 @@ function beginShare(busy){
     }
     // trava antiga sem overlay: libera para não bloquear o próximo compartilhamento
     sharing = false;
-    clearTimeout(shareLockTimer);
+    stopShareWatchdog();
   }
   sharing = true;
   if(busy) showShareBusy('Baixando vídeo do Drive. Aguarde.');
-  clearTimeout(shareLockTimer);
-  shareLockTimer = setTimeout(endShare, busy ? 120000 : 5000);
+  // sem prazo fixo: só encerra se ficar MUITO tempo sem nenhum byte novo
+  armShareWatchdog(busy ? 300000 : 600000);
   return true;
 }
 function endShare(){
   sharing = false;
-  clearTimeout(shareLockTimer);
+  stopShareWatchdog();
   hideShareBusy();
 }
+
+/* --- vigia: 5 min sem nenhum progresso = conexão travada de verdade --- */
+let shareWatchdog = null;
+function armShareWatchdog(ms){
+  clearTimeout(shareWatchdog);
+  shareWatchdog = setTimeout(function(){
+    if(!sharing) return;
+    endShare();
+    toast('A conexão parou de responder. Tente compartilhar de novo.');
+  }, ms || 300000);
+}
+function stopShareWatchdog(){
+  clearTimeout(shareWatchdog);
+  shareWatchdog = null;
+}
+
+/* --- botão Cancelar da tela "Preparando vídeo..." --- */
+function cancelShare(){
+  try{
+    if(window.AndroidApp && typeof AndroidApp.cancelShare === 'function') AndroidApp.cancelShare();
+  }catch(e){}
+  endShare();
+  toast('Compartilhamento cancelado');
+}
+window.cancelShare = cancelShare;
+
+/* --- progresso real: % do vídeo atual, MB e % no total --- */
+function shareMb(v){ return (v / 1048576).toFixed(1).replace('.', ','); }
+window.onShareProgress = function(idx, total, read, bytes, etapa){
+  if(!sharing) return;
+  armShareWatchdog(300000);   // chegou byte: renova o vigia
+  const verbo = (etapa === 'copiando') ? 'Copiando' : 'Baixando';
+  const frac = (bytes > 0) ? Math.min(1, read / bytes) : 0;
+  const pct = (bytes > 0) ? Math.round(frac * 100) : null;
+  const geral = (total > 0) ? Math.round((((idx - 1) + frac) / total) * 100) : 0;
+
+  const t = $('#shareBusyText');
+  if(t){
+    let s = verbo + ' ' + idx + ' de ' + total;
+    if(pct !== null) s += ' · ' + pct + '%';
+    s += ' · ' + shareMb(read) + ' MB';
+    if(bytes > 0) s += ' de ' + shareMb(bytes) + ' MB';
+    if(total > 1) s += ' · total ' + geral + '%';
+    t.textContent = s;
+  }
+
+  const el = $('#shareBusy');
+  const bar = el && el.querySelector('.sb-bar i');
+  if(bar){
+    const altura = (total > 0) ? (((idx - 1) + frac) / total) * 100 : (pct || 0);
+    bar.style.width = Math.min(99, Math.max(2, altura)).toFixed(1) + '%';
+  }
+};
 window.onSharePreparing = function(){
   showShareBusy('Baixando vídeo do Drive. Aguarde.');
 };
