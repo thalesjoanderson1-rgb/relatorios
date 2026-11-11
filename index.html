@@ -9562,17 +9562,6 @@ window.onShareReady = function(){
 };
 
 function refreshDriveStatus(){
-  if(window.IS_TEST_BUILD){
-    const st = $('#driveStatusText'); if(st) st.textContent = 'Desligado no modo teste';
-    const badge = $('#driveBadge'); if(badge) badge.textContent = 'teste';
-    ['#btnDriveConnect', '#btnDriveDisconnect', '#btnDriveSync', '#btnDriveBackup'].forEach(sel => {
-      const el = $(sel); if(el) el.style.display = 'none';
-    });
-    const hint = $('#driveHint');
-    if(hint) hint.textContent = 'Modo teste: Google Drive e sincronização desligados.';
-    if(typeof updateDriveUsage === 'function') updateDriveUsage(false, !!(driveInfo && driveInfo.connected));
-    return;
-  }
   if(window.AndroidApp && typeof AndroidApp.driveStatus === 'function'){
     try{ driveInfo = JSON.parse(AndroidApp.driveStatus()); }catch(e){}
   } else {
@@ -9659,7 +9648,6 @@ function setEntryCloud(id, cloud){
 }
 
 function cloudUploadEntry(e){
-  if(window.IS_TEST_BUILD) return;
   if(!e || e.id == null) return;
   if(!window.AndroidApp || typeof AndroidApp.cloudUpload !== 'function'){
     setEntryCloud(e.id, { status:'pending', reason:'sem_app' });
@@ -11829,11 +11817,6 @@ function nxRenderUsage(o){
 function updateDriveUsage(force, connected){
   const el = document.getElementById('driveUsageLine');
   if(!el) return;
-  if(window.IS_TEST_BUILD){
-    el.style.display = '';
-    nxRenderUsage({bytes:1331439862, files:37, videoBytes:1267000000, videos:12, textBytes:64439862, texts:25});
-    return;
-  }
   const can = !!connected && window.AndroidApp && typeof AndroidApp.driveUsage === 'function';
   if(!can){ el.style.display = 'none'; return; }
   el.style.display = '';
