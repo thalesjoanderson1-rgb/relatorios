@@ -5307,36 +5307,109 @@ document.addEventListener('click', (e) => {
 /* Botão Voltar do Android: fecha o que estiver aberto e volta de aba antes
    de sair do app. Devolve true quando o app tratou o toque. */
 window.onAndroidBack = function(){
-  const picker = $('#picker');
-  if(picker && !picker.hidden){
-    closePicker();
-    return true;
-  }
+  try{
+    const mostrando = el => !!el && getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden';
 
-  const dlg = $('#dlg');
-  if(dlg && !dlg.hidden){
-    dialogClose(false);
-    return true;
-  }
+    // ---- camadas por cima de tudo (ordem: de cima para baixo) ----
 
-  const editWrap = $('#editEntryWrap');
-  if(editWrap && editWrap.style.display !== 'none'){
-    closeEditEntry();
-    return true;
-  }
+    // aviso "versão online aplicada"
+    const doneChip = $('#updateDoneChip');
+    if(mostrando(doneChip)){
+      const ok = $('#updateDoneOk');
+      if(ok) ok.click(); else doneChip.style.display = 'none';
+      return true;
+    }
 
-  const wrap = $('#histViewWrap');
-  if(wrap && wrap.style.display !== 'none'){
-    wrap.style.display = 'none';
-    return true;
-  }
+    // caixa de atualização
+    const upd = $('#updateWrap');
+    if(mostrando(upd)){
+      const later = $('#updateLater');
+      if(later) later.click(); else upd.style.display = 'none';
+      return true;
+    }
 
-  // Voltar não refaz o caminho das abas: sempre cai no Início.
-  if(activeTab !== 'inicio'){
-    switchTab('inicio', true);
-    window.scrollTo({ top: 0 });
-    return true;
-  }
+    // edição de relatório do histórico
+    const editWrap = $('#editEntryWrap');
+    if(mostrando(editWrap)){
+      closeEditEntry();
+      return true;
+    }
+
+    // calendário da semana
+    const weekCal = $('#weekCalWrap');
+    if(mostrando(weekCal)){
+      try{ closeWeekCalendar(); }catch(e){ weekCal.style.display = 'none'; }
+      return true;
+    }
+
+    // relatório aberto do histórico
+    const histView = $('#histViewWrap');
+    if(mostrando(histView)){
+      histView.style.display = 'none';
+      return true;
+    }
+
+    // compartilhando: não deixa o voltar atrapalhar o envio
+    const busy = $('#shareBusy');
+    if(mostrando(busy)){
+      return true;
+    }
+
+    // onboarding
+    const onboard = $('#onboard');
+    if(onboard && !onboard.hidden){
+      const skip = $('#onboardSkip');
+      if(skip) skip.click();
+      onboard.hidden = true;            // garantia (mesmo sem listener)
+      try{ localStorage.setItem('alii_onboard_v1', '1'); }catch(e){}
+      return true;
+    }
+
+    // seletor de regra / violação
+    const picker = $('#picker');
+    if(picker && !picker.hidden){
+      closePicker();
+      return true;
+    }
+
+    // diálogos do app (confirmar, aviso, importar…)
+    const dlg = $('#dlg');
+    if(dlg && !dlg.hidden){
+      dialogClose(false);
+      return true;
+    }
+
+    // ---- estados da tela ----
+
+    // seleção em lote no histórico
+    if(histSelectMode){
+      toggleHistSelectMode(false);
+      return true;
+    }
+
+    // painel de filtros aberto
+    const fp = $('#histFilterPanel'), fb = $('#btnHistFilters');
+    if(fp && fp.classList.contains('open')){
+      fp.classList.remove('open');
+      if(fb) fb.classList.remove('open');
+      return true;
+    }
+
+    // resultado do organizador
+    const orgWrap = $('#orgResultWrap');
+    if(mostrando(orgWrap)){
+      orgWrap.style.display = 'none';
+      const pre = $('#orgResult'); if(pre) pre.textContent = '';
+      return true;
+    }
+
+    // aba: sempre volta para o Início
+    if(activeTab !== 'inicio'){
+      switchTab('inicio', true);
+      window.scrollTo({ top: 0 });
+      return true;
+    }
+  }catch(e){ /* o voltar nunca pode quebrar o app */ }
 
   return false; // no Início: deixa o Android sair
 };
