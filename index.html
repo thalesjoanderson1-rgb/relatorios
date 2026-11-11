@@ -9636,6 +9636,8 @@ function cloudPayload(e){
   return JSON.stringify({
     reportId: String(e.id),
     reportText: entryTemplate(e),
+    // id do .txt que já está no Drive (permite mover para a pasta do relatório)
+    reportFileId: (e.cloud && e.cloud.reportFileId) || '',
     date: e.date,
     streamer: e.streamer,
     violation: e.violation,
@@ -9676,6 +9678,31 @@ function cloudUploadEntry(e){
   }catch(err){
     setEntryCloud(e.id, { status:'failed', error:String(err) });
   }
+}
+
+/* Organiza o Drive uma vez: cada relatório ganha a pasta "#número" com o seu
+   texto e os seus vídeos (serve também para os relatórios antigos). */
+function organizeDriveOnce(force){
+  try{
+    if(!window.AndroidApp || typeof AndroidApp.cloudOrganize !== 'function') return;
+    if(!driveInfo || !driveInfo.connected) return;
+
+    // o próprio app guarda quando terminou; enquanto não terminou, tenta de novo
+    let done = false;
+    try{ if(typeof AndroidApp.cloudOrganizeDone === 'function') done = !!AndroidApp.cloudOrganizeDone(); }catch(e){}
+    if(done && !force) return;
+
+    const list = [];
+    for(const e of loadHistory()){
+      const ids = entryCloudVideoIds(e);
+      const fid = (e.cloud && e.cloud.reportFileId) || '';
+      if(!ids.length && !fid) continue;
+      list.push({ id: String(e.id), reportFileId: fid, videoFileIds: ids });
+    }
+
+    window.AndroidApp.cloudOrganize(JSON.stringify(list));
+    if(list.length) toast('Organizando as pastas do Drive por relatório…');
+  }catch(err){}
 }
 
 function applyCloudStatuses(){
@@ -11178,6 +11205,7 @@ window.onAppResume = function(){
     clearGenerateState();
   }
   if(cloudPollActive()) startCloudPoll();
+  organizeDriveOnce();
   scheduleSync(700);
   flushPendingTranslations();
 };
@@ -11187,6 +11215,7 @@ window.onDriveConnected = function(o){
   driveInfo.email = (o && o.email) || '';
   refreshDriveStatus();
   syncPendingCloud();
+  organizeDriveOnce();
   toast('Google Drive conectado');
 };
 window.onDriveError = function(o){
