@@ -7568,12 +7568,11 @@ window.onThumbReady = function(key, data){
   const ths = document.querySelectorAll('.hist-thumb[data-thumb-key]');
   for(let i = 0; i < ths.length; i++){
     if(ths[i].getAttribute('data-thumb-key') === key){
-      ths[i].textContent = '';
-      ths[i].style.backgroundImage = "url('" + data + "')";
-      ths[i].style.backgroundSize = 'cover';
-      ths[i].style.backgroundPosition = 'center';
+      applyHistThumb(ths[i], data);
     }
   }
+  histThumbInFlight = Math.max(0, histThumbInFlight - 1);
+  pumpHistThumbs();
 };
 
 function renderHistVideos(e){
@@ -8713,23 +8712,60 @@ function renderStats(){
   if(card) card.addEventListener('toggle', () => { if(card.open) renderStats(); });
 })();
 
-/* Miniaturas reais dos vídeos do histórico (usa a ponte assíncrona do app) */
+/* Miniaturas reais dos vídeos do histórico (só quando aparecem na tela) */
+let histThumbIO = null;
+let histThumbQueue2 = [];
+let histThumbInFlight = 0;
+
+function applyHistThumb(el, data){
+  if(!el || !data) return;
+  el.textContent = '';
+  el.style.backgroundImage = "url('" + data + "')";
+  el.style.backgroundSize = 'cover';
+  el.style.backgroundPosition = 'center';
+}
+
+function pumpHistThumbs(){
+  while(histThumbInFlight < 2 && histThumbQueue2.length){
+    var item = histThumbQueue2.shift();
+    var el = item[0], src = item[1];
+    var key = 'uri:' + src;
+    el.setAttribute('data-thumb-key', key);
+    if(thumbMem[key]){ applyHistThumb(el, thumbMem[key]); continue; }
+    histThumbInFlight++;
+    (function(k){
+      setTimeout(function(){ if(histThumbInFlight > 0) { histThumbInFlight--; pumpHistThumbs(); } }, 5000);
+    })(key);
+    try{
+      window.AndroidApp.requestVideoThumb(src);
+    }catch(e){
+      histThumbInFlight--;
+    }
+  }
+}
+
 function queueHistThumb(el, src){
   if(!el || !src) return;
   const key = 'uri:' + src;
-  el.setAttribute('data-thumb-key', key);
-  if(thumbMem[key]){
-    el.textContent = '';
-    el.style.backgroundImage = "url('" + thumbMem[key] + "')";
-    el.style.backgroundSize = 'cover';
-    el.style.backgroundPosition = 'center';
-    return;
+  if(thumbMem[key]){ el.setAttribute('data-thumb-key', key); applyHistThumb(el, thumbMem[key]); return; }
+  el.setAttribute('data-thumb-src', src);
+  if(!histThumbIO && 'IntersectionObserver' in window){
+    histThumbIO = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(!en.isIntersecting) return;
+        histThumbIO.unobserve(en.target);
+        var s = en.target.getAttribute('data-thumb-src');
+        if(s) histThumbQueue2.push([en.target, s]);
+        pumpHistThumbs();
+      });
+    }, { rootMargin: '250px' });
   }
-  try{
-    if(window.AndroidApp && typeof window.AndroidApp.requestVideoThumb === 'function'){
-      window.AndroidApp.requestVideoThumb(src);
-    }
-  }catch(e){}
+  if(histThumbIO){
+    histThumbIO.observe(el);
+  } else {
+    histThumbQueue2.push([el, src]);
+    pumpHistThumbs();
+  }
 }
 
 function renderHistory(){
