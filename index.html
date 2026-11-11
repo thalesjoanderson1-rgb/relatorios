@@ -7837,16 +7837,15 @@ function shareVideos(x){
   // Um item por vídeo, na ordem do relatório: arquivo do celular + id no Drive.
   const shareId = entry ? entry.id : (x.registeredId || x.id);
   const pairs = [];
-  let missing = 0;
   vids.forEach((v, i) => {
     const uri = v.uri ? String(v.uri) : '';
     const fid = String(v.fileId || cloudIds[i] || '');
-    if(!uri && !fid){ missing++; return; }
-    // reportId vai junto: se faltar a referência, o app busca na pasta #número
-    pairs.push({ uri: uri, fileId: fid, reportId: String(shareId) });
+    // manda o item mesmo sem referência: o app tenta achar na galeria (pelo nome)
+    // e na pasta #número do Drive antes de desistir
+    pairs.push({ uri: uri, fileId: fid, name: v.name || '', reportId: String(shareId) });
   });
   if(!pairs.length){
-    cloudIds.forEach(fid => { if(fid) pairs.push({ uri:'', fileId:String(fid), reportId:String(shareId) }); });
+    cloudIds.forEach(fid => { if(fid) pairs.push({ uri:'', fileId:String(fid), name:'', reportId:String(shareId) }); });
   }
   if(!pairs.length){ toast('Sem vídeo'); return; }
 
@@ -7878,10 +7877,6 @@ function shareVideos(x){
     ? vids[0].caption
     : (entry && entry.violation ? entryTemplate(entry) : buildTemplate(x));
   copyText(text);
-
-  if(missing){
-    toast('Atenção: ' + missing + ' vídeo do relatório não tem arquivo nem cópia no Drive');
-  }
 
   try{
     if(canPairs){
