@@ -7835,16 +7835,18 @@ function shareVideos(x){
   if(!vids.length && !cloudIds.length){ toast('Sem vídeo'); return; }
 
   // Um item por vídeo, na ordem do relatório: arquivo do celular + id no Drive.
+  const shareId = entry ? entry.id : (x.registeredId || x.id);
   const pairs = [];
   let missing = 0;
   vids.forEach((v, i) => {
     const uri = v.uri ? String(v.uri) : '';
     const fid = String(v.fileId || cloudIds[i] || '');
     if(!uri && !fid){ missing++; return; }
-    pairs.push({ uri: uri, fileId: fid });
+    // reportId vai junto: se faltar a referência, o app busca na pasta #número
+    pairs.push({ uri: uri, fileId: fid, reportId: String(shareId) });
   });
   if(!pairs.length){
-    cloudIds.forEach(fid => { if(fid) pairs.push({ uri:'', fileId:String(fid) }); });
+    cloudIds.forEach(fid => { if(fid) pairs.push({ uri:'', fileId:String(fid), reportId:String(shareId) }); });
   }
   if(!pairs.length){ toast('Sem vídeo'); return; }
 
