@@ -4987,6 +4987,7 @@ function toast(msg, kind){
   clearTimeout(toast._t);
   toast._t = setTimeout(()=>t.classList.remove('show'), 1900);
 }
+try{ window.__toast = toast; }catch(e){}
 
 /** Contador animado (0 → valor) sem rebuild de layout. */
 function animateNum(el, value){
@@ -10355,6 +10356,11 @@ window.onVideoAttached = async function(p){
         if(pendingVideo){
           try{
             const entry = addManualEntryWithVideo(violation, pendingVideo);
+            try{
+              if(window.AndroidApp && AndroidApp.notifySaved){
+                AndroidApp.notifySaved(String(entry.id), '#' + entry.id + ' ' + (entry.streamer || '') + ' · ' + (entry.violation || ''));
+              }
+            }catch(e){}
             pendingVideo = null;
             try{ savePending(); }catch(e){}
             renderPendingVideo();
@@ -10409,6 +10415,11 @@ window.onVideoAttached = async function(p){
 
     renderResults();
     renderHistory();
+    try{
+      if(window.AndroidApp && AndroidApp.notifySaved){
+        AndroidApp.notifySaved(String(h[i].id), '#' + h[i].id + ' ' + (h[i].streamer || '') + ' · ' + (h[i].violation || ''));
+      }
+    }catch(e){}
     toast('Vídeo ' + list.length + ' anexado ao relatório #' + p.id);
   }catch(e){}
 };
@@ -11872,16 +11883,34 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   var later = $('updateLater');
   if(later) later.onclick = function(){ $('updateWrap').style.display = 'none'; };
   var bp = $('btnPreviewUpdate');
-  if(bp) bp.addEventListener('click', function(){
+  function checkNow(){
     if(window.AndroidApp && window.AndroidApp.checkUpdates){
-      toast('Verificando atualizações…');
+      try{ if(window.__toast) window.__toast('Verificando atualizações…'); }catch(e){}
       try{ window.AndroidApp.checkUpdates(); }catch(e){ if(window.onNoUpdate) window.onNoUpdate(); }
     } else if(window.onUpdateAvailable){
       window.onUpdateAvailable();
     }
-  });
+  }
+  // delegação: funciona mesmo se a tela "Mais" for remontada
+  document.addEventListener('click', function(ev){
+    var b = ev.target && ev.target.closest ? ev.target.closest('#btnPreviewUpdate') : null;
+    if(!b) return;
+    ev.preventDefault();
+    checkNow();
+  }, true);
   window.onNoUpdate = function(){
-    toast('Você já está na versão mais recente');
+    try{ if(window.__toast) window.__toast('Você já está na versão mais recente'); }catch(e){}
+  };
+  window.openHistory = function(){
+    try{ switchTab('historico'); window.scrollTo({ top: 0, behavior: 'smooth' }); }catch(e){}
+  };
+  window.openReportById = function(id){
+    try{
+      switchTab('historico');
+      const e = loadHistory().find(x => String(x.id) === String(id));
+      if(e) showHistView(e);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }catch(e){}
   };
 })();
 </script>
