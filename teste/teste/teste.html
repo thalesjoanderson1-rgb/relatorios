@@ -5116,7 +5116,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.46';
+const CONTENT_VERSION = '3.47';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -7044,6 +7044,34 @@ function closeEditEntry(){
 function saveEditEntry(){
   if(!histViewEntry) return;
   const id = histViewEntry.id;
+  const h = loadHistory();
+  const i = h.findIndex(x => String(x.id) === String(id));
+  if(i < 0){ closeEditEntry(); return; }
+
+  const iso = $('#edDate').value || '';
+  const dm = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const novo = {
+    id: $('#edStreamer').value || '',
+    date: dm ? dm[3] + '/' + dm[2] + '/' + dm[1] : (histViewEntry.date || ''),
+    time: $('#edHour').value + ':' + $('#edMin').value + ' ' + $('#edAmPm').value
+  };
+
+  // mesma regra que já existe no Gerar (findDuplicate), só aplicada também aqui
+  const outros = h.filter(x => String(x.id) !== String(id));
+  const dup = findDuplicate(outros, novo);
+  if(dup){
+    dialogConfirm('Já existe um relatório do streamer ' + novo.id + ' em ' + novo.date + ' às ' + novo.time +
+      ' (#' + dup.id + '). Salvar esta edição mesmo assim?', {
+      title: 'Relatório duplicado',
+      ok: 'Salvar mesmo assim',
+      cancel: 'Cancelar'
+    }).then(ok => { if(ok) aplicarEdicaoRelatorio(id); });
+    return;
+  }
+  aplicarEdicaoRelatorio(id);
+}
+
+function aplicarEdicaoRelatorio(id){
   const h = loadHistory();
   const i = h.findIndex(x => String(x.id) === String(id));
   if(i < 0){ closeEditEntry(); return; }
