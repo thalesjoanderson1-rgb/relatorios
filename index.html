@@ -1101,6 +1101,14 @@
   .v7-pagehead h2{margin:0;font-size:22px;letter-spacing:-.5px;color:var(--txt)}
   .v7-weekchip{font-size:10px;color:var(--dim);border:1px solid var(--line);background:var(--surface);padding:5px 9px;border-radius:999px}
   .v7-weekchip b{color:var(--accent)}
+  /* opção 8: chip em duas linhas (SEMANA em cima, número grande embaixo) */
+  .v7-weekchip.wk2{display:inline-flex!important;flex-direction:column!important;align-items:center!important;
+    justify-content:center!important;gap:1px!important;padding:4px 10px!important;border-radius:12px!important;
+    line-height:1!important;letter-spacing:0!important;min-width:44px}
+  .v7-weekchip.wk2 small{font-size:6.5px!important;letter-spacing:.14em!important;text-transform:uppercase!important;
+    color:var(--dim)!important;line-height:1!important}
+  .v7-weekchip.wk2 b{font-size:15px!important;font-weight:800!important;color:var(--accent)!important;
+    letter-spacing:-.2px!important;line-height:1.05!important}
   .v7-hero{
     position:relative;overflow:hidden;background:linear-gradient(180deg,var(--surface),var(--surface2));
     border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:10px;cursor:pointer;
@@ -1178,21 +1186,36 @@
   .v7-more-row em{grid-column:2/3;grid-row:1/3;align-self:center;color:var(--dim);font-style:normal;font-size:18px}
   .v7-more-row:hover{background:#151B24;border-color:rgba(79,140,255,.35)}
   /* bento do Mais */
-  #sec-mais .v7-more-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  #sec-mais .v7-more-list{display:grid;grid-template-columns:1fr 1fr;gap:6px}
   #sec-mais .v7-more-row{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-height:104px;margin:0;padding:12px;text-align:left}
-  #sec-mais .v7-more-row:first-child{grid-column:1/-1;flex-direction:row;align-items:center;gap:12px;min-height:0;
+  #sec-mais .v7-more-row.wide{grid-column:1/-1;flex-direction:row;align-items:center;gap:12px;min-height:0;
     background:linear-gradient(90deg,rgba(139,157,255,.16),rgba(139,157,255,.03));border-color:#8B9DFF;box-shadow:0 8px 22px rgba(79,140,255,.18)}
   #sec-mais .v7-more-row em{display:none}
+  #sec-mais .v7-more-row .cache-size{margin-left:auto;flex:0 0 auto;font-size:9px;font-weight:800;color:#C9D3FF;background:rgba(139,157,255,.14);border:1px solid rgba(139,157,255,.5);border-radius:999px;padding:5px 9px;white-space:nowrap}
   #sec-mais .v7-more-row .bento-ic{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto;background:rgba(139,157,255,.09);border:1px solid rgba(139,157,255,.18)}
-  #sec-mais .v7-more-row:first-child .bento-ic{width:42px;height:42px;background:rgba(139,157,255,.20);border-color:rgba(139,157,255,.45)}
+  #sec-mais .v7-more-row.wide .bento-ic{width:42px;height:42px;background:rgba(139,157,255,.20);border-color:rgba(139,157,255,.45)}
   #sec-mais .v7-more-row .bento-ic svg{width:18px;height:18px;stroke:#8B9DFF;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-  #sec-mais .v7-more-row:first-child .bento-ic svg{width:22px;height:22px;stroke:#E9EEF5}
+  #sec-mais .v7-more-row.wide .bento-ic svg{width:22px;height:22px;stroke:#E9EEF5}
   #sec-mais .v7-more-row .bento-ic .rec-dot{fill:#FF5A5F;stroke:none}
   #sec-mais .bento-tb{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
   #sec-mais .bento-t{font-size:13px;font-weight:700;color:var(--txt);line-height:1.2}
   #sec-mais .bento-s{font-size:10px;color:var(--dim);font-weight:400;line-height:1.3}
   #sec-mais .v7-more-row:first-child .bento-t{font-size:14.5px}
   #sec-mais .v7-more-row:first-child .bento-s{font-size:10.5px}
+  /* "Gravar tela" no Início: mesmo formato de quando ficava no Mais */
+  #homeRecRow{margin:10px 0 16px!important}
+  #homeRecRow .v7-more-row{display:flex!important;flex-direction:row!important;align-items:center!important;
+    gap:12px!important;min-height:0!important;margin:0!important;padding:13px 14px!important;background:linear-gradient(90deg,rgba(139,157,255,.16),rgba(139,157,255,.03))!important;border:1px solid #8B9DFF!important;border-radius:14px!important;box-shadow:0 8px 22px rgba(79,140,255,.18)!important}
+  #homeRecRow .v7-more-row em{display:none!important}
+  #homeRecRow .bento-ic{width:42px!important;height:42px!important;border-radius:11px!important;
+    display:grid!important;place-items:center!important;flex:0 0 auto!important;
+    background:rgba(139,157,255,.20)!important;border:1px solid rgba(139,157,255,.35)!important}
+  #homeRecRow .bento-ic svg{width:22px!important;height:22px!important;stroke:#E9EEF5!important;fill:none!important;
+    stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+  #homeRecRow .bento-ic .rec-dot{fill:#FF5A5F!important;stroke:none!important}
+  #homeRecRow .bento-tb{display:flex!important;flex-direction:column!important;gap:2px!important;min-width:0!important;flex:1!important}
+  #homeRecRow .bento-t{font-size:14.5px!important;font-weight:700!important;color:var(--txt)!important;line-height:1.2!important}
+  #homeRecRow .bento-s{font-size:10.5px!important;color:var(--dim)!important;font-weight:400!important;line-height:1.3!important}
   .v7-drive{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
   .v7-drive-head{display:flex;align-items:center;gap:10px}
   .v7-drive-ic{width:34px;height:34px;border-radius:10px;background:rgba(79,140,255,.1);border:1px solid rgba(79,140,255,.25);display:grid;place-items:center;color:var(--accent);flex:0 0 auto}
@@ -2928,11 +2951,11 @@ textarea{resize:none!important}
     <div><b>Criação de relatórios</b></div>
   </div>
   <nav class="side-nav">
-    <button data-tab="inicio"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>Início</button>
-    <button data-tab="semana"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Semana</button>
-    <button data-tab="historico"><svg viewBox="0 0 24 24" fill="none"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M3.5 4.5V9H8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.4l3 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Histórico</button>
-    <button data-tab="organizador"><svg viewBox="0 0 24 24" fill="none"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h9.5A1.5 1.5 0 0 1 16 7.5v9A1.5 1.5 0 0 1 14.5 18H5a1.5 1.5 0 0 1-1.5-1.5z" stroke="currentColor" stroke-width="1.7"/><path d="M16 10.5 20.5 8v8L16 13.5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Vídeos apagados</button>
-    <button data-tab="regras"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="7" r="2.2" stroke="currentColor" stroke-width="1.7"/><circle cx="8" cy="17" r="2.2" stroke="currentColor" stroke-width="1.7"/></svg>Regras</button>
+    <button data-tab="inicio" aria-label="Início"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>Início</button>
+    <button data-tab="semana" aria-label="Semana"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Semana</button>
+    <button data-tab="historico" aria-label="Histórico"><svg viewBox="0 0 24 24" fill="none"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M3.5 4.5V9H8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.4l3 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Histórico</button>
+    <button data-tab="organizador" aria-label="Organizador"><svg viewBox="0 0 24 24" fill="none"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h9.5A1.5 1.5 0 0 1 16 7.5v9A1.5 1.5 0 0 1 14.5 18H5a1.5 1.5 0 0 1-1.5-1.5z" stroke="currentColor" stroke-width="1.7"/><path d="M16 10.5 20.5 8v8L16 13.5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Vídeos apagados</button>
+    <button data-tab="regras" aria-label="Regras"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="7" r="2.2" stroke="currentColor" stroke-width="1.7"/><circle cx="8" cy="17" r="2.2" stroke="currentColor" stroke-width="1.7"/></svg>Regras</button>
   </nav>
   <div class="side-week">
     <small>Semana</small>
@@ -2970,7 +2993,7 @@ textarea{resize:none!important}
   <section id="sec-inicio" data-panel="inicio">
     <div class="v7-pagehead">
       <h2>Início</h2>
-      <span class="v7-weekchip" id="homeWeekChip">Semana —</span>
+      <span class="v7-weekchip wk2" id="homeWeekChip"><small>Semana</small><b>—</b></span>
     </div>
 
     <section class="v7-hero" data-tab="semana" title="Abrir contador da semana">
@@ -3011,6 +3034,10 @@ textarea{resize:none!important}
       <span class="v7-shortcut-txt"><b>Vídeos apagados</b><small>relatório de vídeo apagado agrupado por motivos</small></span>
       <span class="v7-chev">›</span>
     </button>
+
+    <div class="v7-more-list" id="homeRecRow">
+      <button class="v7-more-row" id="btnScreenRecord"><span class="bento-ic"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="3"/><path d="M15 10.5 21 7v10l-6-3.5z"/><circle cx="9" cy="12" r="2.4" class="rec-dot"/></svg></span><span class="bento-tb"><span class="bento-t">Gravar tela</span><span class="bento-s">gravar violação e gerar relatório na hora</span></span></button>
+    </div>
 
     <section class="v7-card">
       <div class="v7-listhead"><b>Recentes</b><a href="#" data-tab="historico">Ver tudo</a></div>
@@ -3317,11 +3344,11 @@ textarea{resize:none!important}
   <section class="card v7-more" id="sec-mais" data-panel="mais">
     <h2>Mais</h2>
     <div class="v7-more-list">
-      <button class="v7-more-row" id="btnScreenRecord"><span class="bento-ic"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="3"/><path d="M15 10.5 21 7v10l-6-3.5z"/><circle cx="9" cy="12" r="2.4" class="rec-dot"/></svg></span><span class="bento-tb"><span class="bento-t">Gravar tela</span><span class="bento-s">gravar violação e gerar relatório na hora</span></span><em>›</em></button>
       <button class="v7-more-row" id="btnPreviewUpdate"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4"/><path d="M5 17v2.5h14V17"/></svg></span><span class="bento-tb"><span class="bento-t">Atualização</span><span class="bento-s">verificar se existem novas atualizações</span></span><em>›</em></button>
       <button class="v7-more-row" data-tab="semana"><span class="bento-ic"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></span><span class="bento-tb"><span class="bento-t">Semana</span><span class="bento-s">contador, gráfico e backup</span></span><em>›</em></button>
       <button class="v7-more-row" data-tab="organizador"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13"/></svg></span><span class="bento-tb"><span class="bento-t">Vídeos apagados</span><span class="bento-s">relatório de vídeo apagado agrupado por motivos</span></span><em>›</em></button>
       <button class="v7-more-row" data-tab="regras"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M7 4h10v16H7z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><span class="bento-tb"><span class="bento-t">Regras</span><span class="bento-s">revisão de relatório e frases</span></span><em>›</em></button>
+      <button class="v7-more-row wide" id="btnCacheClear" type="button"><span class="bento-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5h6v2M8 7l1 13h6l1-13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="bento-tb"><span class="bento-t">Limpar cache de vídeos</span><span class="bento-s">cópias temporárias — não apaga o histórico</span></span><span class="cache-size" id="cacheSizeChip">0 MB</span></button>
     </div>
     <label class="switch-row" style="margin:10px 2px 0"><span class="switch"><input type="checkbox" id="recOpenReport" checked><i></i></span><span>Abrir relatório com vídeo ao parar</span></label>
     <p class="hint" style="margin:12px 2px 0">Tudo fica salvo no aparelho. Use <b>Semana → Exportar histórico</b> para backup.</p>
@@ -3461,6 +3488,43 @@ textarea{resize:none!important}
   <a href="#sec-mais" data-tab="mais"><span class="v7-navicon"><svg viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg></span>Mais</a>
 </nav>
 
+<!-- seed de histórico removido na auditoria (dados expostos no HTML público) -->
+<div id="dlg" class="dlg" hidden>
+  <div class="dlg-card" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+    <div class="dlg-ico" id="dlgIco"></div>
+    <div class="dlg-k" id="dlgKicker" hidden></div>
+    <h3 id="dlgTitle">Confirmar</h3>
+    <p id="dlgMsg"></p>
+    <div class="dlg-acts">
+      <button type="button" id="dlgCancel">Cancelar</button>
+      <button type="button" id="dlgOk" class="primary">Confirmar</button>
+    </div>
+  </div>
+</div>
+<div id="picker" class="picker" hidden>
+  <div class="picker-card" role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
+    <div class="picker-handle"></div>
+    <h3 id="pickerTitle">Escolher</h3>
+    <div id="pickerOptions" class="picker-options"></div>
+    <button type="button" id="pickerCancel" class="picker-cancel">Cancelar</button>
+  </div>
+</div>
+<div id="onboard" class="onboard" hidden>
+  <div class="onboard-card" role="dialog" aria-modal="true" aria-labelledby="onboardTitle">
+    <div class="onboard-k">Bem-vindo</div>
+    <h2 id="onboardTitle">Criação de relatórios</h2>
+    <p>Três passos para começar:</p>
+    <ol>
+      <li><b>Gere o relatório</b><span>Cole uma violação por linha e o app monta o texto em inglês.</span></li>
+      <li><b>Anexe o vídeo</b><span>Escolha na galeria, corte sem perda e compartilhe tudo junto.</span></li>
+      <li><b>Conecte o Drive</b><span>Backup em RELATÓRIOS/AAAA-MM e histórico igual no celular e no PC.</span></li>
+    </ol>
+    <div class="onboard-acts">
+      <button type="button" id="onboardSkip" class="ghost">Pular</button>
+      <button type="button" id="onboardOk" class="primary">Começar</button>
+    </div>
+  </div>
+</div>
 <script type="text/plain" id="seedHistoryCsv">
 ID;Streamer;Data;Hora;Violacao;Details;Action;Registrado_em
 1;223232;08/07/2026;09:43 AM;Bare Torso.;Streamer broadcasting without a shirt (bare torso).;Live closed.;2026-07-29T23:30:00-0300
@@ -4951,43 +5015,8 @@ ID;Streamer;Data;Hora;Violacao;Details;Action;Registrado_em
 1488;10479020;06/11/2026;22:40 PM;Children in Broadcast.;streamer broadcasting with a child appearing.;Warning sent to the streamer.;2026-11-07T02:04:37-0300
 1489;10591074;06/11/2026;23:19 PM;Inactive / Fake Broadcast.;streamer absent for more than 5 minutes during broadcast.;Live closed.;2026-11-07T02:07:23-0300
 </script>
-<div id="dlg" class="dlg" hidden>
-  <div class="dlg-card" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
-    <div class="dlg-ico" id="dlgIco"></div>
-    <div class="dlg-k" id="dlgKicker" hidden></div>
-    <h3 id="dlgTitle">Confirmar</h3>
-    <p id="dlgMsg"></p>
-    <div class="dlg-acts">
-      <button type="button" id="dlgCancel">Cancelar</button>
-      <button type="button" id="dlgOk" class="primary">Confirmar</button>
-    </div>
-  </div>
-</div>
-<div id="picker" class="picker" hidden>
-  <div class="picker-card" role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
-    <div class="picker-handle"></div>
-    <h3 id="pickerTitle">Escolher</h3>
-    <div id="pickerOptions" class="picker-options"></div>
-    <button type="button" id="pickerCancel" class="picker-cancel">Cancelar</button>
-  </div>
-</div>
-<div id="onboard" class="onboard" hidden>
-  <div class="onboard-card" role="dialog" aria-modal="true" aria-labelledby="onboardTitle">
-    <div class="onboard-k">Bem-vindo</div>
-    <h2 id="onboardTitle">Criação de relatórios</h2>
-    <p>Três passos para começar:</p>
-    <ol>
-      <li><b>Gere o relatório</b><span>Cole uma violação por linha e o app monta o texto em inglês.</span></li>
-      <li><b>Anexe o vídeo</b><span>Escolha na galeria, corte sem perda e compartilhe tudo junto.</span></li>
-      <li><b>Conecte o Drive</b><span>Backup em RELATÓRIOS/AAAA-MM e histórico igual no celular e no PC.</span></li>
-    </ol>
-    <div class="onboard-acts">
-      <button type="button" id="onboardSkip" class="ghost">Pular</button>
-      <button type="button" id="onboardOk" class="primary">Começar</button>
-    </div>
-  </div>
-</div>
-<script>
+
+    <script>
 (function(){
 "use strict";
 
@@ -5315,6 +5344,7 @@ function switchTab(name, noStack){
   const selBar = document.getElementById('histSelBar');
   if(selBar) selBar.style.display = (histSelectMode && tab === 'historico') ? 'flex' : 'none';
   try{ localStorage.setItem('alii_tab_v1', tab); }catch(e){}
+  if(tab === 'mais'){ try{ updateCacheInfo(); }catch(e){} }
 }
 
 document.addEventListener('click', (e) => {
@@ -6354,12 +6384,23 @@ async function autoCorrectEN(text){
   const t = String(text || '').trim();
   if(t.length < 4) return t;
 
+  // o serviço público tem limite de tamanho: texto grande fica sem correção
+  if(t.length > 18000) return t;
+
   try{
-    const res = await fetch('https://api.languagetool.org/v2/check', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'text=' + encodeURIComponent(t) + '&language=en-US&enabledOnly=false'
-    });
+    const ctl = (typeof AbortController === 'function') ? new AbortController() : null;
+    const to = ctl ? setTimeout(() => { try{ ctl.abort(); }catch(e){} }, 6000) : null;
+    let res;
+    try{
+      res = await fetch('https://api.languagetool.org/v2/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'text=' + encodeURIComponent(t) + '&language=en-US&enabledOnly=false',
+        signal: ctl ? ctl.signal : undefined
+      });
+    } finally {
+      if(to) clearTimeout(to);
+    }
     if(!res.ok) return t;
 
     const data = await res.json();
@@ -6494,7 +6535,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.38';
+const CONTENT_VERSION = '3.41';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -6569,16 +6610,30 @@ let histCache = null;
 
 function loadHistory(){
   if(histCache) return histCache;
+  const bruto = localStorage.getItem(HKEY);
   try{
-    const v = JSON.parse(localStorage.getItem(HKEY) || '[]');
+    const v = JSON.parse(bruto || '[]');
     histCache = Array.isArray(v) ? v : [];
     return histCache;
   }catch(e){
+    // histórico corrompido: guarda o original e tenta o backup automático
+    try{ localStorage.setItem('alii_history_broken_v1', bruto || ''); }catch(_){}
+    for(let i = 1; i <= 3; i++){
+      try{
+        const b = JSON.parse(localStorage.getItem(AUTO_BK_KEY + '_' + i) || 'null');
+        if(b && Array.isArray(b.data) && b.data.length){
+          histCache = b.data;
+          toast('Histórico recuperado do backup de ' + String(b.at || '').slice(0, 10));
+          return histCache;
+        }
+      }catch(_){}
+    }
     histCache = [];
     return histCache;
   }
 }
 function saveHistory(h, opts){
+  let ok = true;
   try{
     if(Array.isArray(h)) stampHistoryChanges(h);
     autoBackupBeforeSave();
@@ -6586,10 +6641,19 @@ function saveHistory(h, opts){
     histCache = Array.isArray(h) ? h : null;
     renderAutoBackup();
   }catch(e){
+    ok = false;
+    // NÃO finge que salvou: mantém o último estado e avisa de forma clara
     histCache = null;
-    toast('Não foi possível salvar (armazenamento cheio)');
+    try{
+      dialogOpen('O armazenamento do app encheu e o histórico NÃO foi salvo. Exporte o histórico ou limpe dados antigos antes de continuar.',
+        { info: true, title: 'Não foi possível salvar' });
+    }catch(_){
+      toast('Armazenamento cheio — o histórico não foi salvo');
+    }
   }
+  if(!ok) return false;
   if(!opts || !opts.noSync) scheduleSync(1800);
+  return true;
 }
 
 /* ============================ histórico importado (CSV real) ============================ */
@@ -7900,20 +7964,100 @@ function fmtSize(b){
   return mb < 0.1 ? Math.round(b/1024) + ' KB' : mb.toFixed(1).replace('.', ',') + ' MB';
 }
 
+function videoObj(v){
+  if(!v) return null;
+  if(typeof v === 'string'){
+    const s = v.trim();
+    return s ? { uri: s } : null;
+  }
+  if(typeof v !== 'object') return null;
+  const o = Object.assign({}, v);
+  // nomes usados por versões antigas
+  if(!o.uri){
+    if(typeof o.videoUri === 'string') o.uri = o.videoUri;
+    else if(typeof o.path === 'string') o.uri = o.path;
+    else if(typeof o.url === 'string') o.uri = o.url;
+  }
+  if(!o.uri && !o.fileId && !o.name) return null;
+  return o;
+}
+
+function mesmoVideo(a, b){
+  const au = String(a.uri || ''), bu = String(b.uri || '');
+  if(au && bu) return au === bu;
+  const af = String(a.fileId || ''), bf = String(b.fileId || '');
+  if(af && bf) return af === bf;
+  const an = String(a.name || ''), bn = String(b.name || '');
+  return !!(an && bn && an === bn);
+}
+
 function entryVideos(e){
   if(!e) return [];
-  if(Array.isArray(e.videos)) return e.videos.filter(Boolean).slice(0, 2);
-  return e.video ? [e.video] : [];
+  const out = [];
+  const add = v => {
+    const o = videoObj(v);
+    if(!o) return;
+    if(out.some(x => mesmoVideo(x, o))) return;
+    out.push(o);
+  };
+  if(Array.isArray(e.videos)) e.videos.forEach(add);
+  // relatórios antigos guardavam só "video" (às vezes como texto)
+  add(e.video);
+  return out.slice(0, 2);
+}
+
+/**
+ * Lista de vídeos do relatório juntando todas as fontes (tela, histórico e
+ * resultados) e removendo repetidos. Evita compartilhar cópia antiga com 1 vídeo
+ * quando o relatório já tem 2.
+ */
+function videosDoRelatorio(entry, shareId){
+  const out = [];
+  const add = list => (list || []).forEach(v => { if(v) out.push(v); });
+  add(entryVideos(entry));
+  if(shareId != null && String(shareId) !== ''){
+    try{
+      const h = loadHistory();
+      const f = h.find(e => String(e.id) === String(shareId));
+      if(f) add(entryVideos(f));
+    }catch(e){}
+    try{
+      if(typeof results !== 'undefined' && Array.isArray(results)){
+        const r = results.find(x => String(x.registeredId) === String(shareId));
+        if(r) add(entryVideos(r));
+      }
+    }catch(e){}
+  }
+  const vistosUri = new Set(), vistosFid = new Set(), vistosNome = new Set();
+  const fim = [];
+  for(const v of out){
+    const o = videoObj(v);
+    if(!o) continue;
+    const u = String(o.uri || '');
+    const f = String((o.cloud && o.cloud.videoFileIds && o.cloud.videoFileIds[0]) || o.fileId || '');
+    const n = String(o.name || '');
+    if((u && vistosUri.has(u)) || (f && vistosFid.has(f)) || (!u && !f && n && vistosNome.has(n))) continue;
+    if(u) vistosUri.add(u);
+    if(f) vistosFid.add(f);
+    if(n) vistosNome.add(n);
+    fim.push(o);
+    if(fim.length === 2) break;
+  }
+  return fim;
 }
 
 function setEntryVideos(e, list){
-  e.videos = (list || []).filter(Boolean).slice(0, 2);
+  const limpos = [];
+  (list || []).forEach(v => {
+    const o = videoObj(v);
+    if(o && !limpos.some(x => mesmoVideo(x, o))) limpos.push(o);
+  });
+  e.videos = limpos.slice(0, 2);
   e.video = e.videos[0] || null;
   return e.videos;
 }
 
-function entryCloudVideoIds(e){
-  if(!e || !e.cloud) return [];
+function entryCloudVideoIds(e){  if(!e || !e.cloud) return [];
   if(Array.isArray(e.cloud.videoFileIds)) return e.cloud.videoFileIds.filter(Boolean);
   return e.cloud.videoFileId ? [e.cloud.videoFileId] : [];
 }
@@ -8252,12 +8396,15 @@ function shareVideos(x){
     return;
   }
   const entry = (x && x.streamer !== undefined) ? x : (resultEntry(x) || x);
-  const vids = entryVideos(entry || x);
+  const shareId = entry ? entry.id : (x.registeredId || x.id);
+
+  // junta TODAS as cópias do relatório (a que veio da tela, a do histórico e a
+  // da lista de resultados) e remove repetidos — assim nenhum vídeo se perde
+  const vids = videosDoRelatorio(entry || x, shareId);
   const cloudIds = entryCloudVideoIds(entry || x);
   if(!vids.length && !cloudIds.length){ toast('Sem vídeo'); return; }
 
   // Um item por vídeo, na ordem do relatório: arquivo do celular + id no Drive.
-  const shareId = entry ? entry.id : (x.registeredId || x.id);
   const pairs = [];
   vids.forEach((v, i) => {
     const uri = v.uri ? String(v.uri) : '';
@@ -8886,7 +9033,7 @@ function renderHome(){
   if(wc) animateNum(wc, total);
 
   const chip = $('#homeWeekChip');
-  if(chip) chip.innerHTML = `Semana <b>${cur.week}</b> · ${total}`;
+  if(chip) chip.innerHTML = `<small>Semana ${cur.week}</small><b>${total}</b>`;
 
   const trend = $('#homeTrend');
   if(trend){
@@ -8948,7 +9095,7 @@ function renderHome(){
   }
 
   box.innerHTML = '';
-  for(const e of sorted.slice(0, 3)){
+  for(const e of sorted.slice(0, 5)){
     const sev = sevFor(e.violation);
     const cls = sev === '🔴' ? 'r' : (sev === '🟠' ? '' : 'g');
     const sevName = sev === '🔴' ? 'grave' : (sev === '🟠' ? 'alta' : 'leve');
@@ -10063,6 +10210,7 @@ window.onSharePreparing = function(){
 };
 window.onShareReady = function(){
   endShare();
+  try{ updateCacheInfo(); }catch(e){}
 };
 
 function refreshDriveStatus(){
@@ -10112,6 +10260,47 @@ function driveSetOptions(){
     try{ AndroidApp.cloudSetOptions(JSON.stringify({ autoUpload:auto, deleteLocal:del, wifiOnly:wifi })); }catch(e){}
   }
 }
+
+/* Cache de vídeos: cópias temporárias feitas para compartilhar e assistir.
+   Os vídeos em si ficam no Drive; isto aqui pode ser apagado a qualquer hora. */
+function cacheSizeTxt(b){
+  if(b >= 1073741824) return (b / 1073741824).toFixed(1).replace('.', ',') + ' GB';
+  if(b >= 1048576) return Math.round(b / 1048576) + ' MB';
+  if(b > 0) return Math.round(b / 1024) + ' KB';
+  return '0 MB';
+}
+
+function updateCacheInfo(){
+  const el = $('#cacheSizeChip');
+  if(!el) return;
+  if(!window.AndroidApp || typeof AndroidApp.cacheSize !== 'function'){
+    el.textContent = '-';
+    return;
+  }
+  try{
+    const b = +AndroidApp.cacheSize() || 0;
+    el.textContent = cacheSizeTxt(b);
+  }catch(e){ el.textContent = '-'; }
+}
+const btnCacheClear = $('#btnCacheClear');
+if(btnCacheClear) btnCacheClear.addEventListener('click', () => {
+  if(!window.AndroidApp || typeof AndroidApp.clearCache !== 'function'){
+    toast('Limpar cache está disponível no app Android');
+    return;
+  }
+  try{
+    const livre = +AndroidApp.clearCache();
+    if(livre < 0){ toast('Aguarde o compartilhamento terminar'); return; }
+    const txt = livre >= 1073741824
+      ? (livre / 1073741824).toFixed(1).replace('.', ',') + ' GB'
+      : fmtSize(livre);
+    if(livre > 0) toast('Cache limpo — ' + txt + ' liberados');
+    else toast('Não havia nada para limpar');
+    updateCacheInfo();
+  }catch(e){
+    toast('Não foi possível limpar o cache');
+  }
+});
 
 function cloudPayload(e){
   const vids = entryVideos(e);
@@ -10999,6 +11188,20 @@ window.onVideoAttached = async function(p){
     };
 
     const current = entryVideos(h[i]);
+
+    // o mesmo vídeo não entra duas vezes (acontecia de o editor devolver o
+    // arquivo que já estava no relatório e ocupar a vaga do 2º vídeo de verdade)
+    const mesmoVideo = v => {
+      const u = String(v.uri || '');
+      if(u && u === String(video.uri || '')) return true;
+      return !!(v.name && v.name === video.name)
+        && (+v.size || 0) === (+video.size || 0);
+    };
+    if(current.some(mesmoVideo)){
+      toast('Este vídeo já está no relatório');
+      return;
+    }
+
     if(current.length >= 2){
       toast('Este relatório já tem 2 vídeos');
       return;
@@ -11008,6 +11211,12 @@ window.onVideoAttached = async function(p){
     setEntryVideos(h[i], list);
     saveHistory(h);
     cloudUploadEntry(h[i]);
+
+    // mantém a tela aberta apontando para a versão nova (senão compartilha cópia velha)
+    if(histViewEntry && String(histViewEntry.id) === String(p.id)){
+      histViewEntry = h[i];
+      try{ renderHistVideos(histViewEntry); }catch(e){}
+    }
 
     const r = results.find(x => String(x.registeredId) === String(p.id));
     if(r) setEntryVideos(r, list);
@@ -11726,12 +11935,14 @@ function bindSyncUi(){
     if(document.hidden){ stopCloudPoll(); return; }
     scheduleSync(700);
     if(cloudPollActive()) startCloudPoll();
+    if(typeof activeTab !== 'undefined' && activeTab === 'mais'){ try{ updateCacheInfo(); }catch(e){} }
   });
 }
 
 window.onAppResume = function(){
   // ao voltar do compartilhamento, garante que a trava foi liberada
   endShare();
+  try{ updateCacheInfo(); }catch(e){}
   // saiu do app: o Organizador não mantém o texto colado
   clearOrganizerState();
   // rascunho digitado na criação (sem resultado gerado) também não volta
@@ -11832,7 +12043,29 @@ function markExistingSharedOnce(){
   }catch(e){}
 }
 
+/* Migração segura: normaliza vídeos de relatórios antigos sem mudar IDs nem datas. */
+const VIDEOS_NORM_KEY = 'alii_videos_norm_v1';
+function migrarVideosAntigos(){
+  try{
+    if(localStorage.getItem(VIDEOS_NORM_KEY) === '1') return;
+    const h = loadHistory();
+    let mudou = false;
+    for(const e of h){
+      if(!e || typeof e !== 'object') continue;
+      const antes = JSON.stringify({ v: e.videos || null, um: e.video || null });
+      const lista = entryVideos(e);
+      if(!lista.length) continue;
+      setEntryVideos(e, lista);
+      const depois = JSON.stringify({ v: e.videos, um: e.video });
+      if(antes !== depois) mudou = true;
+    }
+    if(mudou) saveHistory(h);
+    localStorage.setItem(VIDEOS_NORM_KEY, '1');
+  }catch(err){}
+}
+
 seedHistoryOnce();
+migrarVideosAntigos();
 markExistingSharedOnce();
 bind();
 if(cloudPollActive()) startCloudPoll();
