@@ -1411,7 +1411,7 @@
 
   /* ajustes */
   .toast{background:#151B24;border-color:var(--line);color:var(--txt);box-shadow:0 12px 30px rgba(0,0,0,.5)}
-  .share-busy{position:fixed;inset:0;z-index:300;background:rgba(4,6,10,.72);backdrop-filter:blur(3px);display:grid;place-items:center;padding:24px}
+  .share-busy{position:fixed;inset:0;z-index:100000;background:rgba(4,6,10,.72);backdrop-filter:blur(3px);display:grid;place-items:center;padding:24px}
   .share-busy-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 24px;text-align:center;max-width:300px;box-shadow:0 24px 60px rgba(0,0,0,.55)}
   .share-busy-card b{display:block;font-size:14px;color:var(--txt);margin-bottom:5px}
   .share-busy-card span{display:block;font-size:11px;color:var(--dim);line-height:1.5}
@@ -3525,6 +3525,15 @@ textarea{resize:none!important}
     </div>
   </div>
 </div>
+<style id="alii-video-actions">
+  /* vídeo do relatório: remover e anexar no lugar */
+  #histViewWrap #histViewVideos .hist-vslot{position:relative;display:flex;width:148px;flex:0 0 auto}
+  #histViewWrap #histViewVideos .hist-vslot .hist-vcard{width:100%!important}
+  #histViewWrap #histViewVideos .hist-vdel{position:absolute!important;top:4px!important;right:4px!important;width:22px!important;height:22px!important;min-width:0!important;min-height:0!important;padding:0!important;border-radius:50%!important;border:1px solid rgba(255,100,100,.45)!important;background:rgba(42,18,22,.92)!important;color:#ff6b6b!important;font-size:12px;line-height:1;display:grid;place-items:center;z-index:5;box-shadow:0 3px 10px rgba(0,0,0,.55);text-transform:none!important;letter-spacing:0!important}
+  #histViewWrap #histViewVideos .hist-vdel:active{transform:scale(.94)}
+  #histViewWrap #histViewVideos .hist-vadd{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:6px!important;width:148px!important;height:118px!important;min-height:0!important;padding:0!important;border:1px dashed rgba(77,163,255,.45)!important;border-radius:12px!important;background:rgba(77,163,255,.05)!important;color:#7f95ad!important;font-size:10px!important;line-height:1.2!important;text-align:center!important;text-transform:none!important;letter-spacing:0!important;box-shadow:none!important}
+  #histViewWrap #histViewVideos .hist-vadd b{font-size:19px;color:var(--accent);line-height:1;font-weight:400}
+</style>
 <script>
 (function(){
 "use strict";
@@ -5044,7 +5053,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.43';
+const CONTENT_VERSION = '3.44';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -6642,7 +6651,8 @@ function renderHistVideos(e){
   const vids = entryVideos(e);
   const cloudIds = entryCloudVideoIds(e);
   const total = Math.max(vids.length, cloudIds.length);
-  if(!total){ box.style.display = 'none'; box.innerHTML = ''; return; }
+  const podeAnexar = total < 2 && !!(window.AndroidApp && window.AndroidApp.openVideoEditor);
+  if(!total && !podeAnexar){ box.style.display = 'none'; box.innerHTML = ''; return; }
 
   let html = '';
   for(let i = 0; i < total; i++){
@@ -6651,17 +6661,35 @@ function renderHistVideos(e){
     const where = (v.uri && !v.remote) ? '' : ' · Drive';
     const key = thumbKeyFor(v, cloudIds[i]);
     const thumb = v.thumb || (key ? thumbMem[key] : '') || '';
-    html += `<button class="hist-vcard" data-hplay="${i}" title="Assistir vídeo ${i + 1}">
-      <span class="hist-vthumb"${key ? ` data-thumb-key="${esc(key)}"` : ''}${thumb ? ` style="background-image:url('${thumb}')"` : ''}>
-        <span class="hist-vplay">${HICONS.play}</span>
-      </span>
-      <span class="hist-vlabel">Vídeo ${i + 1}${where}${dur}</span>
-    </button>`;
+    html += `<div class="hist-vslot">
+      <button class="hist-vcard" data-hplay="${i}" title="Assistir vídeo ${i + 1}">
+        <span class="hist-vthumb"${key ? ` data-thumb-key="${esc(key)}"` : ''}${thumb ? ` style="background-image:url('${thumb}')"` : ''}>
+          <span class="hist-vplay">${HICONS.play}</span>
+        </span>
+        <span class="hist-vlabel">Vídeo ${i + 1}${where}${dur}</span>
+      </button>
+      <button class="hist-vdel" type="button" data-vdel="${i}" aria-label="Remover vídeo ${i + 1}" title="Remover vídeo">✕</button>
+    </div>`;
+  }
+  if(podeAnexar){
+    html += `<button class="hist-vadd" type="button" data-vadd="1" title="Gravar e anexar outro vídeo"><b>＋</b><span>Anexar vídeo</span></button>`;
   }
   box.innerHTML = html;
   box.style.display = 'flex';
   box.querySelectorAll('[data-hplay]').forEach(b => {
     b.addEventListener('click', () => playEntryVideo(e, +b.getAttribute('data-hplay')));
+  });
+  box.querySelectorAll('[data-vdel]').forEach(b => {
+    b.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      removerVideoDoRelatorio(e, +b.getAttribute('data-vdel'));
+    });
+  });
+  const addBtn = box.querySelector('[data-vadd]');
+  if(addBtn) addBtn.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    anexarVideoNaFicha(e);
   });
 
   // miniatura sob demanda, sem bloquear a interface
@@ -6693,6 +6721,113 @@ function renderHistVideos(e){
       }
     }, 40);
   }
+}
+
+/* --- remover / anexar vídeo na ficha do relatório --- */
+function removerVideoDoRelatorio(entry, idx){
+  if(!entry) return;
+  dialogConfirm('O vídeo sai deste relatório e é apagado do Google Drive. O texto, a data, os outros vídeos e o restante do histórico continuam iguais.', {
+    title: 'Remover este vídeo?',
+    ok: 'Remover',
+    cancel: 'Cancelar',
+    danger: true
+  }).then(ok => {
+    if(!ok) return;
+    aplicarRemocaoVideo(entry, idx);
+  });
+}
+
+function aplicarRemocaoVideo(entry, idx){
+  const h = loadHistory();
+  const i = h.findIndex(x => String(x.id) === String(entry.id));
+  if(i < 0){ toast('Relatório não encontrado'); return; }
+
+  const alvo = h[i];
+  const vids = entryVideos(alvo).slice();
+  const cloudIds = entryCloudVideoIds(alvo).slice();
+  const alvoVideo = vids[idx] || {};
+  const fidApagar = String(alvoVideo.fileId || cloudIds[idx] || '');
+  if(idx >= 0 && idx < vids.length) vids.splice(idx, 1);
+  if(idx >= 0 && idx < cloudIds.length) cloudIds.splice(idx, 1);
+
+  setEntryVideos(alvo, vids);
+  alvo.cloud = alvo.cloud || {};
+  if(cloudIds.length){
+    alvo.cloud.videoFileIds = cloudIds;
+  } else {
+    delete alvo.cloud.videoFileIds;
+    delete alvo.cloud.videoFileId;
+  }
+  if(!vids.length && !cloudIds.length){
+    delete alvo.videos;
+    delete alvo.video;
+  }
+
+  saveHistory(h);
+
+  // cópia usada pela tela de resultados (se o relatório ainda estiver lá)
+  try{
+    if(typeof results !== 'undefined' && Array.isArray(results)){
+      const r = results.find(x => String(x.registeredId) === String(alvo.id));
+      if(r) setEntryVideos(r, vids);
+    }
+  }catch(e){}
+
+  histViewEntry = alvo;
+  try{ renderHistVideos(alvo); }catch(e){}
+  try{ renderResults(); }catch(e){}
+  try{ renderHistory(); }catch(e){}
+
+  const sobrou = Math.max(entryVideos(alvo).length, entryCloudVideoIds(alvo).length);
+  if(fidApagar && window.AndroidApp && typeof AndroidApp.deleteCloudVideo === 'function'){
+    try{
+      AndroidApp.deleteCloudVideo(fidApagar, String(alvo.id));
+      toast('Vídeo removido. Apagando do Drive…');
+      return;
+    }catch(e){}
+  }
+  toast(sobrou ? 'Vídeo removido do relatório' : 'Vídeo removido · o relatório continua salvo');
+}
+
+/* resposta do app depois de apagar o vídeo no Drive */
+window.onCloudVideoDeleted = function(fileId, ok, erro){
+  if(ok) toast('Vídeo apagado do Drive');
+  else toast('Não apagou no Drive' + (erro ? ': ' + erro : ''));
+};
+
+/* apaga no Drive só os vídeos do relatório apagado (nunca o texto nem a pasta) */
+function apagarVideosNoDrive(entry){
+  if(!entry) return;
+  if(!(window.AndroidApp && typeof AndroidApp.deleteCloudVideo === 'function')) return;
+  const ids = entryCloudVideoIds(entry).slice();
+  entryVideos(entry).forEach(v => {
+    if(v && v.fileId && ids.indexOf(String(v.fileId)) < 0) ids.push(String(v.fileId));
+  });
+  ids.forEach(fid => {
+    if(!fid) return;
+    try{ AndroidApp.deleteCloudVideo(String(fid), String(entry.id)); }catch(e){}
+  });
+}
+
+function anexarVideoNaFicha(entry){
+  if(!entry) return;
+  if(!window.AndroidApp || !window.AndroidApp.openVideoEditor){
+    toast('Anexar vídeo está disponível no app Android');
+    return;
+  }
+  const total = Math.max(entryVideos(entry).length, entryCloudVideoIds(entry).length);
+  if(total >= 2){ toast('Máximo de 2 vídeos por relatório'); return; }
+  try{
+    window.AndroidApp.openVideoEditor(JSON.stringify({ id: String(entry.id), text: entryTemplate(entry) }));
+  }catch(e){ toast('Erro ao abrir o editor de vídeo'); }
+}
+
+/* ao compartilhar, fecha a ficha para o progresso não ficar atrás dela */
+function fecharFichaAoCompartilhar(){
+  try{
+    const w = $('#histViewWrap');
+    if(w && w.style.display && w.style.display !== 'none') w.style.display = 'none';
+  }catch(e){}
 }
 
 function showHistView(e){
@@ -6922,6 +7057,10 @@ function shareVideos(x){
     // e na pasta #número do Drive antes de desistir
     pairs.push({ uri: uri, fileId: fid, name: v.name || '', reportId: String(shareId) });
   });
+  // vídeo que só existe no Drive (sem objeto local) completa a lista
+  for(let i = pairs.length; i < cloudIds.length; i++){
+    if(cloudIds[i]) pairs.push({ uri:'', fileId:String(cloudIds[i]), name:'', reportId:String(shareId) });
+  }
   if(!pairs.length){
     cloudIds.forEach(fid => { if(fid) pairs.push({ uri:'', fileId:String(fid), name:'', reportId:String(shareId) }); });
   }
@@ -6949,6 +7088,8 @@ function shareVideos(x){
     : cloud.length > 0;
 
   if(!beginShare(needsCloud)) return;
+  // a ficha do relatório tem camada 99999: fecha para o progresso aparecer na frente
+  fecharFichaAoCompartilhar();
   if(window.AndroidApp && entry && entry.id != null) markShared(entry.id);
 
   const text = (vids[0] && vids[0].caption && vids[0].caption.trim())
@@ -7722,7 +7863,7 @@ async function deleteSelectedEntries(){
   if(!(await dialogConfirm('Apagar ' + list.length + ' relatório(s) selecionado(s)?', {
     title: 'Apagar selecionados', ok: 'Apagar', danger: true
   }))) return;
-  for(const e of list) markDeleted(e.id);
+  for(const e of list){ apagarVideosNoDrive(e); markDeleted(e.id); }
   const ids = new Set(list.map(e => String(e.id)));
   saveHistory(loadHistory().filter(e => !ids.has(String(e.id))));
   histSelected.clear();
@@ -8112,6 +8253,7 @@ function renderHistory(){
           if(v.uri && !v.source){ try{ window.AndroidApp.deleteVideo(v.uri); }catch(err){} }
         }
       }
+      apagarVideosNoDrive(e);
       const h2 = loadHistory().filter(x => String(x.id) !== String(e.id));
       markDeleted(e.id);
       saveHistory(h2);
@@ -8234,6 +8376,7 @@ async function deleteLast(){
   if(!(await dialogConfirm(`Apagar o último relatório (#${max} · ${e ? e.streamer : ''})?`, {
     title: 'Apagar último', ok: 'Apagar', danger: true
   }))) return;
+  if(e) apagarVideosNoDrive(e);
   markDeleted(max);
   saveHistory(h.filter(x => +x.id !== max));
   renderHistory();
@@ -9491,7 +9634,7 @@ function bind(){
       title: 'Apagar histórico', ok: 'Apagar tudo', danger: true
     }))) return;
     const all = loadHistory();
-    for(const e of all) markDeleted(e.id);
+    for(const e of all){ apagarVideosNoDrive(e); markDeleted(e.id); }
     saveHistory([]);
     renderHistory();
     toast('Histórico apagado');
