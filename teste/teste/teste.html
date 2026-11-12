@@ -2044,6 +2044,9 @@ pre.report,.review-pre{background:#0A0E13!important;border-radius:3px!important;
 #shareBusyText{display:block;font-size:11px!important;color:var(--dim)!important;margin-top:4px;line-height:1.5;text-align:left}
 .sb-bar{height:3px;background:var(--line);margin-top:14px;position:relative;overflow:hidden;border-radius:2px}
 .sb-bar i{position:absolute;left:0;top:0;bottom:0;width:33.33%;background:var(--accent);border-radius:2px;transition:width .25s ease}
+/* quando o tamanho é desconhecido: barra correndo em vez de porcentagem falsa */
+.sb-bar.indet i{width:35%!important;transition:none;animation:sbIndet 1.3s ease-in-out infinite}
+@keyframes sbIndet{0%{left:-35%}100%{left:100%}}
 .sb-steps{display:flex;gap:13px;margin-top:9px;font-family:var(--mono);font-size:7.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 .sb-steps span{display:flex;align-items:center;gap:4px}
 .sb-steps i{width:5px;height:5px;border-radius:50%;background:var(--line)}
@@ -2051,6 +2054,13 @@ pre.report,.review-pre{background:#0A0E13!important;border-radius:3px!important;
 .sb-steps .done i{background:var(--accent);opacity:.55}
 .sb-steps .on{color:var(--accent)}
 .sb-steps .on i{background:var(--accent)}
+/* cancelar: usa exatamente as cores do card (mesmas variáveis) */
+.sb-cancel{
+  display:block;width:100%;margin-top:16px;padding:10px 14px;cursor:pointer;
+  background:transparent;border:1px solid var(--line);border-radius:10px;
+  color:var(--txt);font:inherit;font-size:12px;font-weight:600;letter-spacing:.01em;
+}
+.sb-cancel:hover,.sb-cancel:active{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.16)}
 
 /* detalhes */
 .v7-stat span{font-family:var(--mono)!important;font-size:8px!important;color:var(--muted)!important}
@@ -2872,12 +2882,29 @@ textarea{resize:none!important}
 
 @media(max-width:520px){.week-split{grid-template-columns:1fr}}
 
-/* ===== celular: respeita notch e barra de gestos ===== */
+/* ===== celular/tablet: barra colada embaixo + area segura ===== */
 @media (max-width: 899px){
-  body{padding-bottom:calc(142px + env(safe-area-inset-bottom, 0px)) !important}
-  .bottom-nav{bottom:calc(12px + env(safe-area-inset-bottom, 0px)) !important}
-  .hist-selbar{bottom:calc(88px + env(safe-area-inset-bottom, 0px)) !important}
-  .toast{bottom:calc(20px + env(safe-area-inset-bottom, 0px)) !important}
+  body{padding-bottom:calc(112px + env(safe-area-inset-bottom, 0px)) !important}
+
+  /* menu encostado na barra do celular (ocupa a largura toda) */
+  .bottom-nav{
+    left:0 !important;
+    right:0 !important;
+    bottom:0 !important;
+    border-radius:18px 18px 0 0 !important;
+    border-left:0 !important;
+    border-right:0 !important;
+    border-bottom:0 !important;
+    padding:8px 8px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    background:rgba(12,14,18,.97) !important;
+    box-shadow:0 -10px 26px rgba(0,0,0,.45) !important;
+  }
+
+  /* a barra de atalhos solta não aparece junto com o menu */
+  .quick{display:none !important}
+
+  .hist-selbar{bottom:calc(84px + env(safe-area-inset-bottom, 0px)) !important}
+  .toast{bottom:calc(78px + env(safe-area-inset-bottom, 0px)) !important}
   .share-busy{padding-bottom:env(safe-area-inset-bottom, 0px)}
 }
 @media (max-width: 380px){
@@ -3417,6 +3444,7 @@ textarea{resize:none!important}
     </div>
     <div class="sb-bar"><i></i></div>
     <div class="sb-steps"><span class="on"><i></i>Baixando</span><span><i></i>Anexando</span><span><i></i>Abrindo</span></div>
+    <button class="sb-cancel" id="btnShareCancel" type="button" onclick="cancelShare()">Cancelar</button>
   </div>
 </div>
 
@@ -6466,7 +6494,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.34';
+const CONTENT_VERSION = '3.39';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -6551,6 +6579,7 @@ function loadHistory(){
   }
 }
 function saveHistory(h, opts){
+  let ok = true;
   try{
     if(Array.isArray(h)) stampHistoryChanges(h);
     autoBackupBeforeSave();
@@ -6558,10 +6587,19 @@ function saveHistory(h, opts){
     histCache = Array.isArray(h) ? h : null;
     renderAutoBackup();
   }catch(e){
+    ok = false;
+    // NÃO finge que salvou: mantém o último estado e avisa de forma clara
     histCache = null;
-    toast('Não foi possível salvar (armazenamento cheio)');
+    try{
+      dialogOpen('O armazenamento do app encheu e o histórico NÃO foi salvo. Exporte o histórico ou limpe dados antigos antes de continuar.',
+        { info: true, title: 'Não foi possível salvar' });
+    }catch(_){
+      toast('Armazenamento cheio — o histórico não foi salvo');
+    }
   }
+  if(!ok) return false;
   if(!opts || !opts.noSync) scheduleSync(1800);
+  return true;
 }
 
 /* ============================ histórico importado (CSV real) ============================ */
@@ -9886,7 +9924,6 @@ let driveInfo = { connected:false, email:'', autoUpload:true, deleteLocal:true, 
 let cloudPoll = null;
 let histViewEntry = null;
 let sharing = false;
-let shareLockTimer = null;
 
 const SHARE_STEPS = ['download', 'attach', 'open'];
 
@@ -9911,16 +9948,35 @@ function setShareStage(stage){
 }
 window.onShareStage = function(stage){ setShareStage(stage); };
 
+let shareWakeLock = null;
+async function manterTelaLigada(){
+  // na versão online (navegador) segura a tela para o download não parar
+  try{
+    if(!('wakeLock' in navigator) || shareWakeLock) return;
+    shareWakeLock = await navigator.wakeLock.request('screen');
+    shareWakeLock.addEventListener('release', () => { shareWakeLock = null; });
+  }catch(e){ shareWakeLock = null; }
+}
+async function liberarTela(){
+  try{
+    if(shareWakeLock){ const l = shareWakeLock; shareWakeLock = null; await l.release(); }
+  }catch(e){}
+}
+
 function showShareBusy(msg){
   const el = $('#shareBusy');
   if(el) el.style.display = 'grid';
   const t = $('#shareBusyText');
   if(t && msg) t.textContent = msg;
+  const barra = el && el.querySelector('.sb-bar');
+  if(barra) barra.classList.remove('indet');
   setShareStage('download');
+  manterTelaLigada();
 }
 function hideShareBusy(){
   const el = $('#shareBusy');
   if(el) el.style.display = 'none';
+  liberarTela();
 }
 function beginShare(busy){
   if(sharing){
@@ -9932,19 +9988,86 @@ function beginShare(busy){
     }
     // trava antiga sem overlay: libera para não bloquear o próximo compartilhamento
     sharing = false;
-    clearTimeout(shareLockTimer);
+    stopShareWatchdog();
   }
   sharing = true;
   if(busy) showShareBusy('Baixando vídeo do Drive. Aguarde.');
-  clearTimeout(shareLockTimer);
-  shareLockTimer = setTimeout(endShare, busy ? 120000 : 5000);
+  // sem prazo fixo: só encerra se ficar MUITO tempo sem nenhum byte novo
+  armShareWatchdog(busy ? 300000 : 600000);
   return true;
 }
 function endShare(){
   sharing = false;
-  clearTimeout(shareLockTimer);
+  stopShareWatchdog();
   hideShareBusy();
 }
+
+/* --- vigia: NÃO fecha a tela; só avisa que está sem resposta --- */
+let shareWatchdog = null;
+function armShareWatchdog(ms){
+  clearTimeout(shareWatchdog);
+  shareWatchdog = setTimeout(function(){
+    if(!sharing) return;
+    const t = $('#shareBusyText');
+    if(t) t.textContent = 'Sem resposta há 5 min. Toque em Cancelar se quiser parar.';
+  }, ms || 300000);
+}
+function stopShareWatchdog(){
+  clearTimeout(shareWatchdog);
+  shareWatchdog = null;
+}
+
+/* --- botão Cancelar da tela "Preparando vídeo..." --- */
+function cancelShare(){
+  try{
+    if(window.AndroidApp && typeof AndroidApp.cancelShare === 'function') AndroidApp.cancelShare();
+  }catch(e){}
+  endShare();
+  toast('Compartilhamento cancelado');
+}
+window.cancelShare = cancelShare;
+
+/* --- conversão (não informa progresso): avisa e espera sem fechar a tela --- */
+window.onShareConverting = function(idx, total){
+  if(!sharing) return;
+  armShareWatchdog(1200000);   // 20 min: conversão de vídeo grande é lenta
+  const t = $('#shareBusyText');
+  if(t) t.textContent = 'Convertendo vídeo ' + idx + ' de ' + total + ' para MP4 (H.264). Pode demorar.';
+  const el = $('#shareBusy');
+  const barra = el && el.querySelector('.sb-bar');
+  if(barra) barra.classList.add('indet');
+};
+
+/* --- progresso real: % do vídeo atual, MB e % no total --- */
+function shareMb(v){ return (v / 1048576).toFixed(1).replace('.', ','); }
+window.onShareProgress = function(idx, total, read, bytes, etapa){
+  if(!sharing) return;
+  armShareWatchdog(300000);   // chegou byte: renova o vigia
+  const verbo = (etapa === 'copiando') ? 'Copiando' : 'Baixando';
+  const conhecido = bytes > 0;
+  const frac = conhecido ? Math.min(1, read / bytes) : 0;
+  const pct = conhecido ? Math.round(frac * 100) : null;
+  const geral = (total > 0) ? Math.round((((idx - 1) + frac) / total) * 100) : 0;
+
+  const t = $('#shareBusyText');
+  if(t){
+    let s = verbo + ' ' + idx + ' de ' + total;
+    if(pct !== null) s += ' · ' + pct + '%';
+    s += ' · ' + shareMb(read) + ' MB';
+    if(conhecido) s += ' de ' + shareMb(bytes) + ' MB';
+    if(total > 1 && conhecido) s += ' · total ' + geral + '%';
+    t.textContent = s;
+  }
+
+  const el = $('#shareBusy');
+  const barra = el && el.querySelector('.sb-bar');
+  if(barra) barra.classList.toggle('indet', !conhecido);
+  const bar = barra && barra.querySelector('i');
+  if(bar && conhecido){
+    const altura = (total > 0) ? (((idx - 1) + frac) / total) * 100 : (pct || 0);
+    bar.style.width = Math.min(99, Math.max(2, altura)).toFixed(1) + '%';
+  }
+};
 window.onSharePreparing = function(){
   showShareBusy('Baixando vídeo do Drive. Aguarde.');
 };
