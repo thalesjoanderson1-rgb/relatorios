@@ -5419,7 +5419,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.85';
+const CONTENT_VERSION = '3.87';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12441,6 +12441,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     try { st = JSON.parse(AndroidApp.anStatus()); } catch(e) {}
     if(st && st.logado){
       mostrar('anPainel');
+      AN.uid = st.uid ? String(st.uid) : '';
       el('anQuem').textContent = 'conectado como ' + (st.usuario || '—');
       el('anExpira').textContent = st.exp ? ('acesso até ' + fmt(st.exp)) : '';
       // já carregou há pouco? mostra na hora e não refaz a busca
@@ -12592,6 +12593,13 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   function anexar(itens){
     if(!itens || !itens.length) return;
+    if(AN.tipo === 3){
+      itens = itens.filter(function(it){
+        if(Number(it.isDelete) !== 1) return true;
+        return AN.uid && String(it.operatorId || '') === String(AN.uid);
+      });
+      if(!itens.length) return;
+    }
     var box = el('anLista');
     var vazio = box.querySelector('.hint');
     if(vazio) box.innerHTML = '';
@@ -13120,6 +13128,13 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(window.__vidPend) AndroidApp.anVideoConferir(window.__vidPend.item.videoId);
   };
 
+  window.__anVideoExcluidoUrl = function(json){
+    var p = window.__vidPend;
+    if(!p) return;
+    p.tentouUrl = true;
+    AndroidApp.anVideoConferir(p.item.videoId);
+  };
+
   window.__anVideoConferido = function(json){
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
     var p = window.__vidPend;
@@ -13141,11 +13156,23 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     gravar(FILA, fila);
 
     var card = document.querySelector('[data-anid="' + p.item.videoId + '"]');
-    if(card) card.remove();
+    if(card){
+      card.classList.add('an-apagado');
+      var acoes = card.querySelector('.an-vacts');
+      if(acoes) acoes.innerHTML = '<button class="ghost" type="button" disabled>🗑 removido</button>';
+    }
 
-    if(r && r.ok && r.achou && Number(r.isDelete) === 1) aviso('✓ Vídeo excluído e confirmado no painel');
-    else if(r && r.ok && r.achou) aviso('✓ Excluído (o painel ainda não marcou como removido)');
-    else aviso('✓ Excluído — não confirmei na releitura');
+    var confirmado = r && r.ok && r.achou && Number(r.isDelete) === 1;
+    if(confirmado){
+      aviso('✓ Vídeo excluído e confirmado no painel');
+    } else if(p && !p.tentouUrl && window.AndroidApp && typeof AndroidApp.anVideoExcluirUrl === 'function'){
+      // o corpo pode ter sido descartado pelo servidor: tenta com os ids na URL
+      p.tentouUrl = true;
+      AndroidApp.anVideoExcluirUrl(p.item.videoId);
+      return;
+    } else {
+      aviso('não apagou — o painel recusou (tente de novo)');
+    }
 
     pintarFila();
   };
