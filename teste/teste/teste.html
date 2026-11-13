@@ -3512,6 +3512,10 @@ textarea{resize:none!important}
       #sec-analises .an-conta b{font-size:13px}
       #sec-analises .an-conta .hint{margin:2px 0 0}
       #sec-analises .an-conta button{margin-left:auto;flex:0 0 auto}
+      #sec-analises .an-segs{display:flex;gap:6px;margin:0 0 10px}
+      #sec-analises .an-seg{flex:1;text-align:center;font-size:12px;font-weight:600;padding:8px 0;border-radius:9px;border:1px solid var(--line);background:var(--card2);color:var(--dim);min-width:0}
+      #sec-analises .an-seg.on{background:rgba(77,163,255,.14);border-color:rgba(77,163,255,.5);color:#bcd9ff}
+      #sec-analises .an-seg.off{opacity:.45}
       #sec-analises .an-filtros{display:flex;gap:6px;margin:0 0 10px;align-items:center}
       #sec-analises .an-f{border:1px solid var(--line);background:var(--card2);color:var(--dim);border-radius:999px;padding:6px 12px;font-size:12px;cursor:pointer}
       #sec-analises .an-f.on{background:rgba(77,163,255,.16);border-color:rgba(77,163,255,.5);color:#bcd9ff}
@@ -3529,6 +3533,14 @@ textarea{resize:none!important}
       #sec-analises .an-img{flex:1;position:relative;border-radius:9px;overflow:hidden;border:1px solid var(--line);aspect-ratio:1/1;background:#0a1017}
       #sec-analises .an-img img{width:100%;height:100%;object-fit:cover;display:block}
       #sec-analises .an-img b{position:absolute;left:0;right:0;bottom:0;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:#cfe0f5;background:linear-gradient(transparent,rgba(4,8,12,.9));padding:10px 6px 4px;text-align:center;font-weight:600}
+      #sec-analises .an-tits{display:flex;flex-direction:column;gap:6px;margin-top:9px}
+      #sec-analises .an-tit{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+      #sec-analises .an-tit span{display:block;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+      #sec-analises .an-tit b{font-size:12.5px;font-weight:600;line-height:1.45;display:block;word-break:break-word}
+      #sec-analises .an-tit.novo{border-color:rgba(242,182,50,.4);background:rgba(242,182,50,.05)}
+      #sec-analises .an-tit.novo b{color:#ffe3a3}
+      #sec-analises .an-tit.grande b{font-size:15px}
+      #sec-analises .seg.off{opacity:.45}
       #sec-analises .an-acts{display:flex;gap:6px;margin-top:9px}
       #sec-analises .an-acts button{flex:1;height:36px;font-size:12.5px}
       #sec-analises .an-ok{color:#8fe0b0!important;border-color:rgba(46,204,113,.4)!important;background:rgba(46,204,113,.1)!important}
@@ -3597,6 +3609,11 @@ textarea{resize:none!important}
         </div>
         <button class="ghost" id="anSair" type="button">Sair</button>
       </div>
+      <div class="an-segs">
+        <button class="an-seg on" data-antipo="1" type="button">Capa</button>
+        <button class="an-seg" data-antipo="2" type="button">Título</button>
+        <button class="an-seg off" data-antipo="3" type="button">Vídeos</button>
+      </div>
       <div class="an-filtros">
         <button class="an-f" data-anfiltro="0" type="button">Hoje</button>
         <button class="an-f" data-anfiltro="7" type="button">7 dias</button>
@@ -3604,17 +3621,13 @@ textarea{resize:none!important}
         <button class="ghost an-refresh" id="anRecarregar" type="button" title="Recarregar">↻</button>
       </div>
       <div class="an-lista" id="anLista"></div>
-      <p class="hint" id="anVazio" hidden style="text-align:center;margin:14px 0">Nenhuma capa pendente nesse filtro.</p>
+      <p class="hint" id="anVazio" hidden style="text-align:center;margin:14px 0">Nenhum item pendente nesse filtro.</p>
     </div>
 
     <div class="an-overlay centro" id="anVer" hidden>
       <div class="an-sheet">
-        <div class="an-sh-top"><h3>Análise de capa</h3><p id="anVerSub">—</p></div>
-        <div style="overflow:auto;flex:1">
-          <div class="an-grande"><img id="anVerImg1" alt=""><b>capa original</b></div>
-          <div class="an-grande"><img id="anVerImg2" alt=""><b>capa da resenha</b></div>
-          <div class="an-dados" id="anVerDados"></div>
-        </div>
+        <div class="an-sh-top"><h3 id="anVerTit">Análise de capa</h3><p id="anVerSub">—</p></div>
+        <div style="overflow:auto;flex:1" id="anVerCorpo"></div>
         <div class="an-rodape">
           <div class="an-botoes">
             <button class="ghost" id="anVerFechar" type="button">Fechar</button>
@@ -5352,7 +5365,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.74';
+const CONTENT_VERSION = '3.75';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12265,7 +12278,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 <script>
 /* ---- Análises (capa) — painel do app ---- */
 (function(){
-  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0 };
+  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1 };
 
   function el(id){ return document.getElementById(id); }
 
@@ -12376,7 +12389,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   function pedir(pagina){
     AN.emVoo = (AN.emVoo || 0) + 1;
-    AndroidApp.anListar(pagina, 100, AN.filtro);
+    AndroidApp.anListar(pagina, 100, AN.filtro, AN.tipo);
   }
 
   function enfileirar(pagina){
@@ -12436,13 +12449,22 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   function cardHtml(it){
     var g = it.gender === 2 ? 'Feminino' : (it.gender === 1 ? 'Masculino' : '—');
+    var corpo;
+    if(AN.tipo === 2){
+      corpo = '<div class="an-tits">'
+        + '<div class="an-tit"><span>título original</span><b>' + esc(it.title || '—') + '</b></div>'
+        + '<div class="an-tit novo"><span>título enviado</span><b>' + esc(it.checkTitle || '—') + '</b></div>'
+        + '</div>';
+    } else {
+      corpo = '<div class="an-imgs">'
+        + '<div class="an-img"><img loading="lazy" decoding="async" src="' + esc(it.cover) + '" alt=""><b>Original</b></div>'
+        + '<div class="an-img"><img loading="lazy" decoding="async" src="' + esc(it.checkCover) + '" alt=""><b>Resenha</b></div>'
+        + '</div>';
+    }
     return '<div class="an-item" data-anid="' + it.id + '">'
       + '<div class="an-h"><span class="an-id">#' + esc(it.id) + '</span><span class="an-nome">' + esc(it.nickname) + '</span><span class="an-hora">' + esc(it.quando) + '</span></div>'
       + '<div class="an-meta">' + esc(it.guild || '—') + ' · ' + g + '</div>'
-      + '<div class="an-imgs">'
-      +   '<div class="an-img"><img loading="lazy" decoding="async" src="' + esc(it.cover) + '" alt=""><b>Original</b></div>'
-      +   '<div class="an-img"><img loading="lazy" decoding="async" src="' + esc(it.checkCover) + '" alt=""><b>Resenha</b></div>'
-      + '</div>'
+      + corpo
       + '<div class="an-acts">'
       +   '<button class="ghost" data-anver="' + it.id + '" type="button">Ver</button>'
       +   '<button class="ghost an-bad" data-anrej="' + it.id + '" type="button">Rejeitar</button>'
@@ -12476,17 +12498,31 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   function ver(it){
     if(!it) return;
     AN.alvo = it;
+    el('anVerTit').textContent = AN.tipo === 2 ? 'Análise de título' : 'Análise de capa';
     el('anVerSub').textContent = '#' + it.id + ' · ' + (it.nickname || '') + ' · ' + (it.quando || '');
-    el('anVerImg1').src = it.cover || '';
-    el('anVerImg2').src = it.checkCover || '';
-    el('anVerDados').innerHTML =
-        '<div class="an-d"><span>usuário</span><b>' + esc(it.userId) + '</b></div>'
+    var topo;
+    if(AN.tipo === 2){
+      topo = '<div class="an-tit grande" style="margin:0 14px 10px"><span>título original</span><b>' + esc(it.title || '—') + '</b></div>'
+        + '<div class="an-tit novo grande" style="margin:0 14px 10px"><span>título enviado</span><b>' + esc(it.checkTitle || '—') + '</b></div>';
+    } else {
+      topo = '<div class="an-grande"><img src="' + esc(it.cover) + '" alt=""><b>capa original</b></div>'
+        + '<div class="an-grande"><img src="' + esc(it.checkCover) + '" alt=""><b>capa da resenha</b></div>';
+    }
+    el('anVerCorpo').innerHTML = topo
+      + '<div class="an-dados">'
+      + '<div class="an-d"><span>usuário</span><b>' + esc(it.userId) + '</b></div>'
       + '<div class="an-d"><span>id</span><b>' + esc(it.id) + '</b></div>'
       + '<div class="an-d"><span>apelido</span><b>' + esc(it.nickname) + '</b></div>'
       + '<div class="an-d"><span>gênero</span><b>' + (it.gender === 2 ? 'Feminino' : it.gender === 1 ? 'Masculino' : '—') + '</b></div>'
       + '<div class="an-d"><span>guilda</span><b>' + esc(it.guild || '—') + '</b></div>'
-      + '<div class="an-d"><span>enviado</span><b>' + esc(it.quando) + '</b></div>';
+      + '<div class="an-d"><span>enviado</span><b>' + esc(it.quando) + '</b></div>'
+      + '</div>';
     el('anVer').hidden = false;
+  }
+
+  function motivosDoTipo(){
+    if(!AN.motivos) return [];
+    return AN.tipo === 2 ? (AN.motivos.titulo || []) : (AN.motivos.capa || []);
   }
 
   function pedirMotivos(cb){
@@ -12509,7 +12545,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   function pintarMotivos(termo){
     var t = String(termo || '').toLowerCase();
-    var html = (AN.motivos || []).map(function(txt, i){
+    var html = motivosDoTipo().map(function(txt, i){
       if(t && String(txt).toLowerCase().indexOf(t) < 0) return '';
       var sel = (AN.motivo === i) ? ' sel' : '';
       return '<button class="an-op' + sel + '" data-anmotivo="' + i + '" type="button"><span class="n">' + (i + 1) + '</span>' + esc(txt) + '</button>';
@@ -12520,21 +12556,22 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   function escolherMotivo(i){
     AN.motivo = i;
     pintarMotivos(el('anBusca').value);
-    el('anEscolhido').textContent = 'motivo ' + (i + 1) + ' · ' + (AN.motivos[i] || '');
+    el('anEscolhido').textContent = 'motivo ' + (i + 1) + ' · ' + (motivosDoTipo()[i] || '');
     el('anRejEnviar').disabled = false;
   }
 
   function confirmar(it, state, motivo){
     if(!it) return;
     var rej = (state === 2);
-    el('anConfTitulo').textContent = rej ? 'Rejeitar a capa?' : 'Passar a capa?';
+    var coisa = AN.tipo === 2 ? 'o título' : 'a capa';
+    el('anConfTitulo').textContent = rej ? ('Rejeitar ' + coisa + '?') : ('Passar ' + coisa + '?');
     el('anConfSub').textContent = '#' + it.id + ' · ' + (it.nickname || '');
     if(rej){
       el('anConfCorpo').innerHTML = '<div class="an-d"><span>motivo ' + (motivo + 1) + '</span><b>'
-        + esc(AN.motivos ? AN.motivos[motivo] : '') + '</b></div>'
+        + esc(motivosDoTipo()[motivo] || '') + '</b></div>'
         + '<p class="hint" style="margin:8px 0 0">O painel recebe a rejeição agora.</p>';
     } else {
-      el('anConfCorpo').innerHTML = '<p class="hint" style="margin:0">A capa será aprovada no painel.</p>';
+      el('anConfCorpo').innerHTML = '<p class="hint" style="margin:0">' + (AN.tipo === 2 ? 'O título será aprovado no painel.' : 'A capa será aprovada no painel.') + '</p>';
     }
     el('anConfOk').textContent = rej ? 'Confirmar rejeição' : 'Confirmar';
     el('anConfOk').disabled = false;
@@ -12549,7 +12586,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     el('anConfOk').disabled = true;
     el('anConfOk').textContent = 'enviando…';
     esperar('acao');
-    AndroidApp.anDecidir(p.it.id, p.it.userId, p.it.roomId, p.state, p.state === 2 ? p.motivo : -1);
+    AndroidApp.anDecidir(p.it.id, p.it.userId, p.it.roomId, p.state, p.state === 2 ? p.motivo : -1, AN.tipo);
   }
 
   window.__anLogin = function(json){
@@ -12615,7 +12652,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   window.__anMotivos = function(json){
     clearTimeout(AN.timer);
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
-    if(r && r.ok){ AN.motivos = r.capa || []; }
+    if(r && r.ok){ AN.motivos = { capa: r.capa || [], titulo: r.titulo || [] }; }
     else if(r && r.expirado){ fecharTudo(); acessoEncerrado(); return; }
     else { el('anOps').innerHTML = '<p class="hint">' + esc((r && r.msg) || 'não foi possível carregar os motivos') + '</p>'; return; }
     var f = AN.aguardando; AN.aguardando = null;
@@ -12635,7 +12672,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     }
     el('anConfOk').textContent = 'conferindo no painel…';
     var p = AN.pendente;
-    if(p) AndroidApp.anConferir(p.it.id, p.state);
+    if(p) AndroidApp.anConferir(p.it.id, p.state, AN.tipo);
   };
 
   window.__anConferir = function(json){
@@ -12783,6 +12820,16 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if((b = alvo.closest('[data-anrej]'))){ e.preventDefault(); abrirRejeitar(porId(b.getAttribute('data-anrej'))); return; }
     if((b = alvo.closest('[data-anpass]'))){ e.preventDefault(); confirmar(porId(b.getAttribute('data-anpass')), 1, -1); return; }
     if((b = alvo.closest('[data-anmotivo]'))){ e.preventDefault(); escolherMotivo(Number(b.getAttribute('data-anmotivo'))); return; }
+    if((b = alvo.closest('[data-antipo]'))){
+      e.preventDefault();
+      var tp = Number(b.getAttribute('data-antipo'));
+      if(tp === 3){ aviso('vídeos ainda não está pronto'); return; }
+      if(tp === AN.tipo) return;
+      AN.tipo = tp;
+      document.querySelectorAll('#sec-analises [data-antipo]').forEach(function(x){ x.classList.toggle('on', x === b); });
+      carregar();
+      return;
+    }
     if((b = alvo.closest('[data-anfiltro]'))){
       e.preventDefault();
       AN.filtro = Number(b.getAttribute('data-anfiltro'));
