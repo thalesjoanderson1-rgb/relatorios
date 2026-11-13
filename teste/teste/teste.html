@@ -3542,6 +3542,8 @@ textarea{resize:none!important}
       #sec-analises .an-tit.novo b{color:#ffe3a3}
       #sec-analises .an-tit.grande b{font-size:15px}
       #sec-analises .seg.off{opacity:.45}
+      #sec-analises .an-item.an-apagado{opacity:.6;border-left-color:var(--bad)}
+      #sec-analises .an-item.an-apagado .an-vtitle{text-decoration:line-through}
       #sec-analises .an-vid{display:flex;gap:10px;margin-top:9px}
       #sec-analises .an-vthumb{width:62px;height:78px;border-radius:9px;border:1px solid var(--line);flex:0 0 auto;overflow:hidden;background:#0a1017;display:grid;place-items:center;font-size:20px}
       #sec-analises .an-vthumb img{width:100%;height:100%;object-fit:cover}
@@ -5415,7 +5417,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.83';
+const CONTENT_VERSION = '3.84';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12536,10 +12538,12 @@ Seus relatórios e vídeos continuam salvos.</span></div>
         +   '<div class="an-vtitle">' + esc(it.title || '(sem título)') + '</div>'
         +   '<div class="an-vmeta">user ' + esc(it.userId) + ' · ' + esc(it.quando || '') + '</div>'
         +   '<div class="an-vacts">'
-        +   (AN.vidModo === 'principal'
-              ? '<button class="ghost an-bad" data-anvtirar="' + it.videoId + '" type="button">Tirar da principal</button>'
-              : '<button class="ghost" data-anprincipal="' + it.videoId + '" type="button">Principal</button>'
-                + '<button class="ghost an-bad" data-anvdel="' + it.videoId + '" type="button">Excluir</button>')
+        +   (Number(it.isDelete) === 1
+              ? '<button class="ghost" type="button" disabled>🗑 removido</button>'
+              : (AN.vidModo === 'principal'
+                  ? '<button class="ghost an-bad" data-anvtirar="' + it.videoId + '" type="button">Tirar da principal</button>'
+                  : '<button class="ghost" data-anprincipal="' + it.videoId + '" type="button">Principal</button>'
+                    + '<button class="ghost an-bad" data-anvdel="' + it.videoId + '" type="button">Excluir</button>'))
         +   '</div>'
         + '</div></div>';
     } else if(AN.tipo === 2){
@@ -12554,6 +12558,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
         + '</div>';
     }
     var ident = AN.tipo === 3 ? it.videoId : it.id;
+    var extraClasse = (AN.tipo === 3 && Number(it.isDelete) === 1) ? ' an-apagado' : '';
     var nomeTopo = AN.tipo === 3 ? ('user ' + (it.userId || '')) : (it.nickname || '');
     var metaTopo = AN.tipo === 3 ? ('vídeo ' + (it.videoId || '')) : (esc(it.guild || '—') + ' · ' + g);
     var acoes = '';
@@ -12564,7 +12569,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
         + '<button class="ghost an-ok" data-anpass="' + it.id + '" type="button">Passar</button>'
         + '</div>';
     }
-    return '<div class="an-item" data-anid="' + ident + '" data-uid="' + (it.userId || '') + '">'
+    return '<div class="an-item' + extraClasse + '" data-anid="' + ident + '" data-uid="' + (it.userId || '') + '">'
       + '<div class="an-h"><span class="an-id">#' + esc(ident) + '</span><span class="an-nome">' + esc(nomeTopo) + '</span><span class="an-hora">' + esc(it.quando) + '</span></div>'
       + '<div class="an-meta">' + metaTopo + '</div>'
       + corpo
