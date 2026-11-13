@@ -3357,6 +3357,7 @@ textarea{resize:none!important}
 
   <section class="card" id="sec-organizador" data-panel="organizador">
     <h2>Relatórios de vídeos apagados</h2>
+    <div id="vidFilaBox" style="margin:0 0 14px"></div>
     <p class="hint" style="margin:0 0 10px">
       Cole os avisos de vídeos apagados. O texto é preservado; os blocos são
       agrupados por <b>Reason</b> na ordem fixa e as duplicatas continuam.
@@ -3541,7 +3542,22 @@ textarea{resize:none!important}
       #sec-analises .an-tit.novo b{color:#ffe3a3}
       #sec-analises .an-tit.grande b{font-size:15px}
       #sec-analises .seg.off{opacity:.45}
+      #sec-analises .an-vid{display:flex;gap:10px;margin-top:9px}
+      #sec-analises .an-vthumb{width:62px;height:78px;border-radius:9px;border:1px solid var(--line);flex:0 0 auto;overflow:hidden;background:#0a1017;display:grid;place-items:center;font-size:20px}
+      #sec-analises .an-vthumb img{width:100%;height:100%;object-fit:cover}
+      #sec-analises .an-vinfo{flex:1;min-width:0}
+      #sec-analises .an-vtitle{font-size:12.5px;font-weight:600;line-height:1.35;word-break:break-word}
+      #sec-analises .an-vmeta{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:3px}
+      #sec-analises .an-vacts{display:flex;gap:6px;margin-top:8px}
+      #sec-analises .an-vacts button{flex:1;height:32px;font-size:11.5px}
       #sec-analises .an-acts{display:flex;gap:6px;margin-top:9px}
+      .vf-sec{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 11px;margin-bottom:8px}
+      .vf-head{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700}
+      .vf-head em{font-style:normal;font-family:var(--mono);font-size:10px;color:#ffb3b3;border:1px solid rgba(255,93,93,.35);background:rgba(255,93,93,.08);border-radius:999px;padding:2px 7px}
+      .vf-linha{display:flex;gap:8px;align-items:baseline;border:1px solid var(--line);border-radius:8px;padding:6px 8px;margin-top:5px;font-size:11px}
+      .vf-linha b{font-family:var(--mono);font-size:10px;color:#cfe0f5;font-weight:600}
+      .vf-linha span{color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .vf-btn{width:100%;margin-top:9px;height:40px}
       #sec-analises .an-acts button{flex:1;height:36px;font-size:12.5px}
       #sec-analises .an-ok{color:#8fe0b0!important;border-color:rgba(46,204,113,.4)!important;background:rgba(46,204,113,.1)!important}
       #sec-analises .an-bad{color:#ff9a9a!important;border-color:rgba(255,93,93,.4)!important;background:rgba(255,93,93,.1)!important}
@@ -3612,7 +3628,7 @@ textarea{resize:none!important}
       <div class="an-segs">
         <button class="an-seg on" data-antipo="1" type="button">Capa</button>
         <button class="an-seg" data-antipo="2" type="button">Título</button>
-        <button class="an-seg off" data-antipo="3" type="button">Vídeos</button>
+        <button class="an-seg" data-antipo="3" type="button">Vídeos</button>
       </div>
       <div class="an-filtros">
         <button class="an-f" data-anfiltro="0" type="button">Hoje</button>
@@ -3671,6 +3687,21 @@ textarea{resize:none!important}
     <div id="anFoto" hidden>
       <img id="anFotoImg" alt="">
       <button class="an-foto-x" id="anFotoFechar" type="button" aria-label="Fechar">✕</button>
+    </div>
+
+    <div class="an-overlay" id="anVid" hidden>
+      <div class="an-sheet">
+        <div class="an-sh-top"><h3>Excluir vídeo?</h3><p id="anVidSub">—</p></div>
+        <div class="an-ops" id="anVidOps"></div>
+        <input class="an-busca" id="anVidOutro" placeholder="outro motivo (se não estiver na lista)" style="display:none">
+        <div class="an-rodape">
+          <p class="hint" id="anVidEscolhido">nenhum motivo selecionado</p>
+          <div class="an-botoes">
+            <button class="ghost" id="anVidCancelar" type="button">Cancelar</button>
+            <button class="ghost an-bad" id="anVidOk" type="button" disabled>Excluir</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="an-overlay centro" id="anSim" hidden>
@@ -5365,7 +5396,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.75';
+const CONTENT_VERSION = '3.76';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12284,7 +12315,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   // As camadas (ver/rejeitar/confirmar/aviso) precisam ficar no <body>:
   // dentro da aba elas herdam o posicionamento do painel e saem do lugar.
-  ['anAviso','anVer','anRej','anConf','anFoto','anSim'].forEach(function(id){
+  ['anAviso','anVer','anRej','anConf','anFoto','anSim','anVid'].forEach(function(id){
     var n = el(id);
     if(n && n.parentNode !== document.body) document.body.appendChild(n);
   });
@@ -12389,7 +12420,8 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   function pedir(pagina){
     AN.emVoo = (AN.emVoo || 0) + 1;
-    AndroidApp.anListar(pagina, 100, AN.filtro, AN.tipo);
+    if(AN.tipo === 3) AndroidApp.anVideosListar(pagina, 100);
+    else AndroidApp.anListar(pagina, 100, AN.filtro, AN.tipo);
   }
 
   function enfileirar(pagina){
@@ -12415,7 +12447,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     AN.carregando = true;
     AN.carregadoEm = 0;
     // o que ainda estiver voltando do filtro anterior será ignorado
-    AN.descartar = (AN.emVoo || 0) + FILA.espera.length;
+    AN.emVoo = 0;
     FILA.espera = [];
     FILA.ativos = 0;
     el('anLista').innerHTML = '<p class="hint">carregando…</p>';
@@ -12450,7 +12482,16 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   function cardHtml(it){
     var g = it.gender === 2 ? 'Feminino' : (it.gender === 1 ? 'Masculino' : '—');
     var corpo;
-    if(AN.tipo === 2){
+    if(AN.tipo === 3){
+      corpo = '<div class="an-vid">'
+        + '<div class="an-vthumb">' + (it.cover ? '<img loading="lazy" decoding="async" src="' + esc(it.cover) + '" alt="">' : '🎬') + '</div>'
+        + '<div class="an-vinfo">'
+        +   '<div class="an-vtitle">' + esc(it.title || '(sem título)') + '</div>'
+        +   '<div class="an-vmeta">user ' + esc(it.userId) + ' · ' + esc(it.quando || '') + '</div>'
+        +   '<div class="an-vacts"><button class="ghost" data-anprincipal="' + it.videoId + '" type="button" disabled title="em breve">Principal</button>'
+        +   '<button class="ghost an-bad" data-anvdel="' + it.videoId + '" type="button">Excluir</button></div>'
+        + '</div></div>';
+    } else if(AN.tipo === 2){
       corpo = '<div class="an-tits">'
         + '<div class="an-tit"><span>título original</span><b>' + esc(it.title || '—') + '</b></div>'
         + '<div class="an-tit novo"><span>título enviado</span><b>' + esc(it.checkTitle || '—') + '</b></div>'
@@ -12461,15 +12502,23 @@ Seus relatórios e vídeos continuam salvos.</span></div>
         + '<div class="an-img"><img loading="lazy" decoding="async" src="' + esc(it.checkCover) + '" alt=""><b>Resenha</b></div>'
         + '</div>';
     }
-    return '<div class="an-item" data-anid="' + it.id + '">'
-      + '<div class="an-h"><span class="an-id">#' + esc(it.id) + '</span><span class="an-nome">' + esc(it.nickname) + '</span><span class="an-hora">' + esc(it.quando) + '</span></div>'
-      + '<div class="an-meta">' + esc(it.guild || '—') + ' · ' + g + '</div>'
+    var ident = AN.tipo === 3 ? it.videoId : it.id;
+    var nomeTopo = AN.tipo === 3 ? ('user ' + (it.userId || '')) : (it.nickname || '');
+    var metaTopo = AN.tipo === 3 ? ('vídeo ' + (it.videoId || '')) : (esc(it.guild || '—') + ' · ' + g);
+    var acoes = '';
+    if(AN.tipo !== 3){
+      acoes = '<div class="an-acts">'
+        + '<button class="ghost" data-anver="' + it.id + '" type="button">Ver</button>'
+        + '<button class="ghost an-bad" data-anrej="' + it.id + '" type="button">Rejeitar</button>'
+        + '<button class="ghost an-ok" data-anpass="' + it.id + '" type="button">Passar</button>'
+        + '</div>';
+    }
+    return '<div class="an-item" data-anid="' + ident + '" data-uid="' + (it.userId || '') + '">'
+      + '<div class="an-h"><span class="an-id">#' + esc(ident) + '</span><span class="an-nome">' + esc(nomeTopo) + '</span><span class="an-hora">' + esc(it.quando) + '</span></div>'
+      + '<div class="an-meta">' + metaTopo + '</div>'
       + corpo
-      + '<div class="an-acts">'
-      +   '<button class="ghost" data-anver="' + it.id + '" type="button">Ver</button>'
-      +   '<button class="ghost an-bad" data-anrej="' + it.id + '" type="button">Rejeitar</button>'
-      +   '<button class="ghost an-ok" data-anpass="' + it.id + '" type="button">Passar</button>'
-      + '</div></div>';
+      + acoes
+      + '</div>';
   }
 
   function anexar(itens){
@@ -12615,9 +12664,10 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     clearTimeout(AN.timer);
     FILA.ativos = Math.max(0, FILA.ativos - 1);
     AN.emVoo = Math.max(0, (AN.emVoo || 0) - 1);
-    // resposta de um filtro antigo (troca de Hoje/7 dias/Todos): descarta
-    if(AN.descartar > 0){ AN.descartar--; return; }
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
+    // resposta de outra aba ou de outro filtro: descarta (sem contador, sem travar)
+    if(r && r.tipo !== undefined && Number(r.tipo) !== Number(AN.tipo)) return;
+    if(r && r.dias !== undefined && Number(r.dias) !== Number(AN.filtro) && Number(r.tipo) !== 3) return;
     if(!r || !r.ok){
       AN.carregando = false;
       if(r && r.expirado){ acessoEncerrado(); }
@@ -12703,6 +12753,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   };
 
   window.__anBack = function(){
+    if(el('anVid') && !el('anVid').hidden){ el('anVid').hidden = true; return true; }
     if(el('anSim') && !el('anSim').hidden){ el('anSim').hidden = true; SIM.cb = null; return true; }
     if(el('anFoto') && !el('anFoto').hidden){ fecharFoto(); return true; }
     if(el('anConf') && !el('anConf').hidden){ el('anConf').hidden = true; AN.pendente = null; return true; }
@@ -12823,7 +12874,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if((b = alvo.closest('[data-antipo]'))){
       e.preventDefault();
       var tp = Number(b.getAttribute('data-antipo'));
-      if(tp === 3){ aviso('vídeos ainda não está pronto'); return; }
+      if(tp === 3 && !(window.AndroidApp && typeof AndroidApp.anVideosListar === 'function')){ aviso('atualize o app para ver os vídeos'); return; }
       if(tp === AN.tipo) return;
       AN.tipo = tp;
       document.querySelectorAll('#sec-analises [data-antipo]').forEach(function(x){ x.classList.toggle('on', x === b); });
@@ -12904,5 +12955,219 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   });
 })();
 </script>
+
+<script>
+/* ---- Vídeos: exclusão no painel + fila de relatório ---- */
+(function(){
+  var MOTIVOS = [
+    { pt: "Marcas d'água de outras plataformas", en: 'Watermarks from other platforms' },
+    { pt: 'Exposição excessiva do corpo', en: 'Excessive exposure of the body' },
+    { pt: 'Envolvimento de menores', en: 'Involvement of minors' },
+    { pt: 'Decote profundo', en: 'deep necklines' },
+    { pt: 'Vídeos de biquíni', en: 'bikini vídeos' },
+    { pt: 'Pessoa fumando', en: 'video of someone smoking / cigarette use' }
+  ];
+  var FILA = 'alii_vidfila_v1', HIST = 'alii_vidhist_v1';
+  var alvo = null, escolha = -1;
+
+  function el(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+  function ler(k){ try{ return JSON.parse(localStorage.getItem(k) || '[]'); }catch(e){ return []; } }
+  function gravar(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  function aviso(txt){
+    var a = el('anAviso');
+    if(!a) return;
+    a.textContent = txt; a.classList.add('on');
+    clearTimeout(a.__t); a.__t = setTimeout(function(){ a.classList.remove('on'); }, 4500);
+  }
+
+  function pintar(){
+    var ops = MOTIVOS.map(function(m, i){
+      return '<button class="an-op' + (escolha === i ? ' sel' : '') + '" data-vmot="' + i + '" type="button">'
+        + '<span class="n">' + (i + 1) + '</span>' + esc(m.pt) + '</button>';
+    }).join('');
+    ops += '<button class="an-op' + (escolha === MOTIVOS.length ? ' sel' : '') + '" data-vmot="' + MOTIVOS.length + '" type="button" style="border-style:dashed">'
+      + '<span class="n">＋</span>Outros — escrever o motivo</button>';
+    el('anVidOps').innerHTML = ops;
+    var out = el('anVidOutro');
+    out.style.display = (escolha === MOTIVOS.length) ? 'block' : 'none';
+    var pronto = escolha >= 0 && (escolha < MOTIVOS.length || out.value.trim().length > 1);
+    el('anVidOk').disabled = !pronto;
+    var txt = 'nenhum motivo selecionado';
+    if(escolha >= 0 && escolha < MOTIVOS.length) txt = 'motivo ' + (escolha + 1) + ' · ' + MOTIVOS[escolha].en;
+    else if(escolha === MOTIVOS.length) txt = 'outros · ' + (out.value.trim() || '(escreva)');
+    el('anVidEscolhido').textContent = txt;
+  }
+
+  function abrir(item){
+    alvo = item; escolha = -1;
+    el('anVidSub').textContent = '#' + item.videoId + ' · user ' + item.userId;
+    el('anVidOutro').value = '';
+    pintar();
+    el('anVid').hidden = false;
+  }
+
+  function motivoFinal(){
+    if(escolha >= 0 && escolha < MOTIVOS.length) return { pt: MOTIVOS[escolha].pt, en: MOTIVOS[escolha].en };
+    if(escolha === MOTIVOS.length) return { pt: el('anVidOutro').value.trim(), en: el('anVidOutro').value.trim() };
+    return null;
+  }
+
+  function enviar(){
+    var m = motivoFinal();
+    if(!alvo || !m) return;
+    el('anVidOk').disabled = true;
+    el('anVidOk').textContent = 'excluindo…';
+    window.__vidPend = { item: alvo, motivo: m };
+    AndroidApp.anVideoExcluir(alvo.videoId);
+  }
+
+  window.__anVideoExcluido = function(json){
+    var r = {}; try{ r = JSON.parse(json); }catch(e){}
+    el('anVidOk').textContent = 'Excluir';
+    if(!r || !r.ok){
+      el('anVidOk').disabled = false;
+      aviso((r && r.msg) || 'não foi possível excluir');
+      return;
+    }
+    el('anVidOk').textContent = 'conferindo…';
+    if(window.__vidPend) AndroidApp.anVideoConferir(window.__vidPend.item.videoId);
+  };
+
+  window.__anVideoConferido = function(json){
+    var r = {}; try{ r = JSON.parse(json); }catch(e){}
+    var p = window.__vidPend;
+    window.__vidPend = null;
+    el('anVid').hidden = true;
+    el('anVidOk').disabled = false;
+    el('anVidOk').textContent = 'Excluir';
+    if(!p) return;
+
+    var fila = ler(FILA);
+    fila.push({
+      videoId: p.item.videoId,
+      userId: p.item.userId,
+      titulo: p.item.title || '',
+      motivoPt: p.motivo.pt,
+      motivoEn: p.motivo.en,
+      quando: new Date().toISOString()
+    });
+    gravar(FILA, fila);
+
+    var card = document.querySelector('[data-anid="' + p.item.videoId + '"]');
+    if(card) card.remove();
+
+    if(r && r.ok && r.achou && Number(r.isDelete) === 1) aviso('✓ Vídeo excluído e confirmado no painel');
+    else if(r && r.ok && r.achou) aviso('✓ Excluído (o painel ainda não marcou como removido)');
+    else aviso('✓ Excluído — não confirmei na releitura');
+
+    pintarFila();
+  };
+
+  // ---------- fila / histórico na aba Vídeos apagados ----------
+  function textoRelatorio(itens){
+    var ordem = MOTIVOS.map(function(m){ return m.en; });
+    var grupos = {};
+    itens.forEach(function(x){ (grupos[x.motivoEn] = grupos[x.motivoEn] || []).push(x); });
+    var chaves = Object.keys(grupos).sort(function(a, b){
+      var ia = ordem.indexOf(a), ib = ordem.indexOf(b);
+      if(ia < 0) ia = 999;
+      if(ib < 0) ib = 999;
+      return ia - ib;
+    });
+    var blocos = [];
+    chaves.forEach(function(k){
+      grupos[k].forEach(function(x){
+        blocos.push('👤 User ID: ' + x.userId + '\n🚫 Reason: ' + x.motivoEn + '\n🗑 Action: Video removed');
+      });
+    });
+    return blocos.join('\n\n');
+  }
+
+  function pintarFila(){
+    var box = el('vidFilaBox');
+    if(!box) return;
+    var fila = ler(FILA), hist = ler(HIST);
+    var linhas = fila.map(function(x){
+      return '<div class="vf-linha"><b>#' + esc(x.videoId) + '</b><span>' + esc(x.userId) + ' · ' + esc(x.motivoEn) + '</span></div>';
+    }).join('');
+    var histLinhas = hist.slice(0, 6).map(function(h){
+      var d = new Date(h.quando);
+      return '<div class="vf-linha"><b>' + d.toLocaleDateString('pt-BR') + ' · ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '</b><span>' + h.qtd + ' vídeos</span></div>';
+    }).join('');
+
+    box.innerHTML =
+      '<div class="vf-sec">'
+      + '<div class="vf-head"><b>Na fila</b><em>' + fila.length + '</em></div>'
+      + '<p class="hint" style="margin:2px 0 8px">' + (fila.length ? 'ainda não copiados' : 'nenhum vídeo esperando cópia') + '</p>'
+      + (linhas || '')
+      + (fila.length ? '<button class="primary vf-btn" id="vfCopiar" type="button">Copiar os ' + fila.length + '</button>' : '')
+      + '</div>'
+      + (hist.length ? '<div class="vf-sec"><div class="vf-head"><b>Já enviados</b></div>' + histLinhas + '</div>' : '');
+
+    var btn = el('vfCopiar');
+    if(btn) btn.addEventListener('click', copiarFila);
+  }
+
+  function copiarFila(){
+    var fila = ler(FILA);
+    if(!fila.length) return;
+    var txt = textoRelatorio(fila);
+    var feito = function(){
+      var hist = ler(HIST);
+      hist.unshift({ quando: new Date().toISOString(), qtd: fila.length, texto: txt });
+      gravar(HIST, hist.slice(0, 50));
+      gravar(FILA, []);
+      pintarFila();
+      aviso('✓ ' + fila.length + ' vídeos copiados — fila zerada');
+    };
+    try {
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(txt).then(feito).catch(function(){ copiaVelha(txt, feito); });
+      } else copiaVelha(txt, feito);
+    } catch(e) { copiaVelha(txt, feito); }
+  }
+
+  function copiaVelha(txt, feito){
+    var ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+    feito();
+  }
+
+  // ---------- cliques ----------
+  document.addEventListener('click', function(e){
+    var b = e.target && e.target.closest ? e.target.closest('[data-anvdel], [data-vmot]') : null;
+    if(!b) return;
+    if(b.hasAttribute('data-anvdel')){
+      e.preventDefault();
+      var id = Number(b.getAttribute('data-anvdel'));
+      var card = b.closest('.an-item');
+      var nome = card ? (card.querySelector('.an-nome') || {}).textContent || '' : '';
+      abrir({ videoId: id, userId: (card && card.getAttribute('data-uid')) || '', title: '' });
+      return;
+    }
+    e.preventDefault();
+    escolha = Number(b.getAttribute('data-vmot'));
+    pintar();
+  }, true);
+
+  document.addEventListener('input', function(e){
+    if(e.target && e.target.id === 'anVidOutro') pintar();
+  });
+
+  var btnOk = el('anVidOk');
+  if(btnOk) btnOk.addEventListener('click', function(e){ e.preventDefault(); if(!btnOk.disabled) enviar(); });
+  var btnCanc = el('anVidCancelar');
+  if(btnCanc) btnCanc.addEventListener('click', function(e){ e.preventDefault(); el('anVid').hidden = true; });
+
+  document.addEventListener('DOMContentLoaded', pintarFila);
+  setTimeout(pintarFila, 800);
+  window.__vidPintarFila = pintarFila;
+})();
+</script>
+
 </body>
 </html>
