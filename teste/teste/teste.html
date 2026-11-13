@@ -5167,7 +5167,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.51';
+const CONTENT_VERSION = '3.52';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -8525,30 +8525,6 @@ function renderHistory(){
     });
 
     if(list) list.appendChild(item);
-    if(totalVids){
-      try{
-        const el = item.querySelector('.hist-thumb');
-        const v0 = entryVideos(e)[0];
-        const fid = (entryCloudVideoIds(e)[0] || '');
-        const key = thumbKeyFor(v0, fid);
-        const stored = (v0 && typeof v0 === 'object') ? (v0.thumb || '') : '';
-        const cached = (key && thumbMem[key]) || stored;
-        if(cached) applyHistThumb(el, cached);
-        else if(key) queueHistThumb(el, key, v0, fid, histThumbSeq++ < 8);
-        if(el) el.addEventListener('click', (ev) => {
-          ev.stopPropagation(); ev.preventDefault();
-          try{
-            const uri = (v0 && v0.uri) || '';
-            let info = 'chave: ' + (el.getAttribute('data-thumb-key') || '—');
-            info += ' · uri: ' + (uri ? 'ok' : 'vazia');
-            if(uri && window.AndroidApp && AndroidApp.videoThumb){
-              info += ' · img: ' + ((AndroidApp.videoThumb(uri) || '').length) + 'b';
-            }
-            toast(info);
-          }catch(err){ toast('erro miniatura: ' + err); }
-        });
-      }catch(err){}
-    }
   }
 
   const filteredVideo = filtered.filter(hasAnyVideo).length;
