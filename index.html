@@ -3396,7 +3396,7 @@ textarea{resize:none!important}
       <button class="v7-more-row" data-tab="semana"><span class="bento-ic"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></span><span class="bento-tb"><span class="bento-t">Semana</span><span class="bento-s">contador, gráfico e backup</span></span><em>›</em></button>
       <button class="v7-more-row" data-tab="organizador"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13"/></svg></span><span class="bento-tb"><span class="bento-t">Vídeos apagados</span><span class="bento-s">relatório de vídeo apagado agrupado por motivos</span></span><em>›</em></button>
       <button class="v7-more-row" data-tab="regras"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M7 4h10v16H7z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><span class="bento-tb"><span class="bento-t">Regras</span><span class="bento-s">revisão de relatório e frases</span></span><em>›</em></button>
-      <button class="v7-more-row wide" id="btnCacheClear" type="button"><span class="bento-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5h6v2M8 7l1 13h6l1-13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="bento-tb"><span class="bento-t">Limpar cache de vídeos</span><span class="bento-s">cópias temporárias — não apaga o histórico</span></span><span class="cache-size" id="cacheSizeChip">0 MB</span></button>
+      <button class="v7-more-row wide" id="btnCacheClear" type="button"><span class="bento-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5h6v2M8 7l1 13h6l1-13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="bento-tb"><span class="bento-t">Limpar cache de vídeos</span><span class="bento-s">cache + originais das gravações — não apaga o histórico</span></span><span class="cache-size" id="cacheSizeChip">0 MB</span></button>
     </div>
     <label class="switch-row" style="margin:10px 2px 0"><span class="switch"><input type="checkbox" id="recOpenReport" checked><i></i></span><span>Abrir relatório com vídeo ao parar</span></label>
     <p class="hint" style="margin:12px 2px 0">Tudo fica salvo no aparelho. Use <b>Semana → Exportar histórico</b> para backup.</p>
@@ -6656,7 +6656,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.57';
+const CONTENT_VERSION = '3.58';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
