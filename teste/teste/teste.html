@@ -5352,7 +5352,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.71';
+const CONTENT_VERSION = '3.72';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12333,6 +12333,17 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     el('anChip').textContent = 'desconectado';
   }
 
+  // O painel mantém só uma sessão por conta: entrar no site derruba a do app.
+  function acessoEncerrado(){
+    sairLocal();
+    var m = el('anLoginMsg');
+    if(m){
+      m.textContent = 'o acesso foi encerrado — a conta entrou no site ou em outro aparelho. Digite o código do Google.';
+      m.classList.remove('erro');
+    }
+    aviso('sessão encerrada');
+  }
+
   function abrir(){
     if(!ponte()){ mostrar('anSemApp'); el('anChip').textContent = 'indisponível'; return; }
     var st = {};
@@ -12566,7 +12577,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
     if(!r || !r.ok){
       AN.carregando = false;
-      if(r && r.expirado){ sairLocal(); aviso(r.msg || 'acesso vencido'); }
+      if(r && r.expirado){ acessoEncerrado(); }
       else { el('anLista').innerHTML = '<p class="hint">' + esc((r && r.msg) || 'não foi possível carregar') + '</p>'; }
       return;
     }
@@ -12599,7 +12610,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     clearTimeout(AN.timer);
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
     if(r && r.ok){ AN.motivos = r.capa || []; }
-    else if(r && r.expirado){ fecharTudo(); sairLocal(); aviso(r.msg || 'acesso vencido'); return; }
+    else if(r && r.expirado){ fecharTudo(); acessoEncerrado(); return; }
     else { el('anOps').innerHTML = '<p class="hint">' + esc((r && r.msg) || 'não foi possível carregar os motivos') + '</p>'; return; }
     var f = AN.aguardando; AN.aguardando = null;
     if(f) f(); else pintarMotivos(el('anBusca') ? el('anBusca').value : '');
@@ -12612,7 +12623,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(!r || !r.ok){
       el('anConfOk').disabled = false;
       el('anConfOk').textContent = 'Confirmar';
-      if(r && r.expirado){ fecharTudo(); sairLocal(); aviso(r.msg || 'acesso vencido'); }
+      if(r && r.expirado){ fecharTudo(); acessoEncerrado(); }
       else aviso((r && r.msg) || 'não foi possível enviar');
       return;
     }
@@ -12642,7 +12653,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
         aviso((p && p.state === 2 ? '✓ Rejeitada' : '✓ Passou') + ' e confirmado no painel');
       }
     } else if(r && r.expirado){
-      sairLocal(); aviso('o acesso venceu — informe o código de novo');
+      acessoEncerrado();
     } else {
       aviso('enviado, mas não confirmei no painel — toque em ↻');
     }
