@@ -3653,7 +3653,6 @@ textarea{resize:none!important}
         <button class="an-f on" data-anfiltro="-1" type="button">Todos</button>
         <button class="ghost an-refresh" id="anRecarregar" type="button" title="Recarregar">↻</button>
       </div>
-      <p class="hint" id="anVidTeste" style="display:none;margin:0 0 8px;font-size:10px;color:#5c6b7c;text-decoration:underline;cursor:pointer">testar exclusão (não apaga nada)</p>
       <div class="an-lista" id="anLista"></div>
       <p class="hint" id="anVazio" hidden style="text-align:center;margin:14px 0">Nenhum item pendente nesse filtro.</p>
     </div>
@@ -5419,7 +5418,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.88';
+const CONTENT_VERSION = '3.89';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -13164,14 +13163,14 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
     var confirmado = r && r.ok && r.achou && Number(r.isDelete) === 1;
     if(confirmado){
-      aviso('✓ Vídeo excluído e confirmado no painel');
+      aviso('✓ Apagado #' + (p ? p.item.videoId : '') + ' (confirmado no painel)');
     } else if(p && !p.tentouUrl && window.AndroidApp && typeof AndroidApp.anVideoExcluirUrl === 'function'){
       // o corpo pode ter sido descartado pelo servidor: tenta com os ids na URL
       p.tentouUrl = true;
       AndroidApp.anVideoExcluirUrl(p.item.videoId);
       return;
     } else {
-      aviso('não apagou — o painel recusou (tente de novo)');
+      aviso('NÃO apagou #' + (p ? p.item.videoId : '') + ' — o painel recusou');
     }
 
     pintarFila();
