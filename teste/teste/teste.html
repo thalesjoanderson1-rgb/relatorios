@@ -3590,6 +3590,12 @@ textarea{resize:none!important}
       #anFoto{position:fixed;inset:0;background:transparent;z-index:10000;display:flex;align-items:center;justify-content:center;overflow:hidden}
       #anFoto[hidden]{display:none}
       #anFoto img{max-width:100%;max-height:100%;object-fit:contain;transform-origin:center center;touch-action:none;will-change:transform}
+      #anVplay{position:fixed;inset:0;background:#000;z-index:10001;display:flex;align-items:center;justify-content:center}
+      #anVplay[hidden]{display:none}
+      #anVplay video{width:100%;max-height:100%;background:#000}
+      #anVplay .an-foto-x{position:absolute;top:12px;right:12px;z-index:2;min-width:0;line-height:1;font-size:13px;padding:6px 10px;border-radius:7px;border:1px solid rgba(255,107,107,.35);background:rgba(255,107,107,.1);color:#ff8a8a}
+      #sec-analises .an-vthumb{position:relative}
+      #sec-analises .an-vplay{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:18px;text-shadow:0 2px 6px rgba(0,0,0,.8);background:rgba(0,0,0,.18)}
       #anFoto .an-foto-x{position:absolute;top:12px;right:12px;z-index:2;min-width:0;line-height:1;font-size:13px;padding:6px 10px;border-radius:7px;border:1px solid rgba(255,107,107,.22);background:rgba(255,107,107,.06);color:#FF8A8A}
       #sec-analises .an-img img,#sec-analises .an-grande img{cursor:zoom-in}
     </style>
@@ -3691,6 +3697,11 @@ textarea{resize:none!important}
     <div id="anFoto" hidden>
       <img id="anFotoImg" alt="">
       <button class="an-foto-x" id="anFotoFechar" type="button" aria-label="Fechar">✕</button>
+    </div>
+
+    <div id="anVplay" hidden>
+      <video id="anVplayVid" controls playsinline preload="metadata"></video>
+      <button class="an-foto-x" id="anVplayFechar" type="button" aria-label="Fechar">✕</button>
     </div>
 
     <div class="an-overlay" id="anVid" hidden>
@@ -5400,7 +5411,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.77';
+const CONTENT_VERSION = '3.78';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12319,7 +12330,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   // As camadas (ver/rejeitar/confirmar/aviso) precisam ficar no <body>:
   // dentro da aba elas herdam o posicionamento do painel e saem do lugar.
-  ['anAviso','anVer','anRej','anConf','anFoto','anSim','anVid'].forEach(function(id){
+  ['anAviso','anVer','anRej','anConf','anFoto','anSim','anVid','anVplay'].forEach(function(id){
     var n = el(id);
     if(n && n.parentNode !== document.body) document.body.appendChild(n);
   });
@@ -12490,7 +12501,10 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     var corpo;
     if(AN.tipo === 3){
       corpo = '<div class="an-vid">'
-        + '<div class="an-vthumb">' + (it.cover ? '<img loading="lazy" decoding="async" src="' + esc(it.cover) + '" alt="">' : '🎬') + '</div>'
+        + '<div class="an-vthumb" data-anvplay="' + esc(it.videoUrl || '') + '" title="ver vídeo">'
+        +   (it.cover ? '<img loading="lazy" decoding="async" src="' + esc(it.cover) + '" alt="">' : '🎬')
+        +   '<span class="an-vplay">▶</span>'
+        + '</div>'
         + '<div class="an-vinfo">'
         +   '<div class="an-vtitle">' + esc(it.title || '(sem título)') + '</div>'
         +   '<div class="an-vmeta">user ' + esc(it.userId) + ' · ' + esc(it.quando || '') + '</div>'
@@ -12767,6 +12781,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   };
 
   window.__anBack = function(){
+    if(el('anVplay') && !el('anVplay').hidden){ if(window.__vidFecharPlayer) window.__vidFecharPlayer(); return true; }
     if(el('anVid') && !el('anVid').hidden){ el('anVid').hidden = true; return true; }
     if(el('anSim') && !el('anSim').hidden){ el('anSim').hidden = true; SIM.cb = null; return true; }
     if(el('anFoto') && !el('anFoto').hidden){ fecharFoto(); return true; }
@@ -13087,6 +13102,24 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     pintarFila();
   };
 
+  function abrirPlayer(url){
+    if(!url) return aviso('este vídeo não tem link para assistir');
+    var v = el('anVplayVid');
+    v.src = url;
+    el('anVplay').hidden = false;
+    try { v.play(); } catch(e) {}
+  }
+
+  function fecharPlayer(){
+    var v = el('anVplayVid');
+    try { v.pause(); } catch(e) {}
+    v.removeAttribute('src');
+    try { v.load(); } catch(e) {}
+    el('anVplay').hidden = true;
+  }
+
+  window.__vidFecharPlayer = fecharPlayer;
+
   window.__anVideoRecomendado = function(json){
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
     var p = window.__vidRec;
@@ -13184,8 +13217,13 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   // ---------- cliques ----------
   document.addEventListener('click', function(e){
-    var b = e.target && e.target.closest ? e.target.closest('[data-anvdel], [data-vmot], [data-anprincipal], [data-anvtirar]') : null;
+    var b = e.target && e.target.closest ? e.target.closest('[data-anvdel], [data-vmot], [data-anprincipal], [data-anvtirar], [data-anvplay]') : null;
     if(!b) return;
+    if(b.hasAttribute('data-anvplay')){
+      e.preventDefault();
+      abrirPlayer(b.getAttribute('data-anvplay'));
+      return;
+    }
     if(b.hasAttribute('data-anprincipal')){
       e.preventDefault();
       var vidP = b.getAttribute('data-anprincipal');
@@ -13218,6 +13256,9 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   document.addEventListener('input', function(e){
     if(e.target && e.target.id === 'anVidOutro') pintar();
   });
+
+  var btnFecharPlay = el('anVplayFechar');
+  if(btnFecharPlay) btnFecharPlay.addEventListener('click', function(e){ e.preventDefault(); fecharPlayer(); });
 
   var btnOk = el('anVidOk');
   if(btnOk) btnOk.addEventListener('click', function(e){ e.preventDefault(); if(!btnOk.disabled) enviar(); });
