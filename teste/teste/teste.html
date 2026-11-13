@@ -5167,7 +5167,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.56';
+const CONTENT_VERSION = '3.57';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -5229,13 +5229,18 @@ async function restoreAutoBackup(){
   let snap = null;
   try{ snap = JSON.parse(localStorage.getItem(AUTO_BK_KEY + '_1') || 'null'); }catch(e){}
   if(!snap || !Array.isArray(snap.data) || !snap.data.length){ toast('Nenhum backup automático disponível'); return; }
-  const ok = await dialogConfirm('Restaurar o backup automático de ' +
-    new Date(snap.at).toLocaleString('pt-BR') + ' com ' + snap.data.length + ' relatórios?',
-    { title:'Restaurar backup', ok:'Restaurar', danger:true });
+  const ok = await dialogConfirm('Juntar o backup de ' +
+    new Date(snap.at).toLocaleString('pt-BR') + ' (' + snap.data.length +
+    ' relatórios) ao histórico atual? O que já está no aparelho continua e só entra o que falta.',
+    { title:'Restaurar backup', ok:'Juntar' });
   if(!ok) return;
-  saveHistory(snap.data);
+  const atual = loadHistory();
+  const ids = new Set(atual.map(e => String(e.id)));
+  const novos = snap.data.filter(e => e && e.id !== undefined && e.id !== null && !ids.has(String(e.id)));
+  if(!novos.length){ toast('Nada novo para restaurar'); return; }
+  saveHistory(atual.concat(novos));
   renderHistory();
-  toast('Backup restaurado');
+  toast('Restaurados ' + novos.length + ' relatório(s)');
 }
 
 let histCache = null;
@@ -8835,14 +8840,26 @@ function importHistory(file){
       let list;
 
       if(isCsv) list = parseHistoryCsv(text);
-      else if(text.startsWith('[')) list = JSON.parse(text);
-      else if(text.startsWith('{') && !text.includes('\n')) { const o = JSON.parse(text); list = o.history || []; }
-      else list = text.split(/\r?\n/).filter(Boolean).map(l=>JSON.parse(l));
+      else {
+        // aceita JSON puro (array), objeto {history:[...]} (com ou sem quebra de linha)
+        // e também JSONL (um por linha)
+        let parsed = null;
+        try{ parsed = JSON.parse(text); }catch(e){ parsed = null; }
+        if(parsed !== null && parsed !== undefined){
+          if(Array.isArray(parsed)) list = parsed;
+          else if(parsed && Array.isArray(parsed.history)) list = parsed.history;
+          else if(parsed && Array.isArray(parsed.entries)) list = parsed.entries;
+          else throw new Error('formato');
+        } else {
+          list = text.split(/\r?\n/).filter(l => l.trim()).map(l => JSON.parse(l));
+        }
+      }
 
       if(!Array.isArray(list) || !list.length) throw new Error('formato');
 
       const h = loadHistory();
       const seen = new Set(h.map(historyKey));
+      const usados = new Set(h.map(x => String(x.id)));
       let next = nextId(h);
       let added = 0, skipped = 0;
 
@@ -8860,7 +8877,19 @@ function importHistory(file){
         const key = historyKey(obj);
         if(seen.has(key)){ skipped++; continue; }
         seen.add(key);
-        obj.id = next++;
+        // mantém o id original quando ele está livre — assim os vídeos e os
+        // arquivos do Drive continuam ligados ao relatório
+        let id = (e.id !== undefined && e.id !== null) ? e.id : null;
+        if(id === null || usados.has(String(id))){
+          while(usados.has(String(next))) next++;
+          id = next++;
+        }
+        usados.add(String(id));
+        obj.id = id;
+        const vids = Array.isArray(e.videos) ? e.videos : (e.video ? [e.video] : []);
+        if(vids.length){ obj.videos = vids.slice(0, 2); obj.video = obj.videos[0]; }
+        if(e.cloud && typeof e.cloud === 'object') obj.cloud = e.cloud;
+        if(e.shared_at) obj.shared_at = e.shared_at;
         h.push(obj);
         added++;
       }
