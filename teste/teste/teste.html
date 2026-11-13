@@ -3559,11 +3559,11 @@ textarea{resize:none!important}
       .an-d b{font-size:12px;font-weight:600;word-break:break-word}
       .an-aviso{position:fixed;left:12px;right:12px;bottom:78px;background:#16202b;border:1px solid #2a3949;border-radius:12px;padding:11px 13px;font-size:12.5px;color:var(--txt);z-index:9999;box-shadow:0 12px 30px rgba(0,0,0,.5);display:none}
       .an-aviso.on{display:block}
-      #anFoto{position:fixed;inset:0;background:#05070a;z-index:10000;display:flex;align-items:center;justify-content:center;overflow:hidden}
+      #anFoto{position:fixed;inset:0;background:transparent;z-index:10000;display:flex;align-items:center;justify-content:center;overflow:hidden}
       #anFoto[hidden]{display:none}
       #anFoto img{max-width:100%;max-height:100%;object-fit:contain;transform-origin:center center;touch-action:none;will-change:transform}
-      #anFoto .an-foto-x{position:absolute;top:14px;right:14px;width:42px;height:42px;border-radius:999px;border:1px solid #2a3949;background:rgba(10,16,23,.85);color:var(--txt);font-size:17px;z-index:2}
-      #anFoto .an-foto-dica{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:11px;color:#c6d3e2;margin:0;padding:16px 0 18px;background:linear-gradient(transparent,rgba(0,0,0,.65))}
+      #anFoto .an-foto-x{position:absolute;top:12px;right:12px;width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,20,.55);color:var(--dim);font-size:17px;line-height:1;display:grid;place-items:center;z-index:2}
+      #anFoto .an-foto-x:hover{background:rgba(255,255,255,.06);color:var(--txt)}
       #sec-analises .an-img img,#sec-analises .an-grande img{cursor:zoom-in}
     </style>
 
@@ -3659,7 +3659,6 @@ textarea{resize:none!important}
     <div id="anFoto" hidden>
       <img id="anFotoImg" alt="">
       <button class="an-foto-x" id="anFotoFechar" type="button" aria-label="Fechar">✕</button>
-      <p class="an-foto-dica">toque para fechar · dois dedos para ampliar</p>
     </div>
   </section>
 
@@ -5339,7 +5338,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.64';
+const CONTENT_VERSION = '3.65';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
