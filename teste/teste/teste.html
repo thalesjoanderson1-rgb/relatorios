@@ -3607,7 +3607,7 @@ textarea{resize:none!important}
   .hist-vchip.bad{color:#ff8b8b;border-color:rgba(255,107,107,.38);background:rgba(255,107,107,.10)}
 
   /* placeholder quando a miniatura ainda não chegou */
-  .hist-thumb{background:linear-gradient(135deg,#1b2532,#232f40)!important}
+  .hist-thumb:not(.tem-thumb){background:linear-gradient(135deg,#1b2532,#232f40)!important}
   #histViewWrap .hist-vthumb:not(.tem-thumb){background:linear-gradient(135deg,#1b2532,#232f40)!important}
 </style>
 <style id="alii-backup-css">
@@ -5167,7 +5167,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.52';
+const CONTENT_VERSION = '3.55';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -6766,6 +6766,8 @@ window.onThumbReady = function(key, data){
       ths[i].classList.add('tem-thumb');
       if(k) thumbMem[k] = data;
       if(src) thumbMem['uri:' + src] = data;   // alias p/ a ficha achar pelo uri antigo
+      const idRel = ths[i].getAttribute('data-entry-id');
+      if(idRel) guardarThumbNoRelatorio(idRel, 0, data);
     }
   }
   pumpHistThumbs();
@@ -6835,6 +6837,71 @@ function expiryChip(e){
   return `<span class="hist-vchip warn" title="Vídeo expira em ${pior.dias} dia(s)">${VB_ICON_HOUR}${pior.dias}d</span>`;
 }
 
+/* ================= miniaturas: UM caminho só para ficha e lista ================= */
+
+/* descobre vídeo + id do Drive de um item, igual para as duas telas */
+function thumbDados(e, i){
+  const vids = entryVideos(e);
+  const cloudIds = entryCloudVideoIds(e);
+  const v = vids[i] || {};
+  const fid = cloudIds[i] || v.fileId || (i === 0 ? fidDoRelatorio(e, v, cloudIds) : '');
+  const key = thumbKeyFor(v, fid);
+  return { v: v, fid: fid, key: key || (fid ? 'cloud:' + fid : '') };
+}
+
+/* aplica a imagem no elemento, seja o da lista (.hist-thumb) ou o da ficha (.hist-vthumb) */
+function aplicarThumbEl(el, data){
+  if(!el || !data) return;
+  if(el.classList.contains('hist-thumb')){
+    applyHistThumb(el, data);
+  } else {
+    el.style.backgroundImage = "url('" + data + "')";
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+  }
+  el.classList.add('tem-thumb');
+  const idRel = el.getAttribute('data-entry-id');
+  if(idRel) guardarThumbNoRelatorio(idRel, 0, data);
+}
+
+/* pede a miniatura: cache/quadro salvo → arquivo local → Drive (com novas tentativas) */
+function ligarThumb(el, e, i, tentativa){
+  if(!el) return;
+  const d = thumbDados(e, i);
+  if(!d.key && !d.fid) return;
+  if(d.key) el.setAttribute('data-thumb-key', d.key);
+  if(d.fid) el.setAttribute('data-thumb-fid', d.fid);
+  if(d.v.uri) el.setAttribute('data-thumb-src', d.v.uri);
+  if(!el.getAttribute('data-entry-id')) el.setAttribute('data-entry-id', String(e.id));
+
+  const pronto = (d.key && thumbMem[d.key]) || d.v.thumb || '';
+  if(pronto){ aplicarThumbEl(el, pronto); return; }
+
+  const n = tentativa || 0;
+  try{
+    if(d.v.uri && window.AndroidApp && typeof AndroidApp.requestVideoThumb === 'function'){
+      AndroidApp.requestVideoThumb(d.v.uri);
+    }
+    if(d.fid && window.AndroidApp && typeof AndroidApp.requestCloudThumb === 'function' && !thumbPedindo['f:' + d.fid]){
+      // o arquivo local pode ter sido apagado depois do upload
+      setTimeout(function(){
+        if((d.key && thumbMem[d.key]) || el.classList.contains('tem-thumb')) return;
+        try{
+          thumbPedindo['f:' + d.fid] = 1;
+          AndroidApp.requestCloudThumb(d.fid);
+        }catch(err){}
+      }, d.v.uri ? 1200 : 0);
+    }
+  }catch(err){}
+
+  if(n < 5){
+    setTimeout(function(){
+      if(el.classList.contains('tem-thumb')) return;
+      ligarThumb(el, e, i, n + 1);
+    }, 1500);
+  }
+}
+
 function renderHistVideos(e){
   const box = $('#histViewVideos');
   if(!box) return;
@@ -6849,11 +6916,12 @@ function renderHistVideos(e){
     const v = vids[i] || {};
     const dur = v.duration ? ' · ' + fmtDur(v.duration) : '';
     const where = (v.uri && !v.remote) ? '' : ' · Drive';
-    const key = thumbKeyFor(v, cloudIds[i]);
+    const fidI = cloudIds[i] || v.fileId || (i === 0 ? fidDoRelatorio(e, v, cloudIds) : '');
+    const key = thumbKeyFor(v, fidI);
     const thumb = (key ? thumbMem[key] : '') || v.thumb || '';
     html += `<div class="hist-vslot">
       <button class="hist-vcard" data-hplay="${i}" title="Assistir vídeo ${i + 1}">
-        <span class="hist-vthumb"${key ? ` data-thumb-key="${esc(key)}"` : ''}${cloudIds[i] ? ` data-thumb-fid="${esc(cloudIds[i])}"` : ''}${v.uri ? ` data-thumb-src="${esc(v.uri)}"` : ''}${thumb ? ` style="background-image:url('${thumb}')"` : ''}>
+        <span class="hist-vthumb"${key ? ` data-thumb-key="${esc(key)}"` : ''}${fidI ? ` data-thumb-fid="${esc(fidI)}"` : ''}${v.uri ? ` data-thumb-src="${esc(v.uri)}"` : ''}${thumb ? ` style="background-image:url('${thumb}')"` : ''}>
           <span class="hist-vplay">${HICONS.play}</span>
         </span>
         <span class="hist-vlabel">Vídeo ${i + 1}${where}${dur}</span>
@@ -6861,6 +6929,12 @@ function renderHistVideos(e){
       </button>
       <button class="hist-vdel" type="button" data-vdel="${i}" aria-label="Remover vídeo ${i + 1}" title="Remover vídeo">✕</button>
     </div>`;
+    if(thumb){
+      try{
+        aplicarThumbNaLista(e.id, thumb);
+        if(v.thumb !== thumb) guardarThumbNoRelatorio(e, i, thumb);
+      }catch(err){}
+    }
   }
   if(podeAnexar){
     html += `<button class="hist-vadd" type="button" data-vadd="1" title="Gravar e anexar outro vídeo"><b>＋</b><span>Anexar vídeo</span></button>`;
@@ -6883,42 +6957,13 @@ function renderHistVideos(e){
     anexarVideoNaFicha(e);
   });
 
-  // miniatura sob demanda, sem bloquear a interface (tenta de novo se a ponte não estiver pronta)
-  (function pedirThumbs(tentativa){
-    const temPonte = !!(window.AndroidApp && (AndroidApp.requestVideoThumb || AndroidApp.requestCloudThumb || AndroidApp.videoThumb || AndroidApp.cloudThumb));
-    if(!temPonte && tentativa < 25){
-      setTimeout(() => pedirThumbs(tentativa + 1), 400);
-      return;
+  // miniatura: mesmo caminho da lista (ligarThumb)
+  setTimeout(() => {
+    for(let i = 0; i < total; i++){
+      const el = box.querySelector('[data-hplay="' + i + '"] .hist-vthumb');
+      ligarThumb(el, e, i);
     }
-    setTimeout(() => {
-      for(let i = 0; i < total; i++){
-        const v = vids[i] || {};
-        const key = thumbKeyFor(v, cloudIds[i]);
-        if(!key) continue;
-        const el = box.querySelector('[data-hplay="' + i + '"] .hist-vthumb');
-        const cached = thumbMem[key] || v.thumb || '';
-        if(cached){
-          if(el){ el.style.backgroundImage = "url('" + cached + "')"; el.classList.add('tem-thumb'); }
-          continue;
-        }
-        try{
-          if(v.uri && typeof AndroidApp.requestVideoThumb === 'function'){
-            AndroidApp.requestVideoThumb(v.uri);
-          } else if(cloudIds[i] && typeof AndroidApp.requestCloudThumb === 'function'){
-            AndroidApp.requestCloudThumb(cloudIds[i]);
-          } else if(key.indexOf('cloud:') === 0 && typeof AndroidApp.requestCloudThumb === 'function'){
-            AndroidApp.requestCloudThumb(key.slice(6));
-          } else if(v.uri && typeof AndroidApp.videoThumb === 'function'){
-            const t = AndroidApp.videoThumb(v.uri);
-            if(t){ thumbMem[key] = t; if(el){ el.style.backgroundImage = "url('" + t + "')"; el.classList.add('tem-thumb'); } }
-          } else if(key.indexOf('cloud:') === 0 && typeof AndroidApp.cloudThumb === 'function'){
-            const t = AndroidApp.cloudThumb(key.slice(6));
-            if(t){ thumbMem[key] = t; if(el){ el.style.backgroundImage = "url('" + t + "')"; el.classList.add('tem-thumb'); } }
-          }
-        }catch(err){}
-      }
-    }, 40);
-  })(0);
+  }, 30);
 }
 
 /* --- remover / anexar vídeo na ficha do relatório --- */
@@ -8273,6 +8318,103 @@ function queueHistThumb(el, key, v, fid, immediate){
   else { histThumbQueue2.push([el, key, v, fid]); pumpHistThumbs(); }
 }
 
+/* aplica a miniatura no item da lista (mesma imagem da ficha) */
+function aplicarThumbNaLista(id, data){
+  if(!data) return;
+  try{
+    document.querySelectorAll('#sec-historico .hist-item').forEach(function(it){
+      const b = it.querySelector('[data-view]');
+      if(!b || String(b.getAttribute('data-id')) !== String(id)) return;
+      const th = it.querySelector('.hist-thumb');
+      if(th){ applyHistThumb(th, data); th.classList.add('tem-thumb'); }
+    });
+  }catch(err){}
+  // guarda no relatório para a lista já abrir com a imagem da próxima vez
+  try{
+    const h = loadHistory();
+    const i = h.findIndex(function(x){ return String(x.id) === String(id); });
+    if(i >= 0){
+      const vids = entryVideos(h[i]);
+      if(vids[0] && vids[0].thumb !== data){
+        vids[0].thumb = data;
+        setEntryVideos(h[i], vids);
+        saveHistory(h, { noSync: true });
+      }
+    }
+  }catch(err){}
+}
+
+/* guarda o quadro dentro do relatório (a lista usa depois, sem rede) */
+function guardarThumbNoRelatorio(e, idx, data){
+  try{
+    if(!e || !data) return;
+    const idAlvo = (e && typeof e === 'object') ? e.id : e;
+    if(idAlvo == null) return;
+    const h = loadHistory();
+    const i = h.findIndex(function(x){ return String(x.id) === String(idAlvo); });
+    if(i < 0) return;
+    const vids = entryVideos(h[i]);
+    if(!vids[idx]) return;
+    if(vids[idx].thumb === data) return;
+    vids[idx].thumb = data;
+    setEntryVideos(h[i], vids);
+    saveHistory(h, { noSync: true });
+  }catch(err){}
+}
+
+/* Descobre o fileId do 1º vídeo mesmo quando o histórico não guardou:
+   usa o status que o app mantém no aparelho (DriveSync). */
+function fidDoRelatorio(e, v0, cloudIds){
+  let fid = (cloudIds && cloudIds[0]) || (v0 && v0.fileId) || '';
+  if(fid) return String(fid);
+  try{
+    if(window.AndroidApp && typeof AndroidApp.cloudStatuses === 'function'){
+      const st = JSON.parse(AndroidApp.cloudStatuses() || '{}') || {};
+      const s = st[String(e && e.id)];
+      if(s){
+        const ids = Array.isArray(s.videoFileIds)
+          ? s.videoFileIds
+          : (s.videoFileId ? [s.videoFileId] : []);
+        if(ids[0]) fid = String(ids[0]);
+      }
+    }
+  }catch(err){}
+  return fid;
+}
+
+/* diagnóstico da miniatura: segurar o dedo no quadro cinza mostra os dados reais */
+function diagnosticarMiniatura(e){
+  const v0 = entryVideos(e)[0] || {};
+  const ids = entryCloudVideoIds(e);
+  let st = {};
+  try{
+    if(window.AndroidApp && typeof AndroidApp.cloudStatuses === 'function'){
+      st = JSON.parse(AndroidApp.cloudStatuses() || '{}') || {};
+    }
+  }catch(err){}
+  const s = st[String(e.id)] || {};
+  const idsApp = Array.isArray(s.videoFileIds) ? s.videoFileIds : (s.videoFileId ? [s.videoFileId] : []);
+  let vt = -1, ct = -1;
+  try{ if(v0.uri && window.AndroidApp && AndroidApp.videoThumb) vt = (AndroidApp.videoThumb(v0.uri) || '').length; }catch(err){}
+  const fid = ids[0] || v0.fileId || idsApp[0] || '';
+  try{ if(fid && window.AndroidApp && AndroidApp.cloudThumb) ct = (AndroidApp.cloudThumb(fid) || '').length; }catch(err){}
+  const txt = [
+    'relatório: #' + e.id,
+    'vídeos no histórico: ' + entryVideos(e).length,
+    'uri: ' + (v0.uri ? 'ok' : 'vazia'),
+    'quadro salvo: ' + (v0.thumb ? (v0.thumb.length + 'b') : 'não'),
+    'fileId no relatório: ' + (v0.fileId || '—'),
+    'ids no cloud do relatório: ' + (ids.length ? ids.join(',') : '—'),
+    'ids no app (cloudStatuses): ' + (idsApp.length ? idsApp.join(',') : '—'),
+    'status: ' + (s.status || '—'),
+    'bridge: ' + (window.AndroidApp ? 'ok' : 'sem'),
+    'videoThumb(): ' + (vt < 0 ? 'n/d' : vt + 'b'),
+    'cloudThumb(): ' + (ct < 0 ? 'n/d' : ct + 'b'),
+    'no cache: ' + (thumbMem['cloud:' + fid] ? 'sim' : 'não')
+  ].join('\n');
+  try{ dialogText(txt, 'Diagnóstico da miniatura'); }catch(err){ toast('diag: ' + txt); }
+}
+
 function renderHistory(){
   const statsEl = $('#statsCard');
   if(statsEl && statsEl.open) renderStats();
@@ -8479,18 +8621,7 @@ function renderHistory(){
     if(pl) pl.addEventListener('click', ()=> showHistView(e));
     if(totalVids){
       const elT = item.querySelector('.hist-thumb');
-      const v0 = vids[0] || null;
-      const fid0 = cloudIds[0] || '';
-      const key0 = thumbKeyFor(v0, fid0);
-      const salvo = (v0 && v0.thumb) || '';
-      const emCache = key0 ? (thumbMem[key0] || '') : '';
-      const pronto = emCache || salvo;
-      if(elT && pronto){
-        applyHistThumb(elT, pronto);
-        elT.classList.add('tem-thumb');
-      } else if(elT && key0){
-        queueHistThumb(elT, key0, v0, fid0 || undefined, true);
-      }
+      if(elT) ligarThumb(elT, e, 0);
     }
     const at = item.querySelector('[data-attach]');
     if(at) at.addEventListener('click', ()=>{
