@@ -5411,7 +5411,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.79';
+const CONTENT_VERSION = '3.80';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -13252,7 +13252,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     }
     if(b.hasAttribute('data-anvdel')){
       e.preventDefault();
-      var id = Number(b.getAttribute('data-anvdel'));
+      var id = b.getAttribute('data-anvdel');
       var card = b.closest('.an-item');
       var nome = card ? (card.querySelector('.an-nome') || {}).textContent || '' : '';
       abrir({ videoId: id, userId: (card && card.getAttribute('data-uid')) || '', title: '' });
