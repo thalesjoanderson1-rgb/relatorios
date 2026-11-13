@@ -6652,7 +6652,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.48';
+const CONTENT_VERSION = '3.49';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -13264,10 +13264,18 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       btn: pronto ? 'Instalar agora' : 'Baixar e instalar',
       icon:ICON_APK,
       action:function(){
-        if(window.AndroidApp && AndroidApp.installReadyApk && AndroidApp.isApkReady()){
+        var prontoAgora = false;
+        try{
+          prontoAgora = !!(window.AndroidApp && AndroidApp.isApkReady && AndroidApp.isApkReady());
+        }catch(e){ prontoAgora = false; }
+        if(prontoAgora && window.AndroidApp && AndroidApp.installReadyApk){
           try{ AndroidApp.installReadyApk(); return; }catch(e){}
         }
-        if(window.AndroidApp && window.AndroidApp.downloadApk) window.AndroidApp.downloadApk(url);
+        if(window.AndroidApp && window.AndroidApp.downloadApk){
+          try{ window.AndroidApp.downloadApk(url); }catch(e){ toast('Não foi possível iniciar o download'); }
+        } else {
+          toast('Atualização disponível no app Android');
+        }
       }
     });
     // já baixado? mostra o botão certo desde o começo
