@@ -5419,7 +5419,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.87';
+const CONTENT_VERSION = '3.88';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12456,7 +12456,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       el('anChip').textContent = 'desconectado';
       preencherCredenciais();
       try {
-        if(el('anDiag')) el('anDiag').textContent = 'uid ' + (st.uid || '?') + ' · token ' + (st.tokenIni || 'nenhum');
+        if(el('anDiag')) el('anDiag').textContent = 'conteúdo ' + CONTENT_VERSION + ' · app ' + (st.app || '?') + ' · uid ' + (st.uid || '?');
         if(st && st.motivo){
           el('anLoginMsg').textContent = 'o acesso caiu: ' + st.motivo + (st.quando ? ' · ' + fmt(st.quando) : '');
           el('anLoginMsg').classList.remove('erro');
