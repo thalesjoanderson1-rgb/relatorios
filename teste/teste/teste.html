@@ -3604,6 +3604,7 @@ textarea{resize:none!important}
       <h2>Análises</h2>
       <span class="an-chip" id="anChip">—</span>
     </div>
+    <p class="hint" id="anVersao" style="margin:-4px 0 10px;font-family:var(--mono);font-size:9.5px;color:#5c6b7c"></p>
 
     <div class="an-card" id="anSemApp" hidden>
       <h3>Atualize o app</h3>
@@ -3621,6 +3622,7 @@ textarea{resize:none!important}
       <input class="an-input an-code" id="anCode" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code">
       <button class="primary an-btn" id="anEntrar" type="button">Entrar</button>
       <p class="hint" id="anLoginMsg" style="margin:8px 0 0"></p>
+      <p class="hint" id="anDiag" style="margin:6px 0 0;font-family:var(--mono);font-size:9.5px;color:#5c6b7c"></p>
     </div>
 
     <div id="anPainel" hidden>
@@ -5411,7 +5413,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.80';
+const CONTENT_VERSION = '3.81';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12404,6 +12406,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   }
 
   function abrir(){
+    try { if(el('anVersao')) el('anVersao').textContent = 'conteúdo ' + CONTENT_VERSION; } catch(e) {}
     if(!ponte()){ mostrar('anSemApp'); el('anChip').textContent = 'indisponível'; return; }
     var st = {};
     try { st = JSON.parse(AndroidApp.anStatus()); } catch(e) {}
@@ -12423,6 +12426,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       el('anChip').textContent = 'desconectado';
       preencherCredenciais();
       try {
+        if(el('anDiag')) el('anDiag').textContent = 'uid ' + (st.uid || '?') + ' · token ' + (st.tokenIni || 'nenhum');
         if(st && st.motivo){
           el('anLoginMsg').textContent = 'o acesso caiu: ' + st.motivo + (st.quando ? ' · ' + fmt(st.quando) : '');
           el('anLoginMsg').classList.remove('erro');
