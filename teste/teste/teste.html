@@ -3000,6 +3000,7 @@ textarea{resize:none!important}
   </div>
   <nav class="side-nav">
     <button data-tab="inicio" aria-label="Início"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>Início</button>
+    <button data-tab="analises" aria-label="Análises"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="m8.5 12.2 2.4 2.4 4.6-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Análises</button>
     <button data-tab="semana" aria-label="Semana"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Semana</button>
     <button data-tab="historico" aria-label="Histórico"><svg viewBox="0 0 24 24" fill="none"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M3.5 4.5V9H8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.4l3 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Histórico</button>
     <button data-tab="organizador" aria-label="Organizador"><svg viewBox="0 0 24 24" fill="none"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h9.5A1.5 1.5 0 0 1 16 7.5v9A1.5 1.5 0 0 1 14.5 18H5a1.5 1.5 0 0 1-1.5-1.5z" stroke="currentColor" stroke-width="1.7"/><path d="M16 10.5 20.5 8v8L16 13.5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Vídeos apagados</button>
@@ -3496,6 +3497,159 @@ textarea{resize:none!important}
     <p class="hint" id="appVersion" style="text-align:center;margin:16px 0 4px">Criação de relatórios</p>
   </section>
 
+  <section id="sec-analises" data-panel="analises">
+    <style>
+      #sec-analises .an-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+      #sec-analises .an-card h3{margin:0 0 4px;font-size:15px}
+      #sec-analises .an-lbl{display:block;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:10px 0 4px}
+      #sec-analises .an-input{width:100%;height:42px;border:1px solid var(--line);border-radius:10px;background:var(--card2);color:var(--txt);padding:0 11px;font-size:14px;outline:none;font-family:inherit}
+      #sec-analises .an-input:focus{border-color:rgba(77,163,255,.6)}
+      #sec-analises .an-input.an-code{font-family:var(--mono);font-size:19px;letter-spacing:.32em;text-align:center}
+      #sec-analises .an-btn{width:100%;margin-top:12px;height:44px}
+      #sec-analises .an-chip{font-family:var(--mono);font-size:11px;color:var(--dim);border:1px solid var(--line);background:var(--card2);border-radius:999px;padding:4px 10px;white-space:nowrap}
+      #sec-analises .an-conta{display:flex;align-items:center;gap:10px}
+      #sec-analises .an-conta b{font-size:13px}
+      #sec-analises .an-conta .hint{margin:2px 0 0}
+      #sec-analises .an-conta button{margin-left:auto;flex:0 0 auto}
+      #sec-analises .an-filtros{display:flex;gap:6px;margin:0 0 10px;align-items:center}
+      #sec-analises .an-f{border:1px solid var(--line);background:var(--card2);color:var(--dim);border-radius:999px;padding:6px 12px;font-size:12px;cursor:pointer}
+      #sec-analises .an-f.on{background:rgba(77,163,255,.16);border-color:rgba(77,163,255,.5);color:#bcd9ff}
+      #sec-analises .an-refresh{margin-left:auto;width:36px;height:36px;padding:0;font-size:16px}
+      #sec-analises .an-lista{display:flex;flex-direction:column;gap:10px}
+      #sec-analises .an-item{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:14px;padding:11px 12px}
+      #sec-analises .an-item.no{border-left-color:var(--bad)}
+      #sec-analises .an-item.ok{border-left-color:var(--ok)}
+      #sec-analises .an-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+      #sec-analises .an-id{font-family:var(--mono);font-size:10px;color:var(--dim)}
+      #sec-analises .an-nome{font-size:13px;font-weight:700}
+      #sec-analises .an-hora{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--dim)}
+      #sec-analises .an-meta{font-size:10.5px;color:var(--dim);margin-top:2px}
+      #sec-analises .an-imgs{display:flex;gap:8px;margin-top:9px}
+      #sec-analises .an-img{flex:1;position:relative;border-radius:9px;overflow:hidden;border:1px solid var(--line);aspect-ratio:1/1;background:#0a1017}
+      #sec-analises .an-img img{width:100%;height:100%;object-fit:cover;display:block}
+      #sec-analises .an-img b{position:absolute;left:0;right:0;bottom:0;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:#cfe0f5;background:linear-gradient(transparent,rgba(4,8,12,.9));padding:10px 6px 4px;text-align:center;font-weight:600}
+      #sec-analises .an-acts{display:flex;gap:6px;margin-top:9px}
+      #sec-analises .an-acts button{flex:1;height:36px;font-size:12.5px}
+      #sec-analises .an-ok{color:#8fe0b0!important;border-color:rgba(46,204,113,.4)!important;background:rgba(46,204,113,.1)!important}
+      #sec-analises .an-bad{color:#ff9a9a!important;border-color:rgba(255,93,93,.4)!important;background:rgba(255,93,93,.1)!important}
+      .an-overlay{position:fixed;inset:0;background:rgba(4,6,10,.8);display:flex;align-items:flex-end;justify-content:center;z-index:9998;padding:0}
+      .an-overlay[hidden]{display:none}
+      .an-overlay.centro{align-items:center;padding:16px}
+      .an-sheet{width:100%;max-width:560px;max-height:90vh;background:#101821;border:1px solid #263241;border-radius:18px 18px 0 0;display:flex;flex-direction:column;overflow:hidden}
+      .an-overlay.centro .an-sheet{border-radius:16px;max-height:88vh}
+      .an-sh-top{padding:14px 14px 8px}
+      .an-sh-top h3{margin:0;font-size:16px}
+      .an-sh-top p{margin:3px 0 0;font-size:11.5px;color:var(--dim)}
+      .an-busca{margin:0 14px 8px;height:38px;border:1px solid var(--line);border-radius:10px;background:var(--card2);color:var(--txt);padding:0 10px;font-size:13px;outline:none}
+      .an-ops{overflow:auto;padding:0 14px 8px;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch;min-height:80px}
+      .an-op{display:flex;gap:9px;align-items:flex-start;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card2);font-size:12px;line-height:1.4;color:#c6d3e2;text-align:left;cursor:pointer;font-family:inherit}
+      .an-op .n{font-family:var(--mono);font-size:9px;color:var(--dim);width:18px;flex:0 0 auto;margin-top:2px}
+      .an-op.sel{border-color:rgba(255,93,93,.55);background:rgba(255,93,93,.1);color:#ffd0d0}
+      .an-rodape{padding:10px 14px 14px;border-top:1px solid #1e2833;background:#0d151d}
+      .an-rodape .hint{margin:0 0 8px}
+      .an-botoes{display:flex;gap:8px}
+      .an-botoes button{flex:1;height:42px;font-size:13px}
+      .an-grande{border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative;margin:0 14px 10px;background:#0a1017}
+      .an-grande img{width:100%;max-height:32vh;object-fit:contain;display:block}
+      .an-grande b{position:absolute;top:0;left:0;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:#cfe0f5;background:rgba(4,8,12,.75);padding:4px 8px;border-bottom-right-radius:8px}
+      .an-dados{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px;padding:0 14px 8px}
+      .an-d{background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:7px 9px}
+      .an-d span{display:block;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:2px}
+      .an-d b{font-size:12px;font-weight:600;word-break:break-word}
+      .an-aviso{position:fixed;left:12px;right:12px;bottom:78px;background:#16202b;border:1px solid #2a3949;border-radius:12px;padding:11px 13px;font-size:12.5px;color:var(--txt);z-index:9999;box-shadow:0 12px 30px rgba(0,0,0,.5);display:none}
+      .an-aviso.on{display:block}
+    </style>
+
+    <div class="v7-pagehead">
+      <h2>Análises</h2>
+      <span class="an-chip" id="anChip">—</span>
+    </div>
+
+    <div class="an-card" id="anSemApp" hidden>
+      <h3>Atualize o app</h3>
+      <p class="hint">Esta parte precisa da versão nova do aplicativo (4.93 ou maior). Instale a atualização e volte aqui.</p>
+    </div>
+
+    <div class="an-card" id="anLoginBox" hidden>
+      <h3>Entrar no painel</h3>
+      <p class="hint">Mesma conta do painel. O código de 6 dígitos vem do Google Authenticator.</p>
+      <label class="an-lbl" for="anUser">Usuário</label>
+      <input class="an-input" id="anUser" autocomplete="username" placeholder="seu usuário">
+      <label class="an-lbl" for="anPass">Senha</label>
+      <input class="an-input" id="anPass" type="password" autocomplete="current-password" placeholder="sua senha">
+      <label class="an-lbl" for="anCode">Código do Google (6 dígitos)</label>
+      <input class="an-input an-code" id="anCode" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code">
+      <button class="primary an-btn" id="anEntrar" type="button">Entrar</button>
+      <p class="hint" id="anLoginMsg" style="margin:8px 0 0"></p>
+    </div>
+
+    <div id="anPainel" hidden>
+      <div class="an-card an-conta">
+        <div>
+          <b id="anQuem">—</b>
+          <p class="hint" id="anExpira">—</p>
+        </div>
+        <button class="ghost" id="anSair" type="button">Sair</button>
+      </div>
+      <div class="an-filtros">
+        <button class="an-f on" data-anfiltro="0" type="button">Hoje</button>
+        <button class="an-f" data-anfiltro="7" type="button">7 dias</button>
+        <button class="an-f" data-anfiltro="-1" type="button">Todos</button>
+        <button class="ghost an-refresh" id="anRecarregar" type="button" title="Recarregar">↻</button>
+      </div>
+      <div class="an-lista" id="anLista"></div>
+      <p class="hint" id="anVazio" hidden style="text-align:center;margin:14px 0">Nenhuma capa pendente nesse filtro.</p>
+    </div>
+
+    <div class="an-overlay centro" id="anVer" hidden>
+      <div class="an-sheet">
+        <div class="an-sh-top"><h3>Análise de capa</h3><p id="anVerSub">—</p></div>
+        <div style="overflow:auto;flex:1">
+          <div class="an-grande"><img id="anVerImg1" alt=""><b>capa original</b></div>
+          <div class="an-grande"><img id="anVerImg2" alt=""><b>capa da resenha</b></div>
+          <div class="an-dados" id="anVerDados"></div>
+        </div>
+        <div class="an-rodape">
+          <div class="an-botoes">
+            <button class="ghost" id="anVerFechar" type="button">Fechar</button>
+            <button class="ghost an-bad" id="anVerRej" type="button">Rejeitar</button>
+            <button class="ghost an-ok" id="anVerPass" type="button">Passar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="an-overlay" id="anRej" hidden>
+      <div class="an-sheet">
+        <div class="an-sh-top"><h3>Motivo da rejeição</h3><p id="anRejSub">—</p></div>
+        <input class="an-busca" id="anBusca" placeholder="buscar motivo…">
+        <div class="an-ops" id="anOps"></div>
+        <div class="an-rodape">
+          <p class="hint" id="anEscolhido">nenhum motivo selecionado</p>
+          <div class="an-botoes">
+            <button class="ghost" id="anRejCancelar" type="button">Cancelar</button>
+            <button class="ghost an-bad" id="anRejEnviar" type="button" disabled>Rejeitar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="an-overlay centro" id="anConf" hidden>
+      <div class="an-sheet">
+        <div class="an-sh-top"><h3 id="anConfTitulo">Confirmar</h3><p id="anConfSub">—</p></div>
+        <div style="padding:0 14px 8px" id="anConfCorpo"></div>
+        <div class="an-rodape">
+          <div class="an-botoes">
+            <button class="ghost" id="anConfVoltar" type="button">Voltar</button>
+            <button class="primary" id="anConfOk" type="button">Confirmar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="an-aviso" id="anAviso"></div>
+  </section>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -3541,6 +3695,7 @@ textarea{resize:none!important}
 
 <nav class="bottom-nav">
   <a href="#sec-inicio" data-tab="inicio"><span class="v7-navicon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>Início</a>
+  <a href="#sec-analises" data-tab="analises"><span class="v7-navicon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="m8.5 12.2 2.4 2.4 4.6-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Análises</a>
   <a href="#sec-historico" data-tab="historico"><span class="v7-navicon"><svg viewBox="0 0 24 24" fill="none"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M3.5 4.5V9H8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.4l3 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Histórico</a>
   <a href="#sec-mais" data-tab="mais"><span class="v7-navicon"><svg viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg></span>Mais</a>
 </nav>
@@ -3913,6 +4068,7 @@ function openPicker(sel){
 })();
 const PANELS = {
   inicio: ['sec-inicio'],
+  analises: ['sec-analises'],
   gerar: ['sec-gerar', 'results'],
   semana: ['sec-contador'],
   historico: ['sec-historico'],
@@ -3923,6 +4079,7 @@ const PANELS = {
 
 const TAB_INFO = {
   inicio:   ['Início', 'central de relatórios'],
+  analises: ['Análises', 'capa e título do painel'],
   gerar:    ['Gerar relatório', 'uma violação por linha · tradução automática'],
   semana:   ['Semana', 'contador e gráfico pela data da infração'],
   historico:['Histórico', 'todos os registros salvos no aparelho'],
@@ -3977,6 +4134,7 @@ function switchTab(name, noStack){
   if(selBar) selBar.style.display = (histSelectMode && tab === 'historico') ? 'flex' : 'none';
   try{ localStorage.setItem('alii_tab_v1', tab); }catch(e){}
   if(tab === 'mais'){ try{ updateCacheInfo(); }catch(e){} }
+  if(tab === 'analises'){ try{ if(window.anAbrir) window.anAbrir(); }catch(e){} }
 }
 
 document.addEventListener('click', (e) => {
@@ -3997,6 +4155,7 @@ document.addEventListener('click', (e) => {
 /* Botão Voltar do Android: fecha o que estiver aberto e volta de aba antes
    de sair do app. Devolve true quando o app tratou o toque. */
 window.onAndroidBack = function(){
+  try{ if(window.__anBack && window.__anBack()) return true; }catch(e){}
   try{
     const mostrando = el => !!el && getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden';
 
@@ -5167,7 +5326,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.58';
+const CONTENT_VERSION = '3.59';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12074,6 +12233,318 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   if(clear) clear.addEventListener('click', function(){ setTimeout(count, 60); });
   count();
   window.__histFilterCount = count;
+})();
+</script>
+
+<script>
+/* ---- Análises (capa) — painel do app ---- */
+(function(){
+  var AN = { itens: [], motivos: null, filtro: 0, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null };
+
+  function el(id){ return document.getElementById(id); }
+
+  // As camadas (ver/rejeitar/confirmar/aviso) precisam ficar no <body>:
+  // dentro da aba elas herdam o posicionamento do painel e saem do lugar.
+  ['anAviso','anVer','anRej','anConf'].forEach(function(id){
+    var n = el(id);
+    if(n && n.parentNode !== document.body) document.body.appendChild(n);
+  });
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+  function ponte(){ return !!(window.AndroidApp && typeof AndroidApp.anStatus === 'function'); }
+  function fmt(ms){ try{ return new Date(ms).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }); }catch(e){ return ''; } }
+
+  function aviso(txt){
+    var a = el('anAviso'); if(!a) return;
+    a.textContent = txt; a.classList.add('on');
+    clearTimeout(AN.avisoTimer);
+    AN.avisoTimer = setTimeout(function(){ a.classList.remove('on'); }, 4500);
+  }
+
+  function mostrar(qual){
+    ['anSemApp','anLoginBox','anPainel'].forEach(function(id){
+      var n = el(id); if(n) n.hidden = (id !== qual);
+    });
+  }
+
+  function fecharTudo(){
+    ['anVer','anRej','anConf'].forEach(function(id){ var n = el(id); if(n) n.hidden = true; });
+  }
+
+  function sairLocal(){
+    AN.itens = []; AN.motivos = null; AN.pendente = null; AN.alvo = null;
+    mostrar('anLoginBox');
+    el('anChip').textContent = 'desconectado';
+  }
+
+  function abrir(){
+    if(!ponte()){ mostrar('anSemApp'); el('anChip').textContent = 'indisponível'; return; }
+    var st = {};
+    try { st = JSON.parse(AndroidApp.anStatus()); } catch(e) {}
+    if(st && st.logado){
+      mostrar('anPainel');
+      el('anQuem').textContent = 'conectado como ' + (st.usuario || '—');
+      el('anExpira').textContent = st.exp ? ('acesso até ' + fmt(st.exp)) : '';
+      carregar();
+    } else {
+      mostrar('anLoginBox');
+      el('anChip').textContent = 'desconectado';
+      try { if(st && st.usuario && !el('anUser').value) el('anUser').value = st.usuario; } catch(e) {}
+    }
+  }
+
+  function carregar(){
+    el('anLista').innerHTML = '<p class="hint">carregando…</p>';
+    el('anVazio').hidden = true;
+    AndroidApp.anListar(1, 30, AN.filtro);
+  }
+
+  function render(){
+    var box = el('anLista');
+    if(!AN.itens.length){ box.innerHTML = ''; el('anVazio').hidden = false; return; }
+    el('anVazio').hidden = true;
+    box.innerHTML = AN.itens.map(function(it){
+      var g = it.gender === 2 ? 'Feminino' : (it.gender === 1 ? 'Masculino' : '—');
+      return '<div class="an-item" data-anid="' + it.id + '">'
+        + '<div class="an-h"><span class="an-id">#' + esc(it.id) + '</span><span class="an-nome">' + esc(it.nickname) + '</span><span class="an-hora">' + esc(it.quando) + '</span></div>'
+        + '<div class="an-meta">' + esc(it.guild || '—') + ' · ' + g + '</div>'
+        + '<div class="an-imgs">'
+        +   '<div class="an-img"><img loading="lazy" decoding="async" src="' + esc(it.cover) + '" alt=""><b>Original</b></div>'
+        +   '<div class="an-img"><img loading="lazy" decoding="async" src="' + esc(it.checkCover) + '" alt=""><b>Resenha</b></div>'
+        + '</div>'
+        + '<div class="an-acts">'
+        +   '<button class="ghost" data-anver="' + it.id + '" type="button">Ver</button>'
+        +   '<button class="ghost an-bad" data-anrej="' + it.id + '" type="button">Rejeitar</button>'
+        +   '<button class="ghost an-ok" data-anpass="' + it.id + '" type="button">Passar</button>'
+        + '</div></div>';
+    }).join('');
+  }
+
+  function porId(id){
+    id = Number(id);
+    for(var i = 0; i < AN.itens.length; i++) if(Number(AN.itens[i].id) === id) return AN.itens[i];
+    return null;
+  }
+
+  function ver(it){
+    if(!it) return;
+    AN.alvo = it;
+    el('anVerSub').textContent = '#' + it.id + ' · ' + (it.nickname || '') + ' · ' + (it.quando || '');
+    el('anVerImg1').src = it.cover || '';
+    el('anVerImg2').src = it.checkCover || '';
+    el('anVerDados').innerHTML =
+        '<div class="an-d"><span>usuário</span><b>' + esc(it.userId) + '</b></div>'
+      + '<div class="an-d"><span>id</span><b>' + esc(it.id) + '</b></div>'
+      + '<div class="an-d"><span>apelido</span><b>' + esc(it.nickname) + '</b></div>'
+      + '<div class="an-d"><span>gênero</span><b>' + (it.gender === 2 ? 'Feminino' : it.gender === 1 ? 'Masculino' : '—') + '</b></div>'
+      + '<div class="an-d"><span>guilda</span><b>' + esc(it.guild || '—') + '</b></div>'
+      + '<div class="an-d"><span>enviado</span><b>' + esc(it.quando) + '</b></div>';
+    el('anVer').hidden = false;
+  }
+
+  function pedirMotivos(cb){
+    if(AN.motivos){ cb(); return; }
+    AN.aguardando = cb;
+    el('anOps').innerHTML = '<p class="hint">carregando motivos…</p>';
+    AndroidApp.anMotivos();
+  }
+
+  function abrirRejeitar(it){
+    if(!it) return;
+    AN.alvo = it; AN.motivo = null;
+    el('anRejSub').textContent = '#' + it.id + ' · ' + (it.nickname || '');
+    el('anBusca').value = '';
+    el('anEscolhido').textContent = 'nenhum motivo selecionado';
+    el('anRejEnviar').disabled = true;
+    el('anRej').hidden = false;
+    pedirMotivos(function(){ pintarMotivos(''); });
+  }
+
+  function pintarMotivos(termo){
+    var t = String(termo || '').toLowerCase();
+    var html = (AN.motivos || []).map(function(txt, i){
+      if(t && String(txt).toLowerCase().indexOf(t) < 0) return '';
+      var sel = (AN.motivo === i) ? ' sel' : '';
+      return '<button class="an-op' + sel + '" data-anmotivo="' + i + '" type="button"><span class="n">' + (i + 1) + '</span>' + esc(txt) + '</button>';
+    }).join('');
+    el('anOps').innerHTML = html || '<p class="hint">nenhum motivo encontrado</p>';
+  }
+
+  function escolherMotivo(i){
+    AN.motivo = i;
+    pintarMotivos(el('anBusca').value);
+    el('anEscolhido').textContent = 'motivo ' + (i + 1) + ' · ' + (AN.motivos[i] || '');
+    el('anRejEnviar').disabled = false;
+  }
+
+  function confirmar(it, state, motivo){
+    if(!it) return;
+    var rej = (state === 2);
+    el('anConfTitulo').textContent = rej ? 'Rejeitar a capa?' : 'Passar a capa?';
+    el('anConfSub').textContent = '#' + it.id + ' · ' + (it.nickname || '');
+    if(rej){
+      el('anConfCorpo').innerHTML = '<div class="an-d"><span>motivo ' + (motivo + 1) + '</span><b>'
+        + esc(AN.motivos ? AN.motivos[motivo] : '') + '</b></div>'
+        + '<p class="hint" style="margin:8px 0 0">O painel recebe a rejeição agora.</p>';
+    } else {
+      el('anConfCorpo').innerHTML = '<p class="hint" style="margin:0">A capa será aprovada no painel.</p>';
+    }
+    el('anConfOk').textContent = rej ? 'Confirmar rejeição' : 'Confirmar';
+    el('anConfOk').disabled = false;
+    el('anConf').hidden = false;
+    AN.pendente = { it: it, state: state, motivo: motivo };
+  }
+
+  function enviar(){
+    var p = AN.pendente;
+    if(!p || AN.ocupado) return;
+    AN.ocupado = true;
+    el('anConfOk').disabled = true;
+    el('anConfOk').textContent = 'enviando…';
+    AndroidApp.anDecidir(p.it.id, p.it.userId, p.it.roomId, p.state, p.state === 2 ? p.motivo : -1);
+  }
+
+  window.__anLogin = function(json){
+    var r = {}; try{ r = JSON.parse(json); }catch(e){}
+    el('anEntrar').textContent = 'Entrar';
+    el('anEntrar').disabled = false;
+    if(r && r.ok){
+      el('anPass').value = ''; el('anCode').value = ''; el('anLoginMsg').textContent = '';
+      AN.logado = true;
+      mostrar('anPainel');
+      el('anQuem').textContent = 'conectado como ' + (r.usuario || '—');
+      el('anExpira').textContent = '';
+      carregar();
+    } else {
+      el('anLoginMsg').textContent = (r && r.msg) ? r.msg : 'não foi possível entrar';
+    }
+  };
+
+  window.__anLista = function(json){
+    var r = {}; try{ r = JSON.parse(json); }catch(e){}
+    if(!r || !r.ok){
+      if(r && r.expirado){ sairLocal(); aviso(r.msg || 'acesso vencido'); }
+      else { el('anLista').innerHTML = '<p class="hint">' + esc((r && r.msg) || 'não foi possível carregar') + '</p>'; }
+      return;
+    }
+    AN.itens = r.itens || [];
+    el('anChip').textContent = (r.total || AN.itens.length) + ' pendentes';
+    render();
+  };
+
+  window.__anMotivos = function(json){
+    var r = {}; try{ r = JSON.parse(json); }catch(e){}
+    if(r && r.ok){ AN.motivos = r.capa || []; }
+    else if(r && r.expirado){ fecharTudo(); sairLocal(); aviso(r.msg || 'acesso vencido'); return; }
+    else { el('anOps').innerHTML = '<p class="hint">' + esc((r && r.msg) || 'não foi possível carregar os motivos') + '</p>'; return; }
+    var f = AN.aguardando; AN.aguardando = null;
+    if(f) f(); else pintarMotivos(el('anBusca') ? el('anBusca').value : '');
+  };
+
+  window.__anDecidir = function(json){
+    var r = {}; try{ r = JSON.parse(json); }catch(e){}
+    AN.ocupado = false;
+    if(!r || !r.ok){
+      el('anConfOk').disabled = false;
+      el('anConfOk').textContent = 'Confirmar';
+      if(r && r.expirado){ fecharTudo(); sairLocal(); aviso(r.msg || 'acesso vencido'); }
+      else aviso((r && r.msg) || 'não foi possível enviar');
+      return;
+    }
+    el('anConfOk').textContent = 'conferindo no painel…';
+    var p = AN.pendente;
+    if(p) AndroidApp.anConferir(p.it.id, p.state);
+  };
+
+  window.__anConferir = function(json){
+    var r = {}; try{ r = JSON.parse(json); }catch(e){}
+    var p = AN.pendente;
+    AN.pendente = null;
+    el('anConf').hidden = true;
+    el('anVer').hidden = true;
+    el('anRej').hidden = true;
+    if(p){
+      AN.itens = AN.itens.filter(function(x){ return Number(x.id) !== Number(p.it.id); });
+      render();
+      el('anChip').textContent = AN.itens.length + ' pendentes';
+    }
+    if(r && r.ok && r.achou){
+      if(p && p.state === 2 && Number(r.motivo) !== Number(p.motivo)){
+        aviso('rejeitada, mas o motivo no painel é outro — confira!');
+      } else {
+        aviso((p && p.state === 2 ? '✓ Rejeitada' : '✓ Passou') + ' e confirmado no painel');
+      }
+    } else if(r && r.expirado){
+      sairLocal(); aviso('o acesso venceu — informe o código de novo');
+    } else {
+      aviso('enviado, mas não confirmei no painel — toque em ↻');
+    }
+  };
+
+  window.__anBack = function(){
+    if(el('anConf') && !el('anConf').hidden){ el('anConf').hidden = true; AN.pendente = null; return true; }
+    if(el('anRej') && !el('anRej').hidden){ el('anRej').hidden = true; return true; }
+    if(el('anVer') && !el('anVer').hidden){ el('anVer').hidden = true; return true; }
+    return false;
+  };
+
+  window.anAbrir = abrir;
+
+  document.addEventListener('click', function(e){
+    var alvo = e.target && e.target.closest ? e.target : null;
+    if(!alvo) return;
+    if(!alvo.closest('#sec-analises') && !alvo.closest('.an-overlay')) return;
+
+    var b;
+    if((b = alvo.closest('[data-anver]'))){ e.preventDefault(); ver(porId(b.getAttribute('data-anver'))); return; }
+    if((b = alvo.closest('[data-anrej]'))){ e.preventDefault(); abrirRejeitar(porId(b.getAttribute('data-anrej'))); return; }
+    if((b = alvo.closest('[data-anpass]'))){ e.preventDefault(); confirmar(porId(b.getAttribute('data-anpass')), 1, -1); return; }
+    if((b = alvo.closest('[data-anmotivo]'))){ e.preventDefault(); escolherMotivo(Number(b.getAttribute('data-anmotivo'))); return; }
+    if((b = alvo.closest('[data-anfiltro]'))){
+      e.preventDefault();
+      AN.filtro = Number(b.getAttribute('data-anfiltro'));
+      document.querySelectorAll('#sec-analises [data-anfiltro]').forEach(function(x){ x.classList.toggle('on', x === b); });
+      carregar();
+      return;
+    }
+  }, true);
+
+  function ligar(id, fn){
+    var n = el(id);
+    if(n) n.addEventListener('click', function(e){ e.preventDefault(); fn(); });
+  }
+
+  ligar('anEntrar', function(){
+    var u = el('anUser').value.trim();
+    var p = el('anPass').value;
+    var c = el('anCode').value.replace(/\D/g, '');
+    if(!u || !p || c.length !== 6){ el('anLoginMsg').textContent = 'preencha usuário, senha e os 6 dígitos'; return; }
+    el('anLoginMsg').textContent = '';
+    el('anEntrar').disabled = true;
+    el('anEntrar').textContent = 'Entrando…';
+    AndroidApp.anLogin(u, p, c);
+  });
+
+  ligar('anSair', function(){
+    try { AndroidApp.anSair(); } catch(e) {}
+    sairLocal();
+  });
+
+  ligar('anRecarregar', function(){ carregar(); });
+  ligar('anVerFechar', function(){ el('anVer').hidden = true; });
+  ligar('anVerRej', function(){ var it = AN.alvo; el('anVer').hidden = true; abrirRejeitar(it); });
+  ligar('anVerPass', function(){ var it = AN.alvo; el('anVer').hidden = true; confirmar(it, 1, -1); });
+  ligar('anRejCancelar', function(){ el('anRej').hidden = true; });
+  ligar('anRejEnviar', function(){ if(AN.motivo === null) return; var it = AN.alvo; el('anRej').hidden = true; confirmar(it, 2, AN.motivo); });
+  ligar('anConfVoltar', function(){ el('anConf').hidden = true; AN.pendente = null; });
+  ligar('anConfOk', function(){ enviar(); });
+
+  var busca = el('anBusca');
+  if(busca) busca.addEventListener('input', function(){ pintarMotivos(busca.value); });
+
+  var codigo = el('anCode');
+  if(codigo) codigo.addEventListener('input', function(){
+    codigo.value = codigo.value.replace(/\D/g, '').slice(0, 6);
+  });
 })();
 </script>
 </body>
