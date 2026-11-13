@@ -3630,6 +3630,10 @@ textarea{resize:none!important}
         <button class="an-seg" data-antipo="2" type="button">Título</button>
         <button class="an-seg" data-antipo="3" type="button">Vídeos</button>
       </div>
+      <div class="an-segs" id="anVidModo" style="display:none;margin-top:-4px">
+        <button class="an-seg on" data-anvidmodo="fila" type="button">Para analisar</button>
+        <button class="an-seg" data-anvidmodo="principal" type="button">Na principal</button>
+      </div>
       <div class="an-filtros">
         <button class="an-f" data-anfiltro="0" type="button">Hoje</button>
         <button class="an-f" data-anfiltro="7" type="button">7 dias</button>
@@ -5396,7 +5400,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.76';
+const CONTENT_VERSION = '3.77';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12309,7 +12313,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 <script>
 /* ---- Análises (capa) — painel do app ---- */
 (function(){
-  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1 };
+  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1, vidModo: 'fila' };
 
   function el(id){ return document.getElementById(id); }
 
@@ -12420,8 +12424,10 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   function pedir(pagina){
     AN.emVoo = (AN.emVoo || 0) + 1;
-    if(AN.tipo === 3) AndroidApp.anVideosListar(pagina, 100);
-    else AndroidApp.anListar(pagina, 100, AN.filtro, AN.tipo);
+    if(AN.tipo === 3){
+      if(AN.vidModo === 'principal') AndroidApp.anVideoPrincipal(pagina, 100);
+      else AndroidApp.anVideosListar(pagina, 100);
+    } else AndroidApp.anListar(pagina, 100, AN.filtro, AN.tipo);
   }
 
   function enfileirar(pagina){
@@ -12488,8 +12494,12 @@ Seus relatórios e vídeos continuam salvos.</span></div>
         + '<div class="an-vinfo">'
         +   '<div class="an-vtitle">' + esc(it.title || '(sem título)') + '</div>'
         +   '<div class="an-vmeta">user ' + esc(it.userId) + ' · ' + esc(it.quando || '') + '</div>'
-        +   '<div class="an-vacts"><button class="ghost" data-anprincipal="' + it.videoId + '" type="button" disabled title="em breve">Principal</button>'
-        +   '<button class="ghost an-bad" data-anvdel="' + it.videoId + '" type="button">Excluir</button></div>'
+        +   '<div class="an-vacts">'
+        +   (AN.vidModo === 'principal'
+              ? '<button class="ghost an-bad" data-anvtirar="' + it.videoId + '" type="button">Tirar da principal</button>'
+              : '<button class="ghost" data-anprincipal="' + it.videoId + '" type="button">Principal</button>'
+                + '<button class="ghost an-bad" data-anvdel="' + it.videoId + '" type="button">Excluir</button>')
+        +   '</div>'
         + '</div></div>';
     } else if(AN.tipo === 2){
       corpo = '<div class="an-tits">'
@@ -12666,7 +12676,11 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     AN.emVoo = Math.max(0, (AN.emVoo || 0) - 1);
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
     // resposta de outra aba ou de outro filtro: descarta (sem contador, sem travar)
-    if(r && r.tipo !== undefined && Number(r.tipo) !== Number(AN.tipo)) return;
+    if(r && r.tipo !== undefined){
+      var tpResp = Number(r.tipo);
+      var tpAlvo = (AN.tipo === 3 && AN.vidModo === 'principal') ? 4 : Number(AN.tipo);
+      if(tpResp !== tpAlvo) return;
+    }
     if(r && r.dias !== undefined && Number(r.dias) !== Number(AN.filtro) && Number(r.tipo) !== 3) return;
     if(!r || !r.ok){
       AN.carregando = false;
@@ -12871,10 +12885,19 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if((b = alvo.closest('[data-anrej]'))){ e.preventDefault(); abrirRejeitar(porId(b.getAttribute('data-anrej'))); return; }
     if((b = alvo.closest('[data-anpass]'))){ e.preventDefault(); confirmar(porId(b.getAttribute('data-anpass')), 1, -1); return; }
     if((b = alvo.closest('[data-anmotivo]'))){ e.preventDefault(); escolherMotivo(Number(b.getAttribute('data-anmotivo'))); return; }
+    if((b = alvo.closest('[data-anvidmodo]'))){
+      e.preventDefault();
+      AN.vidModo = b.getAttribute('data-anvidmodo');
+      document.querySelectorAll('#sec-analises [data-anvidmodo]').forEach(function(x){ x.classList.toggle('on', x === b); });
+      carregar();
+      return;
+    }
     if((b = alvo.closest('[data-antipo]'))){
       e.preventDefault();
       var tp = Number(b.getAttribute('data-antipo'));
       if(tp === 3 && !(window.AndroidApp && typeof AndroidApp.anVideosListar === 'function')){ aviso('atualize o app para ver os vídeos'); return; }
+      var vm = document.getElementById('anVidModo');
+      if(vm) vm.style.display = (tp === 3) ? 'flex' : 'none';
       if(tp === AN.tipo) return;
       AN.tipo = tp;
       document.querySelectorAll('#sec-analises [data-antipo]').forEach(function(x){ x.classList.toggle('on', x === b); });
@@ -13064,6 +13087,28 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     pintarFila();
   };
 
+  window.__anVideoRecomendado = function(json){
+    var r = {}; try{ r = JSON.parse(json); }catch(e){}
+    var p = window.__vidRec;
+    window.__vidRec = null;
+    if(!p) return;
+    if(r && r.ok){
+      if(p.seq === 1){
+        p.botao.textContent = '✓ principal';
+        p.botao.disabled = true;
+        aviso('✓ Vídeo posto na página principal');
+      } else {
+        var card = p.botao.closest('.an-item');
+        if(card) card.remove();
+        aviso('✓ Vídeo tirado da principal');
+      }
+    } else {
+      p.botao.disabled = false;
+      p.botao.textContent = p.seq === 1 ? 'Principal' : 'Tirar da principal';
+      aviso((r && r.msg) || 'não foi possível');
+    }
+  };
+
   // ---------- fila / histórico na aba Vídeos apagados ----------
   function textoRelatorio(itens){
     var ordem = MOTIVOS.map(function(m){ return m.en; });
@@ -13139,8 +13184,24 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   // ---------- cliques ----------
   document.addEventListener('click', function(e){
-    var b = e.target && e.target.closest ? e.target.closest('[data-anvdel], [data-vmot]') : null;
+    var b = e.target && e.target.closest ? e.target.closest('[data-anvdel], [data-vmot], [data-anprincipal], [data-anvtirar]') : null;
     if(!b) return;
+    if(b.hasAttribute('data-anprincipal')){
+      e.preventDefault();
+      var vidP = b.getAttribute('data-anprincipal');
+      b.disabled = true; b.textContent = 'pondo…';
+      window.__vidRec = { id: vidP, seq: 1, botao: b };
+      AndroidApp.anVideoRecomendar(vidP, 1);
+      return;
+    }
+    if(b.hasAttribute('data-anvtirar')){
+      e.preventDefault();
+      var vidT = b.getAttribute('data-anvtirar');
+      b.disabled = true; b.textContent = 'tirando…';
+      window.__vidRec = { id: vidT, seq: 0, botao: b };
+      AndroidApp.anVideoRecomendar(vidT, 0);
+      return;
+    }
     if(b.hasAttribute('data-anvdel')){
       e.preventDefault();
       var id = Number(b.getAttribute('data-anvdel'));
