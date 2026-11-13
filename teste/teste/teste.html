@@ -5418,7 +5418,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.90';
+const CONTENT_VERSION = '3.91';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -13112,8 +13112,43 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     el('anVidOk').disabled = true;
     el('anVidOk').textContent = 'excluindo…';
     window.__vidPend = { item: alvo, motivo: m };
-    AndroidApp.anVideoExcluir(alvo.videoId);
+    AndroidApp.anVideoApagar(alvo.videoId);
   }
+
+  window.__anVideoApagado = function(json){
+    var r = {}; try{ r = JSON.parse(json); }catch(e){}
+    var p = window.__vidPend;
+    window.__vidPend = null;
+    el('anVid').hidden = true;
+    el('anVidOk').disabled = false;
+    el('anVidOk').textContent = 'Excluir';
+    if(!p) return;
+
+    if(r && r.ok && r.confirmado){
+      var vid = r.videoId || p.item.videoId;
+      var fila = ler(FILA);
+      fila.push({
+        videoId: vid,
+        userId: p.item.userId,
+        titulo: p.item.title || '',
+        motivoPt: p.motivo.pt,
+        motivoEn: p.motivo.en,
+        quando: new Date().toISOString()
+      });
+      gravar(FILA, fila);
+
+      var card = document.querySelector('[data-anid="' + vid + '"]');
+      if(card){
+        card.classList.add('an-apagado');
+        var acoes = card.querySelector('.an-vacts');
+        if(acoes) acoes.innerHTML = '<button class="ghost" type="button" disabled>🗑 removido</button>';
+      }
+      pintarFila();
+      aviso('✓ Apagado #' + vid + ' (confirmado no painel)');
+    } else {
+      aviso('NÃO apagou #' + (r.videoId || p.item.videoId) + ' — ' + ((r && r.msg) || 'o painel recusou'));
+    }
+  };
 
   window.__anVideoExcluido = function(json){
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
@@ -13220,6 +13255,28 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   });
 
   window.__vidFecharPlayer = fecharPlayer;
+
+  window.__anVideoRecomendadoConf = function(json){
+    var r = {}; try{ r = JSON.parse(json); }catch(e){}
+    var p = window.__vidRec;
+    window.__vidRec = null;
+    if(!p) return;
+    if(r && r.ok && r.confirmado){
+      if(p.seq === 1){
+        p.botao.textContent = '✓ principal';
+        p.botao.disabled = true;
+        aviso('✓ Vídeo na principal (confirmado)');
+      } else {
+        var card = p.botao.closest('.an-item');
+        if(card) card.remove();
+        aviso('✓ Tirado da principal (confirmado)');
+      }
+    } else {
+      p.botao.disabled = false;
+      p.botao.textContent = p.seq === 1 ? 'Principal' : 'Tirar da principal';
+      aviso((r && r.msg) || 'não foi possível');
+    }
+  };
 
   window.__anVideoRecomendado = function(json){
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
@@ -13330,7 +13387,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       var vidP = b.getAttribute('data-anprincipal');
       b.disabled = true; b.textContent = 'pondo…';
       window.__vidRec = { id: vidP, seq: 1, botao: b };
-      AndroidApp.anVideoRecomendar(vidP, 1);
+      AndroidApp.anVideoRecomendarConf(vidP, 1);
       return;
     }
     if(b.hasAttribute('data-anvtirar')){
@@ -13338,7 +13395,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       var vidT = b.getAttribute('data-anvtirar');
       b.disabled = true; b.textContent = 'tirando…';
       window.__vidRec = { id: vidT, seq: 0, botao: b };
-      AndroidApp.anVideoRecomendar(vidT, 0);
+      AndroidApp.anVideoRecomendarConf(vidT, 0);
       return;
     }
     if(b.hasAttribute('data-anvdel')){
