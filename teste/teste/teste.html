@@ -3562,7 +3562,7 @@ textarea{resize:none!important}
       #anFoto{position:fixed;inset:0;background:transparent;z-index:10000;display:flex;align-items:center;justify-content:center;overflow:hidden}
       #anFoto[hidden]{display:none}
       #anFoto img{max-width:100%;max-height:100%;object-fit:contain;transform-origin:center center;touch-action:none;will-change:transform}
-      #anFoto .an-foto-x{position:absolute;top:12px;right:12px;z-index:2;min-width:0;line-height:1}
+      #anFoto .an-foto-x{position:absolute;top:12px;right:12px;z-index:2;min-width:0;line-height:1;font-size:13px;padding:6px 10px;border-radius:7px;border:1px solid rgba(255,107,107,.22);background:rgba(255,107,107,.06);color:#FF8A8A}
       #sec-analises .an-img img,#sec-analises .an-grande img{cursor:zoom-in}
     </style>
 
@@ -3657,7 +3657,22 @@ textarea{resize:none!important}
 
     <div id="anFoto" hidden>
       <img id="anFotoImg" alt="">
-      <button class="ghost an-foto-x" id="anFotoFechar" type="button" aria-label="Fechar">✕</button>
+      <button class="an-foto-x" id="anFotoFechar" type="button" aria-label="Fechar">✕</button>
+    </div>
+
+    <div class="an-overlay centro" id="anSim" hidden>
+      <div class="an-sheet" style="max-width:340px">
+        <div class="an-sh-top">
+          <h3 id="anSimTitulo">Confirmar</h3>
+          <p id="anSimMsg">—</p>
+        </div>
+        <div class="an-rodape">
+          <div class="an-botoes">
+            <button class="ghost" id="anSimNao" type="button">Cancelar</button>
+            <button class="danger" id="anSimSim" type="button">Confirmar</button>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -5337,7 +5352,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.69';
+const CONTENT_VERSION = '3.70';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12256,7 +12271,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   // As camadas (ver/rejeitar/confirmar/aviso) precisam ficar no <body>:
   // dentro da aba elas herdam o posicionamento do painel e saem do lugar.
-  ['anAviso','anVer','anRej','anConf','anFoto'].forEach(function(id){
+  ['anAviso','anVer','anRej','anConf','anFoto','anSim'].forEach(function(id){
     var n = el(id);
     if(n && n.parentNode !== document.body) document.body.appendChild(n);
   });
@@ -12627,6 +12642,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   };
 
   window.__anBack = function(){
+    if(el('anSim') && !el('anSim').hidden){ el('anSim').hidden = true; SIM.cb = null; return true; }
     if(el('anFoto') && !el('anFoto').hidden){ fecharFoto(); return true; }
     if(el('anConf') && !el('anConf').hidden){ el('anConf').hidden = true; AN.pendente = null; return true; }
     if(el('anRej') && !el('anRej').hidden){ el('anRej').hidden = true; return true; }
@@ -12774,8 +12790,11 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   });
 
   ligar('anSair', function(){
-    try { AndroidApp.anSair(); } catch(e) {}
-    sairLocal();
+    perguntar('Sair da conta?', 'Você vai precisar entrar de novo com o código do Google.', 'Sair', function(){
+      try { AndroidApp.anSair(); } catch(e) {}
+      sairLocal();
+      aviso('você saiu da conta do painel');
+    });
   });
 
   ligar('anRecarregar', function(){ carregar(); });
@@ -12786,6 +12805,24 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   ligar('anRejEnviar', function(){ if(AN.motivo === null) return; var it = AN.alvo; el('anRej').hidden = true; confirmar(it, 2, AN.motivo); });
   ligar('anConfVoltar', function(){ el('anConf').hidden = true; AN.pendente = null; });
   ligar('anConfOk', function(){ enviar(); });
+
+  var SIM = { cb: null };
+
+  function perguntar(titulo, msg, okTexto, cb){
+    el('anSimTitulo').textContent = titulo || 'Confirmar';
+    el('anSimMsg').textContent = msg || '';
+    el('anSimSim').textContent = okTexto || 'Confirmar';
+    SIM.cb = cb || null;
+    el('anSim').hidden = false;
+  }
+
+  ligar('anSimNao', function(){ el('anSim').hidden = true; SIM.cb = null; });
+  ligar('anSimSim', function(){
+    var f = SIM.cb;
+    SIM.cb = null;
+    el('anSim').hidden = true;
+    if(f) f();
+  });
 
   var busca = el('anBusca');
   if(busca) busca.addEventListener('input', function(){ pintarMotivos(busca.value); });
