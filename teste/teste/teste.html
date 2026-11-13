@@ -3574,6 +3574,8 @@ textarea{resize:none!important}
       .an-busca{margin:0 14px 8px;height:38px;border:1px solid var(--line);border-radius:10px;background:var(--card2);color:var(--txt);padding:0 10px;font-size:13px;outline:none}
       .an-ops{overflow:auto;padding:0 14px 8px;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch;min-height:80px;overscroll-behavior:contain}
       .an-sheet,#anVerCorpo{overscroll-behavior:contain}
+      body.an-travado{overflow:hidden!important;overscroll-behavior:none;touch-action:none}
+      body.an-travado .an-ops,body.an-travado #anVerCorpo,body.an-travado .an-sheet{touch-action:auto}
       .an-op{display:flex;gap:9px;align-items:flex-start;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card2);font-size:12px;line-height:1.4;color:#c6d3e2;text-align:left;cursor:pointer;font-family:inherit}
       .an-op .n{font-family:var(--mono);font-size:9px;color:var(--dim);width:18px;flex:0 0 auto;margin-top:2px}
       .an-op.sel{border-color:rgba(255,93,93,.55);background:rgba(255,93,93,.1);color:#ffd0d0}
@@ -5417,7 +5419,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.84';
+const CONTENT_VERSION = '3.85';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12349,7 +12351,18 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(!alvos.length || !window.MutationObserver) return;
     var obs = new MutationObserver(function(){
       var aberto = alvos.some(function(n){ return !n.hidden; });
-      document.body.style.overflow = aberto ? 'hidden' : '';
+      var html = document.documentElement, body = document.body;
+      if(aberto){
+        html.style.overflow = 'hidden';
+        body.style.overflow = 'hidden';
+        body.style.overscrollBehavior = 'none';
+        body.classList.add('an-travado');
+      } else {
+        html.style.overflow = '';
+        body.style.overflow = '';
+        body.style.overscrollBehavior = '';
+        body.classList.remove('an-travado');
+      }
     });
     alvos.forEach(function(n){ obs.observe(n, { attributes: true, attributeFilter: ['hidden'] }); });
   })();
