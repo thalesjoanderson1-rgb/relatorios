@@ -5352,7 +5352,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.72';
+const CONTENT_VERSION = '3.73';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12363,6 +12363,12 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       mostrar('anLoginBox');
       el('anChip').textContent = 'desconectado';
       preencherCredenciais();
+      try {
+        if(st && st.motivo){
+          el('anLoginMsg').textContent = 'o acesso caiu: ' + st.motivo + (st.quando ? ' · ' + fmt(st.quando) : '');
+          el('anLoginMsg').classList.remove('erro');
+        }
+      } catch(e) {}
     }
   }
 
