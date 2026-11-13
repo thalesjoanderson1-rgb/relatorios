@@ -5338,7 +5338,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.61';
+const CONTENT_VERSION = '3.62';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12251,7 +12251,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 <script>
 /* ---- Análises (capa) — painel do app ---- */
 (function(){
-  var AN = { itens: [], motivos: null, filtro: 0, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null };
+  var AN = { itens: [], motivos: null, filtro: 0, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false };
 
   function el(id){ return document.getElementById(id); }
 
@@ -12322,11 +12322,20 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     }
   }
 
+  function pedir(pagina){
+    AN.pedida = pagina;
+    esperar('lista', 30000);
+    AndroidApp.anListar(pagina, 100, AN.filtro);
+  }
+
   function carregar(){
+    AN.itens = [];
+    AN.pagina = 0;
+    AN.total = 0;
+    AN.carregando = true;
     el('anLista').innerHTML = '<p class="hint">carregando…</p>';
     el('anVazio').hidden = true;
-    esperar('lista');
-    AndroidApp.anListar(1, 30, AN.filtro);
+    pedir(1);
   }
 
   function render(){
@@ -12456,13 +12465,25 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     clearTimeout(AN.timer);
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
     if(!r || !r.ok){
+      AN.carregando = false;
       if(r && r.expirado){ sairLocal(); aviso(r.msg || 'acesso vencido'); }
       else { el('anLista').innerHTML = '<p class="hint">' + esc((r && r.msg) || 'não foi possível carregar') + '</p>'; }
       return;
     }
-    AN.itens = r.itens || [];
-    el('anChip').textContent = (r.total || AN.itens.length) + ' pendentes';
+    var novos = r.itens || [];
+    AN.total = (r.total === undefined || r.total === null) ? novos.length : r.total;
+    if(AN.pedida <= 1) AN.itens = novos.slice();
+    else AN.itens = AN.itens.concat(novos);
+    AN.pagina = AN.pedida;
+    el('anChip').textContent = AN.total + ' pendentes';
     render();
+    // traz o resto sozinho até acabar (o painel devolve no máximo 100 por vez)
+    if(novos.length > 0 && AN.itens.length < AN.total && AN.pagina < 100){
+      el('anChip').textContent = AN.itens.length + ' de ' + AN.total;
+      pedir(AN.pagina + 1);
+      return;
+    }
+    AN.carregando = false;
   };
 
   window.__anMotivos = function(json){
@@ -12501,8 +12522,9 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     el('anRej').hidden = true;
     if(p){
       AN.itens = AN.itens.filter(function(x){ return Number(x.id) !== Number(p.it.id); });
+      AN.total = Math.max(0, (AN.total || 1) - 1);
       render();
-      el('anChip').textContent = AN.itens.length + ' pendentes';
+      el('anChip').textContent = AN.total + ' pendentes';
     }
     if(r && r.ok && r.achou){
       if(p && p.state === 2 && Number(r.motivo) !== Number(p.motivo)){
