@@ -5326,7 +5326,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.59';
+const CONTENT_VERSION = '3.60';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12266,6 +12266,24 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     });
   }
 
+  function diagnostico(){
+    try { if(window.AndroidApp && typeof AndroidApp.anDebug === 'function') return AndroidApp.anDebug(); } catch(e) {}
+    return 'sem diagnóstico';
+  }
+
+  function esperar(qual, ms){
+    clearTimeout(AN.timer);
+    AN.timer = setTimeout(function(){
+      if(qual === 'login'){
+        el('anEntrar').disabled = false;
+        el('anEntrar').textContent = 'Entrar';
+        el('anLoginMsg').textContent = 'o app não respondeu. ' + diagnostico();
+      } else {
+        aviso('o app não respondeu — toque em ↻');
+      }
+    }, ms || 25000);
+  }
+
   function fecharTudo(){
     ['anVer','anRej','anConf'].forEach(function(id){ var n = el(id); if(n) n.hidden = true; });
   }
@@ -12295,6 +12313,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   function carregar(){
     el('anLista').innerHTML = '<p class="hint">carregando…</p>';
     el('anVazio').hidden = true;
+    esperar('lista');
     AndroidApp.anListar(1, 30, AN.filtro);
   }
 
@@ -12400,10 +12419,12 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     AN.ocupado = true;
     el('anConfOk').disabled = true;
     el('anConfOk').textContent = 'enviando…';
+    esperar('acao');
     AndroidApp.anDecidir(p.it.id, p.it.userId, p.it.roomId, p.state, p.state === 2 ? p.motivo : -1);
   }
 
   window.__anLogin = function(json){
+    clearTimeout(AN.timer);
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
     el('anEntrar').textContent = 'Entrar';
     el('anEntrar').disabled = false;
@@ -12420,6 +12441,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   };
 
   window.__anLista = function(json){
+    clearTimeout(AN.timer);
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
     if(!r || !r.ok){
       if(r && r.expirado){ sairLocal(); aviso(r.msg || 'acesso vencido'); }
@@ -12432,6 +12454,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   };
 
   window.__anMotivos = function(json){
+    clearTimeout(AN.timer);
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
     if(r && r.ok){ AN.motivos = r.capa || []; }
     else if(r && r.expirado){ fecharTudo(); sairLocal(); aviso(r.msg || 'acesso vencido'); return; }
@@ -12441,6 +12464,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   };
 
   window.__anDecidir = function(json){
+    clearTimeout(AN.timer);
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
     AN.ocupado = false;
     if(!r || !r.ok){
@@ -12456,6 +12480,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   };
 
   window.__anConferir = function(json){
+    clearTimeout(AN.timer);
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
     var p = AN.pendente;
     AN.pendente = null;
@@ -12514,6 +12539,10 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   }
 
   ligar('anEntrar', function(){
+    if(!window.AndroidApp || typeof AndroidApp.anLogin !== 'function'){
+      el('anLoginMsg').textContent = 'esta versão do app não tem o acesso ao painel — atualize o app. ' + diagnostico();
+      return;
+    }
     var u = el('anUser').value.trim();
     var p = el('anPass').value;
     var c = el('anCode').value.replace(/\D/g, '');
@@ -12521,6 +12550,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     el('anLoginMsg').textContent = '';
     el('anEntrar').disabled = true;
     el('anEntrar').textContent = 'Entrando…';
+    esperar('login');
     AndroidApp.anLogin(u, p, c);
   });
 
