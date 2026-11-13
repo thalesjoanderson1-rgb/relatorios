@@ -3517,7 +3517,7 @@ textarea{resize:none!important}
       #sec-analises .an-f.on{background:rgba(77,163,255,.16);border-color:rgba(77,163,255,.5);color:#bcd9ff}
       #sec-analises .an-refresh{margin-left:auto;width:36px;height:36px;padding:0;font-size:16px}
       #sec-analises .an-lista{display:flex;flex-direction:column;gap:10px}
-      #sec-analises .an-item{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:14px;padding:11px 12px}
+      #sec-analises .an-item{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:14px;padding:11px 12px;content-visibility:auto;contain-intrinsic-size:auto 330px}
       #sec-analises .an-item.no{border-left-color:var(--bad)}
       #sec-analises .an-item.ok{border-left-color:var(--ok)}
       #sec-analises .an-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
@@ -5338,7 +5338,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.65';
+const CONTENT_VERSION = '3.66';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12251,7 +12251,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 <script>
 /* ---- Análises (capa) — painel do app ---- */
 (function(){
-  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false };
+  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0 };
 
   function el(id){ return document.getElementById(id); }
 
@@ -12314,7 +12314,13 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       mostrar('anPainel');
       el('anQuem').textContent = 'conectado como ' + (st.usuario || '—');
       el('anExpira').textContent = st.exp ? ('acesso até ' + fmt(st.exp)) : '';
-      carregar();
+      // já carregou há pouco? mostra na hora e não refaz a busca
+      if(AN.itens.length && AN.carregadoEm && (Date.now() - AN.carregadoEm) < 120000){
+        el('anChip').textContent = AN.total + ' pendentes';
+        render();
+      } else {
+        carregar();
+      }
     } else {
       mostrar('anLoginBox');
       el('anChip').textContent = 'desconectado';
@@ -12329,41 +12335,96 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     }
   }
 
+  var FILA = { espera: [], ativos: 0, max: 6 };
+
   function pedir(pagina){
-    AN.pedida = pagina;
-    esperar('lista', 30000);
     AndroidApp.anListar(pagina, 100, AN.filtro);
+  }
+
+  function enfileirar(pagina){
+    FILA.espera.push(pagina);
+    bombear();
+  }
+
+  function bombear(){
+    while(FILA.ativos < FILA.max && FILA.espera.length){
+      var p = FILA.espera.shift();
+      FILA.ativos++;
+      pedir(p);
+    }
   }
 
   function carregar(){
     AN.itens = [];
+    AN.paginas = {};
+    AN.contiguo = 0;
+    AN.alvoPaginas = 1;
     AN.pagina = 0;
     AN.total = 0;
     AN.carregando = true;
+    AN.carregadoEm = 0;
+    FILA.espera = [];
+    FILA.ativos = 0;
     el('anLista').innerHTML = '<p class="hint">carregando…</p>';
     el('anVazio').hidden = true;
-    pedir(1);
+    esperar('lista', 30000);
+    enfileirar(1);
+  }
+
+  function montar(){
+    var totalPaginas = Math.max(1, AN.alvoPaginas || 1);
+    var prefixo = 0;
+    for(var p = 1; p <= totalPaginas; p++){
+      if(!AN.paginas[p]) break;
+      prefixo++;
+    }
+    if(prefixo > AN.contiguo){
+      var novos = [];
+      for(var q = AN.contiguo + 1; q <= prefixo; q++) novos = novos.concat(AN.paginas[q] || []);
+      AN.contiguo = prefixo;
+      AN.itens = AN.itens.concat(novos);
+      anexar(novos);
+    }
+    if(prefixo >= totalPaginas){
+      AN.carregando = false;
+      AN.carregadoEm = Date.now();
+      el('anChip').textContent = AN.total + ' pendentes';
+    } else {
+      el('anChip').textContent = AN.itens.length + ' de ' + AN.total;
+    }
+  }
+
+  function cardHtml(it){
+    var g = it.gender === 2 ? 'Feminino' : (it.gender === 1 ? 'Masculino' : '—');
+    return '<div class="an-item" data-anid="' + it.id + '">'
+      + '<div class="an-h"><span class="an-id">#' + esc(it.id) + '</span><span class="an-nome">' + esc(it.nickname) + '</span><span class="an-hora">' + esc(it.quando) + '</span></div>'
+      + '<div class="an-meta">' + esc(it.guild || '—') + ' · ' + g + '</div>'
+      + '<div class="an-imgs">'
+      +   '<div class="an-img"><img loading="lazy" decoding="async" src="' + esc(it.cover) + '" alt=""><b>Original</b></div>'
+      +   '<div class="an-img"><img loading="lazy" decoding="async" src="' + esc(it.checkCover) + '" alt=""><b>Resenha</b></div>'
+      + '</div>'
+      + '<div class="an-acts">'
+      +   '<button class="ghost" data-anver="' + it.id + '" type="button">Ver</button>'
+      +   '<button class="ghost an-bad" data-anrej="' + it.id + '" type="button">Rejeitar</button>'
+      +   '<button class="ghost an-ok" data-anpass="' + it.id + '" type="button">Passar</button>'
+      + '</div></div>';
+  }
+
+  function anexar(itens){
+    if(!itens || !itens.length) return;
+    var box = el('anLista');
+    var vazio = box.querySelector('.hint');
+    if(vazio) box.innerHTML = '';
+    box.insertAdjacentHTML('beforeend', itens.map(cardHtml).join(''));
+    el('anVazio').hidden = true;
   }
 
   function render(){
     var box = el('anLista');
-    if(!AN.itens.length){ box.innerHTML = ''; el('anVazio').hidden = false; return; }
+    box.innerHTML = '';
+    if(!AN.itens.length){ el('anVazio').hidden = false; return; }
     el('anVazio').hidden = true;
-    box.innerHTML = AN.itens.map(function(it){
-      var g = it.gender === 2 ? 'Feminino' : (it.gender === 1 ? 'Masculino' : '—');
-      return '<div class="an-item" data-anid="' + it.id + '">'
-        + '<div class="an-h"><span class="an-id">#' + esc(it.id) + '</span><span class="an-nome">' + esc(it.nickname) + '</span><span class="an-hora">' + esc(it.quando) + '</span></div>'
-        + '<div class="an-meta">' + esc(it.guild || '—') + ' · ' + g + '</div>'
-        + '<div class="an-imgs">'
-        +   '<div class="an-img"><img loading="lazy" decoding="async" src="' + esc(it.cover) + '" alt=""><b>Original</b></div>'
-        +   '<div class="an-img"><img loading="lazy" decoding="async" src="' + esc(it.checkCover) + '" alt=""><b>Resenha</b></div>'
-        + '</div>'
-        + '<div class="an-acts">'
-        +   '<button class="ghost" data-anver="' + it.id + '" type="button">Ver</button>'
-        +   '<button class="ghost an-bad" data-anrej="' + it.id + '" type="button">Rejeitar</button>'
-        +   '<button class="ghost an-ok" data-anpass="' + it.id + '" type="button">Passar</button>'
-        + '</div></div>';
-    }).join('');
+    anexar(AN.itens);
   }
 
   function porId(id){
@@ -12474,6 +12535,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   window.__anLista = function(json){
     clearTimeout(AN.timer);
+    FILA.ativos = Math.max(0, FILA.ativos - 1);
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
     if(!r || !r.ok){
       AN.carregando = false;
@@ -12481,20 +12543,29 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       else { el('anLista').innerHTML = '<p class="hint">' + esc((r && r.msg) || 'não foi possível carregar') + '</p>'; }
       return;
     }
-    var novos = r.itens || [];
-    AN.total = (r.total === undefined || r.total === null) ? novos.length : r.total;
-    if(AN.pedida <= 1) AN.itens = novos.slice();
-    else AN.itens = AN.itens.concat(novos);
-    AN.pagina = AN.pedida;
-    el('anChip').textContent = AN.total + ' pendentes';
-    render();
-    // traz o resto sozinho, sem limite prático (o painel devolve até 100 por vez)
-    if(novos.length > 0 && AN.itens.length < AN.total && AN.pagina < 1000){
-      el('anChip').textContent = AN.itens.length + ' de ' + AN.total;
-      pedir(AN.pagina + 1);
-      return;
+    var temPagina = (r.pagina !== undefined && r.pagina !== null);
+    var pg = temPagina ? Number(r.pagina) : (AN.seq = (AN.seq || 0) + 1);
+    var itens = r.itens || [];
+    if(pg === 1){
+      AN.total = (r.total === undefined || r.total === null) ? itens.length : Number(r.total);
+      AN.paginas[1] = itens;
+      if(temPagina){
+        AN.alvoPaginas = Math.max(1, Math.min(1000, Math.ceil(AN.total / 100)));
+        // busca as outras páginas em paralelo (até 6 de uma vez)
+        for(var p = 2; p <= AN.alvoPaginas; p++) enfileirar(p);
+      } else {
+        // app antigo não informa a página: segue uma por vez, em ordem
+        AN.alvoPaginas = 1;
+      }
+    } else {
+      AN.paginas[pg] = itens;
     }
-    AN.carregando = false;
+    montar();
+    bombear();
+    if(!temPagina && itens.length && AN.itens.length < AN.total && pg < 1000){
+      AN.alvoPaginas = pg + 1;
+      pedir(pg + 1);
+    }
   };
 
   window.__anMotivos = function(json){
