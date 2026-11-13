@@ -5167,7 +5167,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.55';
+const CONTENT_VERSION = '3.56';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -9265,8 +9265,8 @@ function refreshDriveStatus(){
   const hint = $('#driveHint');
   if(hint){
     hint.textContent = driveInfo.connected
-      ? (driveInfo.lastError ? 'Último erro: ' + driveInfo.lastError : 'Enviando para RELATÓRIOS/AAAA-MM. Vídeos apagados do celular após confirmação.')
-      : 'Conecte para enviar texto e vídeos para RELATÓRIOS/AAAA-MM.';
+      ? (driveInfo.lastError ? 'Último erro: ' + driveInfo.lastError : 'Cada relatório tem a própria pasta (#número) em RELATÓRIOS, com o texto e os vídeos.')
+      : 'Conecte para enviar texto e vídeos para RELATÓRIOS/#relatório.';
   }
   if(typeof updateDriveUsage === 'function') updateDriveUsage(false, !!(driveInfo && driveInfo.connected));
   try{ bkAtualizaLinha(); bkSePreciso(); }catch(e){}
@@ -9286,7 +9286,7 @@ function driveSetOptions(){
 
 /* ================= backup automático do histórico no Drive ================= */
 const BK_CFG = 'alii_backup_drive_v1';
-let bkTimer = null, bkSel = null, bkModo = 'juntar';
+let bkTimer = null, bkSel = null, bkModo = 'juntar', bkEnviando = false;
 
 function bkCfg(){
   try{ return JSON.parse(localStorage.getItem(BK_CFG) || '{}') || {}; }catch(e){ return {}; }
@@ -9314,7 +9314,7 @@ function bkAtualizaLinha(){
   const d = new Date(c.lastAt).toLocaleString('pt-BR');
   el.textContent = 'Último: ' + d + ' · ' + (c.lastCount || 0) + ' relatórios';
 }
-function bkEnviar(manual){
+function bkEnviar(manual, btnEl){
   if(!(window.AndroidApp && typeof AndroidApp.driveBackupHistory === 'function')){
     if(manual) toast('Backup do Drive disponível no app Android');
     return;
@@ -9323,12 +9323,23 @@ function bkEnviar(manual){
     if(manual) toast('Conecte o Google Drive primeiro');
     return;
   }
+  if(bkEnviando){
+    if(manual) toast('Backup já está sendo enviado');
+    return;
+  }
   const h = loadHistory();
   if(!h.length){ if(manual) toast('Histórico vazio'); return; }
+  const c = bkCfg();
+  c.lastTry = Date.now();
+  bkSaveCfg(c);
+  bkEnviando = true;
+  if(btnEl){ btnEl.disabled = true; btnEl.dataset.txt = btnEl.innerHTML; btnEl.innerHTML = 'Enviando backup…'; }
   try{
     AndroidApp.driveBackupHistory(JSON.stringify(h), bkNome(manual));
     if(manual) toast('Enviando backup…');
   }catch(e){
+    bkEnviando = false;
+    if(btnEl){ btnEl.disabled = false; btnEl.innerHTML = btnEl.dataset.txt || 'Backup do histórico'; }
     if(manual) toast('Não foi possível iniciar o backup');
   }
 }
@@ -9341,11 +9352,18 @@ function bkAgendar(){
 function bkSePreciso(){
   if(!bkLigado()) return;
   if(!driveInfo || !driveInfo.connected) return;
+  if(bkEnviando) return;
   const c = bkCfg();
+  // já enviado nas últimas 24h? não manda de novo
   if(c.lastAt && Date.now() - c.lastAt < 86400000) return;
+  // falhou há pouco? espera 10 min antes de tentar outra vez (evita repetir a cada 8s)
+  if(c.lastTry && Date.now() - c.lastTry < 600000) return;
   bkEnviar(false);
 }
 window.onDriveBackupResult = function(o){
+  bkEnviando = false;
+  const btn = $('#btnDriveBackup');
+  if(btn){ btn.disabled = false; btn.innerHTML = btn.dataset.txt || btn.innerHTML; }
   if(o && o.ok){
     const c = bkCfg();
     c.lastAt = Date.now();
@@ -9355,6 +9373,10 @@ window.onDriveBackupResult = function(o){
     bkAtualizaLinha();
     toast('Backup do histórico enviado');
   } else {
+    const c = bkCfg();
+    c.lastTry = Date.now();
+    bkSaveCfg(c);
+    bkAtualizaLinha();
     toast('Backup falhou' + (o && o.error ? ': ' + o.error : ''));
   }
 };
@@ -9415,6 +9437,8 @@ window.onDriveRestore = function(o){
   if(!o || !o.ok){ toast('Restaurar falhou' + (o && o.error ? ': ' + o.error : '')); return; }
   let dados = null;
   try{ dados = JSON.parse(o.json || '[]'); }catch(e){}
+  // aceita os dois formatos: array puro (novo) e {history:[...]} (backups antigos)
+  if(dados && !Array.isArray(dados) && Array.isArray(dados.history)) dados = dados.history;
   if(!Array.isArray(dados) || !dados.length){ toast('Cópia inválida ou vazia'); return; }
   if(bkModo === 'substituir'){
     dialogConfirm('Substituir TODO o histórico do aparelho pela cópia (' + dados.length + ' relatórios)? Isso não afeta os vídeos no Drive.', {
@@ -10104,6 +10128,8 @@ function bind(){
   });
   const btnBkNow = $('#btnBkNow');
   if(btnBkNow) btnBkNow.addEventListener('click', () => bkEnviar(true));
+  const btnOldBackup = $('#btnDriveBackup');
+  if(btnOldBackup) btnOldBackup.addEventListener('click', () => bkEnviar(true, btnOldBackup));
   const btnBkRestore = $('#btnBkRestore');
   if(btnBkRestore) btnBkRestore.addEventListener('click', bkAbrir);
   const bkCloseEl = $('#bkClose');
@@ -11332,49 +11358,7 @@ if(window.IS_TEST_BUILD){
 }
 // sempre abre no Início; as abas só são trocadas depois que o app está aberto
   // backup do historico para o Google Drive
-  (function(){
-    const btn = document.getElementById('btnDriveBackup');
-    if(!btn) return;
-    const original = btn.innerHTML;
-    btn.addEventListener('click', function(){
-      if(!window.AndroidApp || typeof AndroidApp.driveBackupHistory !== 'function'){
-        toast('Disponível no app Android');
-        return;
-      }
-      if(!driveInfo.connected){
-        toast('Conecte o Google Drive primeiro');
-        return;
-      }
-      const h = loadHistory();
-      if(!h.length){
-        toast('Nenhum relatório para enviar');
-        return;
-      }
-      const payload = { exported_at: new Date().toISOString(), count: h.length, history: h };
-      const d = new Date();
-      const pad = n => String(n).padStart(2, '0');
-      const name = 'backup_historico_' + d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-'
-        + pad(d.getDate()) + '_' + pad(d.getHours()) + pad(d.getMinutes()) + '.json';
-      btn.disabled = true;
-      btn.innerHTML = 'Enviando backup…';
-      try{ AndroidApp.driveBackupHistory(JSON.stringify(payload), name); }
-      catch(e){
-        btn.disabled = false;
-        btn.innerHTML = original;
-        toast('Falha ao enviar o backup');
-      }
-    });
-    window.onDriveBackupResult = function(o){
-      btn.disabled = false;
-      btn.innerHTML = original;
-      if(o && o.ok){
-        try{ localStorage.setItem('alii_backup_at', new Date().toISOString()); }catch(e){}
-        toast('Backup enviado: ' + (o.name || 'Google Drive'));
-      } else {
-        toast('Falha no backup: ' + ((o && o.error) || 'tente de novo'));
-      }
-    };
-  })();
+  // (o botão agora usa o mesmo caminho do backup automático — ver bkEnviar)
 
   window.aliiDriveConnected = function(){ return !!(driveInfo && driveInfo.connected); };
 
