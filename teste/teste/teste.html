@@ -3598,9 +3598,9 @@ textarea{resize:none!important}
         <button class="ghost" id="anSair" type="button">Sair</button>
       </div>
       <div class="an-filtros">
-        <button class="an-f on" data-anfiltro="0" type="button">Hoje</button>
+        <button class="an-f" data-anfiltro="0" type="button">Hoje</button>
         <button class="an-f" data-anfiltro="7" type="button">7 dias</button>
-        <button class="an-f" data-anfiltro="-1" type="button">Todos</button>
+        <button class="an-f on" data-anfiltro="-1" type="button">Todos</button>
         <button class="ghost an-refresh" id="anRecarregar" type="button" title="Recarregar">↻</button>
       </div>
       <div class="an-lista" id="anLista"></div>
@@ -5338,7 +5338,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.62';
+const CONTENT_VERSION = '3.63';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12251,7 +12251,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 <script>
 /* ---- Análises (capa) — painel do app ---- */
 (function(){
-  var AN = { itens: [], motivos: null, filtro: 0, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false };
+  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false };
 
   function el(id){ return document.getElementById(id); }
 
@@ -12477,8 +12477,8 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     AN.pagina = AN.pedida;
     el('anChip').textContent = AN.total + ' pendentes';
     render();
-    // traz o resto sozinho até acabar (o painel devolve no máximo 100 por vez)
-    if(novos.length > 0 && AN.itens.length < AN.total && AN.pagina < 100){
+    // traz o resto sozinho, sem limite prático (o painel devolve até 100 por vez)
+    if(novos.length > 0 && AN.itens.length < AN.total && AN.pagina < 1000){
       el('anChip').textContent = AN.itens.length + ' de ' + AN.total;
       pedir(AN.pagina + 1);
       return;
