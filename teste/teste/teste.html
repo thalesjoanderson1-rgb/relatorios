@@ -3562,8 +3562,7 @@ textarea{resize:none!important}
       #anFoto{position:fixed;inset:0;background:transparent;z-index:10000;display:flex;align-items:center;justify-content:center;overflow:hidden}
       #anFoto[hidden]{display:none}
       #anFoto img{max-width:100%;max-height:100%;object-fit:contain;transform-origin:center center;touch-action:none;will-change:transform}
-      #anFoto .an-foto-x{position:absolute;top:12px;right:12px;width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,20,.55);color:var(--dim);font-size:17px;line-height:1;display:grid;place-items:center;z-index:2}
-      #anFoto .an-foto-x:hover{background:rgba(255,255,255,.06);color:var(--txt)}
+      #anFoto .an-foto-x{position:absolute;top:12px;right:12px;z-index:2;min-width:0;line-height:1}
       #sec-analises .an-img img,#sec-analises .an-grande img{cursor:zoom-in}
     </style>
 
@@ -3658,7 +3657,7 @@ textarea{resize:none!important}
 
     <div id="anFoto" hidden>
       <img id="anFotoImg" alt="">
-      <button class="an-foto-x" id="anFotoFechar" type="button" aria-label="Fechar">✕</button>
+      <button class="ghost an-foto-x" id="anFotoFechar" type="button" aria-label="Fechar">✕</button>
     </div>
   </section>
 
@@ -5338,7 +5337,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.67';
+const CONTENT_VERSION = '3.68';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
