@@ -5411,7 +5411,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.78';
+const CONTENT_VERSION = '3.79';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12324,7 +12324,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 <script>
 /* ---- Análises (capa) — painel do app ---- */
 (function(){
-  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1, vidModo: 'fila' };
+  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1, vidModo: 'fila', ordenado: false };
 
   function el(id){ return document.getElementById(id); }
 
@@ -12465,6 +12465,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     AN.carregadoEm = 0;
     // o que ainda estiver voltando do filtro anterior será ignorado
     AN.emVoo = 0;
+    AN.ordenado = false;
     FILA.espera = [];
     FILA.ativos = 0;
     el('anLista').innerHTML = '<p class="hint">carregando…</p>';
@@ -12490,7 +12491,15 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(prefixo >= totalPaginas){
       AN.carregando = false;
       AN.carregadoEm = Date.now();
-      el('anChip').textContent = AN.total + ' pendentes';
+      // vídeos: ordem do mais novo para o mais antigo
+      if((AN.tipo === 3) && !AN.ordenado){
+        AN.ordenado = true;
+        AN.itens.sort(function(a, b){ return (Number(b.quandoMs) || 0) - (Number(a.quandoMs) || 0); });
+        render();
+      }
+      el('anChip').textContent = (AN.tipo === 3 && AN.itens.length < AN.total)
+        ? (AN.itens.length + ' de ' + AN.total)
+        : (AN.total + ' pendentes');
     } else {
       el('anChip').textContent = AN.itens.length + ' de ' + AN.total;
     }
@@ -12709,7 +12718,8 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       AN.total = (r.total === undefined || r.total === null) ? itens.length : Number(r.total);
       AN.paginas[1] = itens;
       if(temPagina){
-        AN.alvoPaginas = Math.max(1, Math.min(1000, Math.ceil(AN.total / 100)));
+        var maxPag = (Number(r.tipo) === 3 || Number(r.tipo) === 4) ? 3 : 1000;
+      AN.alvoPaginas = Math.max(1, Math.min(maxPag, Math.ceil(AN.total / 100)));
         // busca as outras páginas em paralelo (até 6 de uma vez)
         for(var p = 2; p <= AN.alvoPaginas; p++) enfileirar(p);
       } else {
