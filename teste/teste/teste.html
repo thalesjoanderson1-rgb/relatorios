@@ -3570,7 +3570,8 @@ textarea{resize:none!important}
       .an-sh-top h3{margin:0;font-size:16px}
       .an-sh-top p{margin:3px 0 0;font-size:11.5px;color:var(--dim)}
       .an-busca{margin:0 14px 8px;height:38px;border:1px solid var(--line);border-radius:10px;background:var(--card2);color:var(--txt);padding:0 10px;font-size:13px;outline:none}
-      .an-ops{overflow:auto;padding:0 14px 8px;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch;min-height:80px}
+      .an-ops{overflow:auto;padding:0 14px 8px;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch;min-height:80px;overscroll-behavior:contain}
+      .an-sheet,#anVerCorpo{overscroll-behavior:contain}
       .an-op{display:flex;gap:9px;align-items:flex-start;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card2);font-size:12px;line-height:1.4;color:#c6d3e2;text-align:left;cursor:pointer;font-family:inherit}
       .an-op .n{font-family:var(--mono);font-size:9px;color:var(--dim);width:18px;flex:0 0 auto;margin-top:2px}
       .an-op.sel{border-color:rgba(255,93,93,.55);background:rgba(255,93,93,.1);color:#ffd0d0}
@@ -5414,7 +5415,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.82';
+const CONTENT_VERSION = '3.83';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12338,6 +12339,18 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(n && n.parentNode !== document.body) document.body.appendChild(n);
   });
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+
+  // com camada aberta, a página de trás não rola
+  (function travarFundo(){
+    var ids = ['anVer','anRej','anConf','anVid','anSim','anFoto','anVplay'];
+    var alvos = ids.map(function(i){ return document.getElementById(i); }).filter(Boolean);
+    if(!alvos.length || !window.MutationObserver) return;
+    var obs = new MutationObserver(function(){
+      var aberto = alvos.some(function(n){ return !n.hidden; });
+      document.body.style.overflow = aberto ? 'hidden' : '';
+    });
+    alvos.forEach(function(n){ obs.observe(n, { attributes: true, attributeFilter: ['hidden'] }); });
+  })();
   function ponte(){ return !!(window.AndroidApp && typeof AndroidApp.anStatus === 'function'); }
   function fmt(ms){ try{ return new Date(ms).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }); }catch(e){ return ''; } }
 
