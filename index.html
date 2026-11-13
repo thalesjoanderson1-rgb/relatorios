@@ -3420,6 +3420,15 @@ textarea{resize:none!important}
       <label class="switch-row"><span class="switch"><input type="checkbox" id="driveDelete" checked><i></i></span><span>Apagar vídeo do celular após enviar</span></label>
       <label class="switch-row"><span class="switch"><input type="checkbox" id="driveWifi"><i></i></span><span>Só enviar no Wi-Fi</span></label>
       <p class="hint" style="margin:6px 0 0">Vídeos no Drive são apagados automaticamente após 45 dias (nunca antes).</p>
+
+      <div id="bkAutoBox" class="bk-auto-box">
+        <label class="switch-row" style="margin:0"><span class="switch"><input type="checkbox" id="bkAuto" checked><i></i></span><span><b>Backup automático do histórico</b></span></label>
+        <p class="hint" id="bkLast" style="margin:4px 0 0">—</p>
+        <div class="row" style="margin:8px 0 0">
+          <button class="primary" id="btnBkNow" type="button">Backup agora</button>
+          <button class="ghost" id="btnBkRestore" type="button">Restaurar do Drive</button>
+        </div>
+      </div>
       <p class="hint" id="driveHint" style="margin:8px 0 0">Conecte para enviar texto e vídeos para RELATÓRIOS/AAAA-MM.</p>
     </div>
             <div class="drive-usage" id="driveUsageLine" style="display:none">
@@ -3581,7 +3590,60 @@ textarea{resize:none!important}
   #histViewWrap #histViewVideos .hist-vdel:active{transform:scale(.94)}
   #histViewWrap #histViewVideos .hist-vadd{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:6px!important;width:148px!important;height:118px!important;min-height:0!important;padding:0!important;border:1px dashed rgba(77,163,255,.45)!important;border-radius:12px!important;background:rgba(77,163,255,.05)!important;color:#7f95ad!important;font-size:10px!important;line-height:1.2!important;text-align:center!important;text-transform:none!important;letter-spacing:0!important;box-shadow:none!important}
   #histViewWrap #histViewVideos .hist-vadd b{font-size:19px;color:var(--accent);line-height:1;font-weight:400}
-</style><script type="text/plain" id="seedHistoryCsv">
+
+  /* validade do vídeo no Drive (regra dos 45 dias) */
+  .vb{display:inline-flex;align-items:center;gap:3px;margin-top:3px;padding:1px 6px;border-radius:20px;
+      font-size:8.5px;line-height:1.55;border:1px solid transparent;white-space:nowrap;font-family:var(--sans)}
+  .vb svg{width:9px;height:9px;flex:0 0 auto}
+  .vb b{font-weight:700}
+  .vb.ok{color:#8fe0b0;border-color:rgba(46,204,113,.30);background:rgba(46,204,113,.08)}
+  .vb.warn{color:#f7c768;border-color:rgba(245,181,68,.38);background:rgba(245,181,68,.10)}
+  .vb.bad{color:#ff8b8b;border-color:rgba(255,107,107,.38);background:rgba(255,107,107,.10)}
+  #histViewWrap #histViewVideos .vb{margin-top:2px}
+  .hist-vchip{display:inline-flex;align-items:center;gap:2px;margin-left:4px;padding:0 5px;border-radius:20px;
+      font-size:8px;line-height:1.6;border:1px solid transparent;white-space:nowrap;vertical-align:middle}
+  .hist-vchip svg{width:8px;height:8px}
+  .hist-vchip.warn{color:#f7c768;border-color:rgba(245,181,68,.38);background:rgba(245,181,68,.10)}
+  .hist-vchip.bad{color:#ff8b8b;border-color:rgba(255,107,107,.38);background:rgba(255,107,107,.10)}
+</style>
+<style id="alii-backup-css">
+  .bk-auto-box{margin-top:12px;padding:10px 12px;border:1px solid rgba(139,157,255,.28);border-radius:12px;background:rgba(139,157,255,.05)}
+  .bk-auto-box .switch-row{margin:0}
+  .bk-auto-box .row{gap:8px}
+  .bk-auto-box button{height:32px!important;font-size:11.5px!important}
+
+  .bk-sheet{position:fixed;inset:0;z-index:100000}
+  .bk-sheet .nx-sheet-card{position:absolute;left:0;right:0;bottom:0;max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px}
+  .bk-kicker{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted)}
+  .bk-title{font-size:18px;font-weight:600;margin:12px 0 0;color:var(--txt)}
+  .bk-list{display:flex;flex-direction:column;gap:8px}
+  .bk-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);cursor:pointer}
+  .bk-row.sel{border-color:rgba(139,157,255,.55);background:rgba(139,157,255,.08)}
+  .bk-row b{display:block;font-size:11.5px;color:var(--txt)}
+  .bk-row small{display:block;font-size:9.5px;color:var(--dim);margin-top:1px}
+  .bk-pick{font-size:9.5px;color:var(--accent);border:1px solid rgba(139,157,255,.45);border-radius:999px;padding:3px 8px;white-space:nowrap}
+  .bk-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 0}
+  .bk-mode{border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:var(--surface2);text-align:left;cursor:pointer}
+  .bk-mode.on{border-color:rgba(47,204,113,.5);background:rgba(47,204,113,.07)}
+  .bk-mode b{display:block;font-size:11px;color:var(--txt)}
+  .bk-mode small{display:block;font-size:9px;color:var(--dim);margin-top:2px;line-height:1.35}
+</style>
+
+<div id="bkSheet" class="bk-sheet" style="display:none">
+  <div class="nx-sheet-backdrop" id="bkBackdrop"></div>
+  <div class="nx-sheet-card">
+    <div class="nx-sheet-top"><span class="bk-kicker">RESTAURAR</span><button type="button" id="bkClose" aria-label="Fechar">×</button></div>
+    <h3 class="bk-title">Backups no Drive</h3>
+    <p class="hint" style="margin:6px 0 10px">Escolha uma cópia. Nada é apagado do aparelho sem confirmação.</p>
+    <div id="bkList" class="bk-list"><p class="hint">Carregando…</p></div>
+    <div class="bk-modes">
+      <button type="button" class="bk-mode on" data-modo="juntar"><b>Juntar</b><small>traz só o que falta</small></button>
+      <button type="button" class="bk-mode" data-modo="substituir"><b>Substituir</b><small>troca o histórico do aparelho</small></button>
+    </div>
+    <div class="btns"><button id="bkApply" class="primary" type="button" disabled>Restaurar cópia</button></div>
+  </div>
+</div>
+<script type="text/plain" id="seedHistoryCsv">
 ID;Streamer;Data;Hora;Violacao;Details;Action;Registrado_em
 1;223232;08/07/2026;09:43 AM;Bare Torso.;Streamer broadcasting without a shirt (bare torso).;Live closed.;2026-07-29T23:30:00-0300
 2;10416591;08/07/2026;14:20 PM;Children in Broadcast.;Streamer broadcasting with a child present (accompanied).;Warning sent to the streamer.;2026-07-29T23:30:00-0300
@@ -6590,7 +6652,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.45';
+const CONTENT_VERSION = '3.48';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -6708,6 +6770,7 @@ function saveHistory(h, opts){
   }
   if(!ok) return false;
   if(!opts || !opts.noSync) scheduleSync(1800);
+  try{ bkAgendar(); }catch(e){}
   return true;
 }
 
@@ -8182,6 +8245,70 @@ window.onThumbReady = function(key, data){
   pumpHistThumbs();
 };
 
+/* --- validade do vídeo no Drive (regra dos 45 dias, só informa) --- */
+const VIDEO_KEEP_DAYS = 45;
+const VB_ICON_HOUR = '<svg viewBox="0 0 24 24" fill="none"><path d="M7 3h10M7 21h10M8 3v3.2c0 1.2.5 2.3 1.4 3.1L12 12l-2.6 2.7A4.3 4.3 0 0 0 8 17.8V21M16 3v3.2c0 1.2-.5 2.3-1.4 3.1L12 12l2.6 2.7c.9.8 1.4 1.9 1.4 3.1V21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const VB_ICON_WARN = '<svg viewBox="0 0 24 24" fill="none"><path d="M12 4 2.8 19.8h18.4z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 10v4M12 17v.2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+
+/* data/hora do relatório (aproximação em UTC-3), usada quando o vídeo antigo
+   não tem a data de envio salva */
+function reportMoment(e){
+  try{
+    const p = String(e && e.date || '').split('/').map(Number);
+    if(p.length !== 3 || p.some(isNaN)) return 0;
+    const m = /(\d{1,2}):(\d{2})\s*(AM|PM)?/i.exec(String(e && e.time || ''));
+    let hh = m ? +m[1] : 0;
+    const mm = m ? +m[2] : 0;
+    if(m && m[3]){
+      const pm = /PM/i.test(m[3]);
+      if(pm && hh < 12) hh += 12;
+      if(!pm && hh === 12) hh = 0;
+    }
+    return Date.UTC(p[2], p[1] - 1, p[0], hh + 3, mm);
+  }catch(err){ return 0; }
+}
+
+function videoExpiry(v, e, temDrive){
+  if(!temDrive) return null;
+  let base = 0, exato = false;
+  const iso = v && (v.uploadedAt || v.uploadedDate);
+  if(iso){ const t = Date.parse(iso); if(!isNaN(t)){ base = t; exato = true; } }
+  if(!base && e && e.cloud && e.cloud.uploadedAt){
+    const t = Date.parse(e.cloud.uploadedAt);
+    if(!isNaN(t)){ base = t; exato = true; }
+  }
+  if(!base) base = reportMoment(e);
+  if(!base) return null;
+  const dias = Math.ceil(VIDEO_KEEP_DAYS - (Date.now() - base) / 86400000);
+  return { dias, exato };
+}
+
+function expiryBadge(v, e, temDrive){
+  const d = videoExpiry(v, e, temDrive);
+  if(!d) return '';
+  const ap = d.exato ? '' : '≈ ';
+  if(d.dias <= 0) return `<span class="vb bad">${VB_ICON_WARN}vídeo apagado do Drive</span>`;
+  if(d.dias <= 15) return `<span class="vb warn">${VB_ICON_HOUR}${ap}expira em ${d.dias} dia${d.dias > 1 ? 's' : ''}</span>`;
+  return `<span class="vb ok">${VB_ICON_HOUR}${ap}${d.dias} dias</span>`;
+}
+
+/* selo pequeno na lista do histórico: só quando está perto ou já venceu */
+function expiryChip(e){
+  const vids = entryVideos(e);
+  const ids = entryCloudVideoIds(e);
+  const total = Math.max(vids.length, ids.length);
+  let pior = null;
+  for(let i = 0; i < total; i++){
+    const temDrive = !!((vids[i] && (vids[i].remote || vids[i].fileId)) || ids[i]);
+    const d = videoExpiry(vids[i] || {}, e, temDrive);
+    if(!d) continue;
+    if(!pior || d.dias < pior.dias) pior = d;
+  }
+  if(!pior || pior.dias > 15) return '';
+  if(pior.dias <= 0) return `<span class="hist-vchip bad" title="O vídeo passou dos 45 dias">${VB_ICON_WARN}</span>`;
+  return `<span class="hist-vchip warn" title="Vídeo expira em ${pior.dias} dia(s)">${VB_ICON_HOUR}${pior.dias}d</span>`;
+}
+
 function renderHistVideos(e){
   const box = $('#histViewVideos');
   if(!box) return;
@@ -8204,6 +8331,7 @@ function renderHistVideos(e){
           <span class="hist-vplay">${HICONS.play}</span>
         </span>
         <span class="hist-vlabel">Vídeo ${i + 1}${where}${dur}</span>
+        ${expiryBadge(v, e, !!(v.remote || v.fileId || cloudIds[i]))}
       </button>
       <button class="hist-vdel" type="button" data-vdel="${i}" aria-label="Remover vídeo ${i + 1}" title="Remover vídeo">✕</button>
     </div>`;
@@ -8453,6 +8581,34 @@ function closeEditEntry(){
 function saveEditEntry(){
   if(!histViewEntry) return;
   const id = histViewEntry.id;
+  const h = loadHistory();
+  const i = h.findIndex(x => String(x.id) === String(id));
+  if(i < 0){ closeEditEntry(); return; }
+
+  const iso = $('#edDate').value || '';
+  const dm = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const novo = {
+    id: $('#edStreamer').value || '',
+    date: dm ? dm[3] + '/' + dm[2] + '/' + dm[1] : (histViewEntry.date || ''),
+    time: $('#edHour').value + ':' + $('#edMin').value + ' ' + $('#edAmPm').value
+  };
+
+  // mesma regra que já existe no Gerar (findDuplicate), só aplicada também aqui
+  const outros = h.filter(x => String(x.id) !== String(id));
+  const dup = findDuplicate(outros, novo);
+  if(dup){
+    dialogConfirm('Já existe um relatório do streamer ' + novo.id + ' em ' + novo.date + ' às ' + novo.time +
+      ' (#' + dup.id + '). Salvar esta edição mesmo assim?', {
+      title: 'Relatório duplicado',
+      ok: 'Salvar mesmo assim',
+      cancel: 'Cancelar'
+    }).then(ok => { if(ok) aplicarEdicaoRelatorio(id); });
+    return;
+  }
+  aplicarEdicaoRelatorio(id);
+}
+
+function aplicarEdicaoRelatorio(id){
   const h = loadHistory();
   const i = h.findIndex(x => String(x.id) === String(id));
   if(i < 0){ closeEditEntry(); return; }
@@ -9724,7 +9880,7 @@ function renderHistory(){
           <span class="hist-id">${totalVids ? `<span class="hist-vbadge" title="${totalVids} vídeo(s)">${HICONS.video}${totalVids > 1 ? '<b>2</b>' : ''}</span>` : ''}#${esc(e.id)}</span>
           <span class="hist-streamer">${esc(e.streamer)}</span>
           <span class="hist-week">Sem. ${wk ? wk.week : '—'}</span>
-          ${e.cloud ? `<span class="hist-cloud ${e.cloud.status === 'uploaded' ? 'uploaded' : (e.cloud.status === 'failed' ? 'failed' : (e.cloud.status === 'sending' || e.cloud.status === 'uploading' ? 'sending' : 'pending'))}" ${e.cloud.status === 'failed' ? 'data-retry title="Toque para reenviar"' : ''}>${cloudLabel(e.cloud)}</span>` : ''}
+          ${e.cloud ? `<span class="hist-cloud ${e.cloud.status === 'uploaded' ? 'uploaded' : (e.cloud.status === 'failed' ? 'failed' : (e.cloud.status === 'sending' || e.cloud.status === 'uploading' ? 'sending' : 'pending'))}" ${e.cloud.status === 'failed' ? 'data-retry title="Toque para reenviar"' : ''}>${cloudLabel(e.cloud)}</span>` : ''}${expiryChip(e)}
         </div>
         <div class="hist-viol">${esc(e.violation)}</div>
         <div class="hist-meta">${esc(e.date)} · ${esc(e.time)}</div>
@@ -10436,6 +10592,7 @@ function refreshDriveStatus(){
       : 'Conecte para enviar texto e vídeos para RELATÓRIOS/AAAA-MM.';
   }
   if(typeof updateDriveUsage === 'function') updateDriveUsage(false, !!(driveInfo && driveInfo.connected));
+  try{ bkAtualizaLinha(); bkSePreciso(); }catch(e){}
 }
 
 function driveSetOptions(){
@@ -10449,6 +10606,161 @@ function driveSetOptions(){
     try{ AndroidApp.cloudSetOptions(JSON.stringify({ autoUpload:auto, deleteLocal:del, wifiOnly:wifi })); }catch(e){}
   }
 }
+
+/* ================= backup automático do histórico no Drive ================= */
+const BK_CFG = 'alii_backup_drive_v1';
+let bkTimer = null, bkSel = null, bkModo = 'juntar';
+
+function bkCfg(){
+  try{ return JSON.parse(localStorage.getItem(BK_CFG) || '{}') || {}; }catch(e){ return {}; }
+}
+function bkSaveCfg(o){
+  try{ localStorage.setItem(BK_CFG, JSON.stringify(o)); }catch(e){}
+}
+function bkLigado(){
+  return bkCfg().auto !== false;      // padrão: ligado
+}
+function bkNome(manual){
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  const dia = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  if(!manual) return 'historico-' + dia + '.json';
+  return 'historico-' + dia + '_' + p(d.getHours()) + p(d.getMinutes()) + '.json';
+}
+function bkAtualizaLinha(){
+  const el = $('#bkLast');
+  const chave = $('#bkAuto');
+  const c = bkCfg();
+  if(chave) chave.checked = c.auto !== false;
+  if(!el) return;
+  if(!c.lastAt){ el.textContent = 'Ainda não enviado'; return; }
+  const d = new Date(c.lastAt).toLocaleString('pt-BR');
+  el.textContent = 'Último: ' + d + ' · ' + (c.lastCount || 0) + ' relatórios';
+}
+function bkEnviar(manual){
+  if(!(window.AndroidApp && typeof AndroidApp.driveBackupHistory === 'function')){
+    if(manual) toast('Backup do Drive disponível no app Android');
+    return;
+  }
+  if(!driveInfo || !driveInfo.connected){
+    if(manual) toast('Conecte o Google Drive primeiro');
+    return;
+  }
+  const h = loadHistory();
+  if(!h.length){ if(manual) toast('Histórico vazio'); return; }
+  try{
+    AndroidApp.driveBackupHistory(JSON.stringify(h), bkNome(manual));
+    if(manual) toast('Enviando backup…');
+  }catch(e){
+    if(manual) toast('Não foi possível iniciar o backup');
+  }
+}
+function bkAgendar(){
+  if(!bkLigado()) return;
+  if(!driveInfo || !driveInfo.connected) return;
+  clearTimeout(bkTimer);
+  bkTimer = setTimeout(() => bkEnviar(false), 30000);
+}
+function bkSePreciso(){
+  if(!bkLigado()) return;
+  if(!driveInfo || !driveInfo.connected) return;
+  const c = bkCfg();
+  if(c.lastAt && Date.now() - c.lastAt < 86400000) return;
+  bkEnviar(false);
+}
+window.onDriveBackupResult = function(o){
+  if(o && o.ok){
+    const c = bkCfg();
+    c.lastAt = Date.now();
+    c.lastCount = loadHistory().length;
+    c.lastName = o.name || '';
+    bkSaveCfg(c);
+    bkAtualizaLinha();
+    toast('Backup do histórico enviado');
+  } else {
+    toast('Backup falhou' + (o && o.error ? ': ' + o.error : ''));
+  }
+};
+
+function bkAbrir(){
+  bkSel = null;
+  const s = $('#bkSheet');
+  if(!s) return;
+  s.style.display = 'block';
+  const lista = $('#bkList');
+  lista.innerHTML = '<p class="hint">Carregando…</p>';
+  const aplicar = $('#bkApply');
+  if(aplicar) aplicar.disabled = true;
+  if(!(window.AndroidApp && typeof AndroidApp.driveListBackups === 'function')){
+    lista.innerHTML = '<p class="hint">Restaurar do Drive está disponível no app Android.</p>';
+    return;
+  }
+  try{ AndroidApp.driveListBackups(); }catch(e){
+    lista.innerHTML = '<p class="hint">Não foi possível listar agora.</p>';
+  }
+}
+function bkFechar(){
+  const s = $('#bkSheet');
+  if(s) s.style.display = 'none';
+}
+window.onDriveBackups = function(arr){
+  const lista = $('#bkList');
+  if(!lista) return;
+  if(!Array.isArray(arr) || !arr.length){
+    lista.innerHTML = '<p class="hint">Nenhuma cópia encontrada no Drive.</p>';
+    return;
+  }
+  lista.innerHTML = arr.map((b, i) => {
+    const d = b.modified ? new Date(b.modified) : null;
+    const quando = d ? d.toLocaleString('pt-BR') : (b.name || '');
+    const kb = b.size ? Math.max(1, Math.round(b.size / 1024)) + ' KB' : '';
+    return `<div class="bk-row" data-bk="${i}">
+      <div><b>${esc(quando)}</b><small>${esc(b.name || '')}${kb ? ' · ' + kb : ''}</small></div>
+      <span class="bk-pick">Selecionar</span>
+    </div>`;
+  }).join('');
+  lista.querySelectorAll('[data-bk]').forEach(el => {
+    el.addEventListener('click', () => {
+      bkSel = arr[+el.getAttribute('data-bk')];
+      lista.querySelectorAll('.bk-row').forEach(x => x.classList.remove('sel'));
+      el.classList.add('sel');
+      const aplicar = $('#bkApply');
+      if(aplicar) aplicar.disabled = false;
+    });
+  });
+};
+window.onDriveBackupsError = function(o){
+  const lista = $('#bkList');
+  if(lista) lista.innerHTML = '<p class="hint">' + esc((o && o.error) || 'Falha ao listar') + '</p>';
+};
+
+window.onDriveRestore = function(o){
+  if(!o || !o.ok){ toast('Restaurar falhou' + (o && o.error ? ': ' + o.error : '')); return; }
+  let dados = null;
+  try{ dados = JSON.parse(o.json || '[]'); }catch(e){}
+  if(!Array.isArray(dados) || !dados.length){ toast('Cópia inválida ou vazia'); return; }
+  if(bkModo === 'substituir'){
+    dialogConfirm('Substituir TODO o histórico do aparelho pela cópia (' + dados.length + ' relatórios)? Isso não afeta os vídeos no Drive.', {
+      title: 'Substituir histórico', ok: 'Substituir', danger: true
+    }).then(ok => {
+      if(!ok) return;
+      saveHistory(dados);
+      renderHistory();
+      bkFechar();
+      toast('Histórico substituído (' + dados.length + ' relatórios)');
+    });
+    return;
+  }
+  const atual = loadHistory();
+  const ids = new Set(atual.map(e => String(e.id)));
+  const novos = dados.filter(e => e && e.id != null && !ids.has(String(e.id)));
+  if(!novos.length){ toast('Nada novo para restaurar'); return; }
+  saveHistory(atual.concat(novos));
+  renderHistory();
+  bkFechar();
+  toast('Restaurados ' + novos.length + ' relatório(s)');
+};
+
 
 /* Cache de vídeos: cópias temporárias feitas para compartilhar e assistir.
    Os vídeos em si ficam no Drive; isto aqui pode ser apagado a qualquer hora. */
@@ -11104,6 +11416,37 @@ function bind(){
   const driveWifi = $('#driveWifi');
   if(driveWifi) driveWifi.addEventListener('change', driveSetOptions);
 
+  // backup automático do histórico (Drive)
+  const bkAutoEl = $('#bkAuto');
+  if(bkAutoEl) bkAutoEl.addEventListener('change', () => {
+    const c = bkCfg();
+    c.auto = bkAutoEl.checked;
+    bkSaveCfg(c);
+    bkAtualizaLinha();
+    if(bkAutoEl.checked) bkSePreciso();
+  });
+  const btnBkNow = $('#btnBkNow');
+  if(btnBkNow) btnBkNow.addEventListener('click', () => bkEnviar(true));
+  const btnBkRestore = $('#btnBkRestore');
+  if(btnBkRestore) btnBkRestore.addEventListener('click', bkAbrir);
+  const bkCloseEl = $('#bkClose');
+  if(bkCloseEl) bkCloseEl.addEventListener('click', bkFechar);
+  const bkBackdropEl = $('#bkBackdrop');
+  if(bkBackdropEl) bkBackdropEl.addEventListener('click', bkFechar);
+  document.querySelectorAll('.bk-mode').forEach(b => b.addEventListener('click', () => {
+    bkModo = b.getAttribute('data-modo') || 'juntar';
+    document.querySelectorAll('.bk-mode').forEach(x => x.classList.toggle('on', x === b));
+  }));
+  const bkApplyEl = $('#bkApply');
+  if(bkApplyEl) bkApplyEl.addEventListener('click', () => {
+    if(!bkSel || !bkSel.id){ toast('Escolha uma cópia'); return; }
+    try{
+      AndroidApp.driveRestoreBackup(String(bkSel.id));
+      toast('Baixando cópia…');
+    }catch(e){ toast('Não foi possível baixar'); }
+  });
+  bkAtualizaLinha();
+
   // sugestão automática
   const aiSw = $('#aiSuggest');
   if(aiSw){
@@ -11320,7 +11663,8 @@ window.onVideoAttached = async function(p){
         name: p.name || '',
         caption: '',
         thumb: p.thumb || '',
-        source: !!p.source
+        source: !!p.source,
+        uploadedAt: new Date().toISOString()
       };
       savePending();
       renderPendingVideo();
@@ -11373,7 +11717,8 @@ window.onVideoAttached = async function(p){
       name: p.name || '',
       caption: p.caption || '',
       thumb: p.thumb || '',
-      source: !!p.source
+      source: !!p.source,
+      uploadedAt: new Date().toISOString()
     };
 
     const current = entryVideos(h[i]);
