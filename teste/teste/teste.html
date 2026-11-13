@@ -3648,6 +3648,7 @@ textarea{resize:none!important}
         <button class="an-f on" data-anfiltro="-1" type="button">Todos</button>
         <button class="ghost an-refresh" id="anRecarregar" type="button" title="Recarregar">↻</button>
       </div>
+      <p class="hint" id="anVidTeste" style="display:none;margin:0 0 8px;font-size:10px;color:#5c6b7c;text-decoration:underline;cursor:pointer">testar exclusão (não apaga nada)</p>
       <div class="an-lista" id="anLista"></div>
       <p class="hint" id="anVazio" hidden style="text-align:center;margin:14px 0">Nenhum item pendente nesse filtro.</p>
     </div>
@@ -5413,7 +5414,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.81';
+const CONTENT_VERSION = '3.82';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12927,6 +12928,8 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       if(tp === 3 && !(window.AndroidApp && typeof AndroidApp.anVideosListar === 'function')){ aviso('atualize o app para ver os vídeos'); return; }
       var vm = document.getElementById('anVidModo');
       if(vm) vm.style.display = (tp === 3) ? 'flex' : 'none';
+      var vt = document.getElementById('anVidTeste');
+      if(vt) vt.style.display = (tp === 3) ? 'block' : 'none';
       if(tp === AN.tipo) return;
       AN.tipo = tp;
       document.querySelectorAll('#sec-analises [data-antipo]').forEach(function(x){ x.classList.toggle('on', x === b); });
@@ -13131,6 +13134,22 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     try { v.load(); } catch(e) {}
     el('anVplay').hidden = true;
   }
+
+  window.__anVideoTeste = function(json){
+    var r = {}; try{ r = JSON.parse(json); }catch(e){}
+    var txt = r && r.ok
+      ? ('http ' + r.http + ' · uid ' + r.uid + ' · ' + r.corpo)
+      : ((r && r.msg) || 'sem resposta');
+    var a = el('anAviso');
+    if(a){ a.textContent = txt; a.classList.add('on'); clearTimeout(a.__t); a.__t = setTimeout(function(){ a.classList.remove('on'); }, 20000); }
+    try { console.log('TESTE EXCLUSAO:', txt); } catch(e) {}
+  };
+
+  var linkTeste = el('anVidTeste');
+  if(linkTeste) linkTeste.addEventListener('click', function(e){
+    e.preventDefault();
+    if(window.AndroidApp && typeof AndroidApp.anVideoTeste === 'function') AndroidApp.anVideoTeste();
+  });
 
   window.__vidFecharPlayer = fecharPlayer;
 
