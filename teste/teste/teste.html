@@ -3605,6 +3605,10 @@ textarea{resize:none!important}
   .hist-vchip svg{width:8px;height:8px}
   .hist-vchip.warn{color:#f7c768;border-color:rgba(245,181,68,.38);background:rgba(245,181,68,.10)}
   .hist-vchip.bad{color:#ff8b8b;border-color:rgba(255,107,107,.38);background:rgba(255,107,107,.10)}
+
+  /* placeholder quando a miniatura ainda não chegou */
+  .hist-thumb{background:linear-gradient(135deg,#1b2532,#232f40)!important}
+  #histViewWrap .hist-vthumb:not(.tem-thumb){background:linear-gradient(135deg,#1b2532,#232f40)!important}
 </style>
 <style id="alii-backup-css">
   .bk-auto-box{margin-top:12px;padding:10px 12px;border:1px solid rgba(139,157,255,.28);border-radius:12px;background:rgba(139,157,255,.05)}
@@ -5163,7 +5167,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.48';
+const CONTENT_VERSION = '3.50';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -6741,16 +6745,21 @@ function thumbKeyFor(v, fid){
 window.onThumbReady = function(key, data){
   if(!key || !data) return;
   thumbMem[key] = data;
+  const fid = key.indexOf('cloud:') === 0 ? key.slice(6) : '';
   const els = document.querySelectorAll('#histViewVideos .hist-vthumb');
   for(let i = 0; i < els.length; i++){
-    if(els[i].getAttribute('data-thumb-key') === key){
+    const k = els[i].getAttribute('data-thumb-key');
+    if(k === key || (fid && els[i].getAttribute('data-thumb-fid') === fid)){
       els[i].style.backgroundImage = "url('" + data + "')";
+      els[i].classList.add('tem-thumb');
     }
   }
-  const ths = document.querySelectorAll('.hist-thumb[data-thumb-key]');
+  const ths = document.querySelectorAll('.hist-thumb');
   for(let i = 0; i < ths.length; i++){
-    if(ths[i].getAttribute('data-thumb-key') === key){
+    const k = ths[i].getAttribute('data-thumb-key');
+    if(k === key || (fid && ths[i].getAttribute('data-thumb-fid') === fid)){
       applyHistThumb(ths[i], data);
+      ths[i].classList.add('tem-thumb');
     }
   }
   pumpHistThumbs();
@@ -6838,7 +6847,7 @@ function renderHistVideos(e){
     const thumb = v.thumb || (key ? thumbMem[key] : '') || '';
     html += `<div class="hist-vslot">
       <button class="hist-vcard" data-hplay="${i}" title="Assistir vídeo ${i + 1}">
-        <span class="hist-vthumb"${key ? ` data-thumb-key="${esc(key)}"` : ''}${thumb ? ` style="background-image:url('${thumb}')"` : ''}>
+        <span class="hist-vthumb"${key ? ` data-thumb-key="${esc(key)}"` : ''}${cloudIds[i] ? ` data-thumb-fid="${esc(cloudIds[i])}"` : ''}${thumb ? ` style="background-image:url('${thumb}')"` : ''}>
           <span class="hist-vplay">${HICONS.play}</span>
         </span>
         <span class="hist-vlabel">Vídeo ${i + 1}${where}${dur}</span>
@@ -8185,13 +8194,33 @@ function pumpHistThumbs(){
   if(!histThumbQueue2.length) return;
   var item = histThumbQueue2.shift();
   var el = item[0], key = item[1], v = item[2], fid = item[3];
+  var tentativas = item[4] || 0;
   if(!el || !el.isConnected) { setTimeout(pumpHistThumbs, 10); return; }
   if(thumbMem[key]){ applyHistThumb(el, thumbMem[key]); setTimeout(pumpHistThumbs, 10); return; }
+  // a ponte do Android pode ainda não estar pronta: devolve para a fila
+  var temPonte = !!(window.AndroidApp && (AndroidApp.requestVideoThumb || AndroidApp.requestCloudThumb));
+  if(!temPonte && tentativas < 25){
+    histThumbQueue2.unshift([el, key, v, fid, tentativas + 1]);
+    setTimeout(pumpHistThumbs, 400);
+    return;
+  }
   try{
     if(v && v.uri && typeof AndroidApp.requestVideoThumb === 'function'){
       AndroidApp.requestVideoThumb(v.uri);
-    } else if(key.indexOf('cloud:') === 0 && typeof AndroidApp.requestCloudThumb === 'function'){
-      AndroidApp.requestCloudThumb(fid || key.slice(6));
+      // o arquivo local pode ter sido apagado depois do upload: se nada chegar,
+      // tenta a miniatura do Drive (antes ficava cinza para sempre)
+      if(fid){
+        setTimeout(function(){
+          if(thumbMem[key]) return;
+          try{
+            if(typeof AndroidApp.requestCloudThumb === 'function') AndroidApp.requestCloudThumb(fid);
+          }catch(e){}
+        }, 1400);
+      }
+    } else if(fid || key.indexOf('cloud:') === 0){
+      if(typeof AndroidApp.requestCloudThumb === 'function'){
+        AndroidApp.requestCloudThumb(fid || key.slice(6));
+      }
     }
   }catch(e){}
   setTimeout(pumpHistThumbs, 60);
@@ -10227,7 +10256,14 @@ window.onVideoAttached = async function(p){
       size: +p.size || 0,
       name: p.name || '',
       caption: p.caption || '',
-      thumb: p.thumb || '',
+      thumb: p.thumb || (function(){
+        try{
+          if(p.uri && window.AndroidApp && typeof AndroidApp.videoThumb === 'function'){
+            return AndroidApp.videoThumb(p.uri) || '';
+          }
+        }catch(e){}
+        return '';
+      })(),
       source: !!p.source,
       uploadedAt: new Date().toISOString()
     };
@@ -11775,10 +11811,18 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       btn: pronto ? 'Instalar agora' : 'Baixar e instalar',
       icon:ICON_APK,
       action:function(){
-        if(window.AndroidApp && AndroidApp.installReadyApk && AndroidApp.isApkReady()){
+        var prontoAgora = false;
+        try{
+          prontoAgora = !!(window.AndroidApp && AndroidApp.isApkReady && AndroidApp.isApkReady());
+        }catch(e){ prontoAgora = false; }
+        if(prontoAgora && window.AndroidApp && AndroidApp.installReadyApk){
           try{ AndroidApp.installReadyApk(); return; }catch(e){}
         }
-        if(window.AndroidApp && window.AndroidApp.downloadApk) window.AndroidApp.downloadApk(url);
+        if(window.AndroidApp && window.AndroidApp.downloadApk){
+          try{ window.AndroidApp.downloadApk(url); }catch(e){ toast('Não foi possível iniciar o download'); }
+        } else {
+          toast('Atualização disponível no app Android');
+        }
       }
     });
     // já baixado? mostra o botão certo desde o começo
