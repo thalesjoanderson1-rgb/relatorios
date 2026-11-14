@@ -5513,7 +5513,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.06';
+const CONTENT_VERSION = '4.07';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -13134,22 +13134,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   function aplicarFoto(){
     var img = el('anFotoImg');
-    if(!img) return;
-    // sem zoom = sempre no centro
-    if(FOTO.esc <= 1.02){
-      FOTO.esc = 1;
-      FOTO.x = 0;
-      FOTO.y = 0;
-    } else {
-      // não deixa a imagem sair da tela
-      var w = (img.clientWidth || 0) * FOTO.esc;
-      var h = (img.clientHeight || 0) * FOTO.esc;
-      var maxX = Math.max(0, (w - window.innerWidth) / 2);
-      var maxY = Math.max(0, (h - window.innerHeight) / 2);
-      FOTO.x = Math.min(maxX, Math.max(-maxX, FOTO.x));
-      FOTO.y = Math.min(maxY, Math.max(-maxY, FOTO.y));
-    }
-    img.style.transform = 'translate(' + FOTO.x + 'px,' + FOTO.y + 'px) scale(' + FOTO.esc + ')';
+    if(img) img.style.transform = 'translate(' + FOTO.x + 'px,' + FOTO.y + 'px) scale(' + FOTO.esc + ')';
   }
 
   function posicionarX(){
@@ -13212,11 +13197,11 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     caixa.addEventListener('touchmove', function(e){
       if(e.touches.length === 2 && FOTO.d0 > 0){
         e.preventDefault();
-        FOTO.esc = Math.min(5, Math.max(1, FOTO.s0 * distancia(e.touches) / FOTO.d0));
+        FOTO.esc = Math.min(5, Math.max(0.4, FOTO.s0 * distancia(e.touches) / FOTO.d0));
         aplicarFoto();
         return;
       }
-      if(e.touches.length === 1 && FOTO.arrastando && !FOTO.pinou){
+      if(e.touches.length === 1 && FOTO.arrastando){
         e.preventDefault();
         var t = e.touches[0];
         var dx = t.clientX - FOTO.px;
