@@ -3747,6 +3747,8 @@ textarea{resize:none!important}
         <button class="ghost an-refresh" id="anRecarregar" type="button" title="Recarregar">↻</button>
       </div>
       <div class="an-lista" id="anLista"></div>
+      <div id="anFim" style="height:1px;margin:0"></div>
+      <p class="hint" id="anFimMsg" hidden style="text-align:center;margin:10px 0">carregando mais…</p>
       <p class="hint" id="anVazio" hidden style="text-align:center;margin:14px 0">Nenhum item pendente nesse filtro.</p>
     </div>
 
@@ -5511,7 +5513,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.97';
+const CONTENT_VERSION = '3.98';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12421,6 +12423,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 <script>
 /* ---- Análises (capa) — painel do app ---- */
 (function(){
+  var TAM = 30;
   var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1, vidModo: 'fila', ordenado: false };
 
   function el(id){ return document.getElementById(id); }
@@ -12559,9 +12562,9 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   function pedir(pagina){
     AN.emVoo = (AN.emVoo || 0) + 1;
     if(AN.tipo === 3){
-      if(AN.vidModo === 'principal') AndroidApp.anVideoPrincipal(pagina, 100);
+      if(AN.vidModo === 'principal') AndroidApp.anVideoPrincipal(pagina, TAM);
       else AndroidApp.anVideosListar(pagina, 100);
-    } else AndroidApp.anListar(pagina, 100, AN.filtro, AN.tipo);
+    } else AndroidApp.anListar(pagina, TAM, AN.filtro, AN.tipo);
   }
 
   function enfileirar(pagina){
@@ -12591,11 +12594,41 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     AN.ordenado = false;
     FILA.espera = [];
     FILA.ativos = 0;
+    AN.pedidas = {};
+    AN.buscando = false;
+    if(el('anFimMsg')) el('anFimMsg').hidden = true;
     el('anLista').innerHTML = '<p class="hint">carregando…</p>';
     el('anVazio').hidden = true;
     esperar('lista', 30000);
     enfileirar(1);
   }
+
+  // ---- carregar mais ao rolar ----
+  var anFimEl = null, anObs = null;
+
+  function carregarMais(){
+    if(!AN.logado) return;
+    if(!AN.total || AN.itens.length >= AN.total) return;
+    if(AN.buscando) return;
+    var proxima = Math.max(2, (AN.contiguo || 0) + 1);
+    AN.pedidas = AN.pedidas || {};
+    if(AN.pedidas[proxima]) return;
+    AN.pedidas[proxima] = 1;
+    AN.buscando = true;
+    if(el('anFimMsg')) el('anFimMsg').hidden = false;
+    enfileirar(proxima);
+  }
+
+  function prepararRolagem(){
+    anFimEl = el('anFim');
+    if(!anFimEl || typeof IntersectionObserver !== 'function') return;
+    if(anObs) anObs.disconnect();
+    anObs = new IntersectionObserver(function(ents){
+      for(var i = 0; i < ents.length; i++) if(ents[i].isIntersecting) carregarMais();
+    }, { rootMargin: '400px' });
+    anObs.observe(anFimEl);
+  }
+  try { prepararRolagem(); } catch(e) {}
 
   // ---- traduzir o título enviado (aba Título) ----
   var TR = { on: false, cache: {}, pend: {}, ativos: 0, fila: [] };
@@ -12715,12 +12748,8 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   if(trWrapEl) trWrapEl.addEventListener('click', function(e){ e.preventDefault(); ligarTraduzir(); });
 
   function montar(){
-    var totalPaginas = Math.max(1, AN.alvoPaginas || 1);
     var prefixo = 0;
-    for(var p = 1; p <= totalPaginas; p++){
-      if(!AN.paginas[p]) break;
-      prefixo++;
-    }
+    while(AN.paginas[prefixo + 1]) prefixo++;
     if(prefixo > AN.contiguo){
       var novos = [];
       for(var q = AN.contiguo + 1; q <= prefixo; q++) novos = novos.concat(AN.paginas[q] || []);
@@ -12728,7 +12757,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       AN.itens = AN.itens.concat(novos);
       anexar(novos);
     }
-    if(prefixo >= totalPaginas){
+    if((AN.total > 0 && AN.itens.length >= AN.total) || (AN.total === 0 && AN.contiguo >= 1)){
       AN.carregando = false;
       AN.carregadoEm = Date.now();
       // vídeos: ordem do mais novo para o mais antigo
@@ -12737,7 +12766,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
         AN.itens.sort(function(a, b){ return (Number(b.quandoMs) || 0) - (Number(a.quandoMs) || 0); });
         render();
       }
-      el('anChip').textContent = (AN.tipo === 3 && AN.itens.length < AN.total)
+      el('anChip').textContent = (AN.itens.length < AN.total)
         ? (AN.itens.length + ' de ' + AN.total)
         : (AN.total + ' pendentes');
     } else {
@@ -12997,6 +13026,8 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   window.__anLista = function(json){
     clearTimeout(AN.timer);
+    AN.buscando = false;
+    if(el('anFimMsg')) el('anFimMsg').hidden = true;
     FILA.ativos = Math.max(0, FILA.ativos - 1);
     AN.emVoo = Math.max(0, (AN.emVoo || 0) - 1);
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
@@ -13019,15 +13050,10 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(pg === 1){
       AN.total = (r.total === undefined || r.total === null) ? itens.length : Number(r.total);
       AN.paginas[1] = itens;
-      if(temPagina){
-        var maxPag = (Number(r.tipo) === 3 || Number(r.tipo) === 4) ? 3 : 1000;
-      AN.alvoPaginas = Math.max(1, Math.min(maxPag, Math.ceil(AN.total / 100)));
-        // busca as outras páginas em paralelo (até 6 de uma vez)
-        for(var p = 2; p <= AN.alvoPaginas; p++) enfileirar(p);
-      } else {
-        // app antigo não informa a página: segue uma por vez, em ordem
-        AN.alvoPaginas = 1;
-      }
+      // carrega sob demanda: só a primeira página agora, o resto ao rolar
+      AN.alvoPaginas = 1;
+      AN.proximaPagina = 2;
+      AN.pedidas = {};
     } else {
       AN.paginas[pg] = itens;
     }
