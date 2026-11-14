@@ -3676,6 +3676,8 @@ textarea{resize:none!important}
       #anConfOk.an-ok{background:#2ecc71!important;border-color:#2ecc71!important;color:#05200f!important}
       /* ação de rejeitar/excluir desabilitada continua vermelha (só mais apagada) */
       #anRejEnviar:disabled,#anVidOk:disabled{opacity:1!important;color:#c97070!important;border-color:rgba(255,93,93,.3)!important;background:rgba(255,93,93,.07)!important}
+      /* botão Rejeitar da folha de motivos (a folha fica fora de #sec-analises) */
+      #anRejEnviar.an-bad:not(:disabled){color:#ff9a9a!important;border-color:rgba(255,93,93,.45)!important;background:rgba(255,93,93,.12)!important}
       /* traduzir títulos (aba Título) */
       #sec-analises .an-tr{display:inline-flex;align-items:center;gap:7px;margin-left:auto;font-size:11px;color:var(--dim);cursor:pointer;user-select:none}
       #sec-analises .an-tr[hidden]{display:none}
@@ -5513,7 +5515,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.09';
+const CONTENT_VERSION = '4.10';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
