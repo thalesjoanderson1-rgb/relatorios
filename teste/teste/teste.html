@@ -1297,7 +1297,7 @@
   .hist-vthumb{position:relative;display:block;width:100%;height:74px;border-radius:8px;background:linear-gradient(135deg,#1B2A3F,#10141B);background-size:cover;background-position:center;overflow:hidden}
   /* miniatura: vídeo inteiro (contain) + fundo desfocado da mesma imagem */
   .hist-vthumb.tem-thumb,.hist-thumb.tem-thumb{background-size:cover;background-position:center;background-repeat:no-repeat}
-  .hist-vthumb .thumb-img,.hist-thumb .thumb-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:2;display:block}
+  .hist-vthumb .thumb-img,.hist-thumb .thumb-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:2;display:block;max-width:100%;max-height:100%}
   .hist-vthumb.tem-thumb::before,.hist-thumb.tem-thumb::before{
     content:"";position:absolute;inset:-14%;background-image:inherit;background-size:cover;background-position:center;
     filter:blur(12px) brightness(.45);z-index:1;pointer-events:none;display:block!important;animation:none!important}
@@ -2896,6 +2896,7 @@ textarea{resize:none!important}
 /* Miniatura nos itens do histórico (opção 7A) */
 #sec-historico .hist-item{align-items:flex-start!important}
 .hist-thumb{
+  position:relative;
   width:56px;height:40px;border-radius:8px;flex:0 0 auto;align-self:flex-start;margin-top:2px;
   background:linear-gradient(135deg,#3A2A20,#1A1420);
   border:1px solid var(--line);display:grid;place-items:center;color:#8FA0B4;font-size:12px;overflow:hidden}
@@ -5510,7 +5511,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.95';
+const CONTENT_VERSION = '3.96';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -8702,20 +8703,9 @@ function aplicarThumbNaLista(id, data){
 
 /* guarda o quadro dentro do relatório (a lista usa depois, sem rede) */
 function guardarThumbNoRelatorio(e, idx, data){
-  try{
-    if(!e || !data) return;
-    const idAlvo = (e && typeof e === 'object') ? e.id : e;
-    if(idAlvo == null) return;
-    const h = loadHistory();
-    const i = h.findIndex(function(x){ return String(x.id) === String(idAlvo); });
-    if(i < 0) return;
-    const vids = entryVideos(h[i]);
-    if(!vids[idx]) return;
-    if(vids[idx].thumb === data) return;
-    vids[idx].thumb = data;
-    setEntryVideos(h[i], vids);
-    saveHistory(h, { noSync: true });
-  }catch(err){}
+  // A miniatura fica só em memória. Guardar o base64 dentro do histórico
+  // enchia o armazenamento e impedia de salvar relatórios novos.
+  return;
 }
 
 /* Descobre o fileId do 1º vídeo mesmo quando o histórico não guardou:
