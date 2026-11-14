@@ -3599,7 +3599,7 @@ textarea{resize:none!important}
       .an-d b{font-size:12px;font-weight:600;word-break:break-word}
       .an-aviso{position:fixed;left:12px;right:12px;bottom:78px;background:#16202b;border:1px solid #2a3949;border-radius:12px;padding:11px 13px;font-size:12.5px;color:var(--txt);z-index:9999;box-shadow:0 12px 30px rgba(0,0,0,.5);display:none}
       .an-aviso.on{display:block}
-      #anFoto{position:fixed;inset:0;background:#05070a;z-index:10000;display:flex;align-items:center;justify-content:center;overflow:hidden}
+      #anFoto{position:fixed;inset:0;background:transparent;z-index:10000;display:flex;align-items:center;justify-content:center;overflow:hidden}
       #anFoto[hidden]{display:none}
       #anFoto img{max-width:100%;max-height:100%;object-fit:contain;transform-origin:center center;touch-action:none;will-change:transform}
       #anVplay{position:fixed;inset:0;background:#000;z-index:10001;display:flex;align-items:center;justify-content:center}
@@ -3608,7 +3608,7 @@ textarea{resize:none!important}
       #anVplay .an-foto-x{position:absolute;top:12px;right:12px;z-index:2;min-width:0;line-height:1;font-size:13px;padding:6px 10px;border-radius:7px;border:1px solid rgba(255,107,107,.35);background:rgba(255,107,107,.1);color:#ff8a8a}
       #sec-analises .an-vthumb{position:relative}
       #sec-analises .an-vplay{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:18px;text-shadow:0 2px 6px rgba(0,0,0,.8);background:rgba(0,0,0,.18)}
-      #anFoto .an-foto-x{position:absolute;top:12px;right:12px;z-index:2;min-width:0;line-height:1;font-size:13px;padding:6px 10px;border-radius:7px;border:1px solid rgba(255,107,107,.22);background:rgba(255,107,107,.06);color:#FF8A8A}
+      #anFoto .an-foto-x{position:absolute;top:58px;right:12px;z-index:2;min-width:0;line-height:1;font-size:13px;padding:6px 10px;border-radius:7px;border:1px solid rgba(255,107,107,.22);background:rgba(255,107,107,.06);color:#FF8A8A}
       #sec-analises .an-img img,#sec-analises .an-grande img{cursor:zoom-in}
 
       /* ====== VISUAL 3.92 — escolhas do usuário ====== */
@@ -5513,7 +5513,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.99';
+const CONTENT_VERSION = '4.00';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
