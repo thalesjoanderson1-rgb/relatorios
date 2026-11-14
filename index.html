@@ -3364,7 +3364,6 @@ textarea{resize:none!important}
 
   <section class="card" id="sec-organizador" data-panel="organizador">
     <h2>Relatórios de vídeos apagados</h2>
-    <div id="vidFilaBox" style="margin:0 0 14px"></div>
     <p class="hint" style="margin:0 0 10px">
       Cole os avisos de vídeos apagados. O texto é preservado; os blocos são
       agrupados por <b>Reason</b> na ordem fixa e as duplicatas continuam.
@@ -3388,6 +3387,7 @@ textarea{resize:none!important}
         <li>novas categorias (ordem de primeira aparição)</li>
       </ol>
     </details>
+    <div id="vidFilaBox" style="margin:14px 0 0"></div>
     <div id="orgResultWrap" style="display:none;margin-top:12px">
       <div class="og-head"><b>Organizado</b><span id="orgCount"></span></div>
       <div class="og-acts">
@@ -5515,7 +5515,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.10';
+const CONTENT_VERSION = '4.11';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -13700,7 +13700,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       + '<div class="vf-head"><b>Na fila</b><em>' + fila.length + '</em></div>'
       + '<p class="hint" style="margin:2px 0 8px">' + (fila.length ? 'ainda não copiados' : 'nenhum vídeo esperando cópia') + '</p>'
       + (linhas || '')
-      + (fila.length ? '<button class="primary vf-btn" id="vfCopiar" type="button">Copiar os ' + fila.length + '</button>' : '')
+      + (fila.length ? '<button class="primary vf-btn" id="vfCopiar" type="button">Copiar</button>' : '')
       + '</div>'
       + (hist.length ? '<div class="vf-sec"><div class="vf-head"><b>Já enviados</b></div>' + histLinhas + '</div>' : '');
 
