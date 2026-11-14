@@ -3608,7 +3608,7 @@ textarea{resize:none!important}
       #anVplay .an-foto-x{position:absolute;top:12px;right:12px;z-index:2;min-width:0;line-height:1;font-size:13px;padding:6px 10px;border-radius:7px;border:1px solid rgba(255,107,107,.35);background:rgba(255,107,107,.1);color:#ff8a8a}
       #sec-analises .an-vthumb{position:relative}
       #sec-analises .an-vplay{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:18px;text-shadow:0 2px 6px rgba(0,0,0,.8);background:rgba(0,0,0,.18)}
-      #anFoto .an-foto-x{position:absolute;top:26px;right:12px;z-index:2;min-width:0;height:13px;line-height:11px;font-size:10px;padding:0 6px;border-radius:5px;border:1px solid rgba(255,107,107,.22);background:rgba(255,107,107,.06);color:#FF8A8A}
+      #anFoto .an-foto-x{position:absolute;top:12px;right:12px;z-index:2;min-width:0;line-height:1;font-size:13px;padding:6px 10px;border-radius:7px;border:1px solid rgba(255,107,107,.22);background:rgba(255,107,107,.06);color:#FF8A8A}
       #sec-analises .an-img img,#sec-analises .an-grande img{cursor:zoom-in}
 
       /* ====== VISUAL 3.92 — escolhas do usuário ====== */
@@ -5513,7 +5513,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.03';
+const CONTENT_VERSION = '4.04';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -13137,6 +13137,22 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(img) img.style.transform = 'translate(' + FOTO.x + 'px,' + FOTO.y + 'px) scale(' + FOTO.esc + ')';
   }
 
+  function posicionarX(){
+    try{
+      var x = el('anFotoFechar');
+      var chip = el('anChip');
+      var sair = el('anSair');
+      if(!x) return;
+      if(!chip || !sair || !chip.offsetHeight || !sair.offsetHeight){ x.style.top = '12px'; return; }
+      var c = chip.getBoundingClientRect();
+      var s2 = sair.getBoundingClientRect();
+      var meio = (c.bottom + s2.top) / 2;
+      var topo = Math.round(meio - (x.offsetHeight / 2));
+      var minimo = Math.round(c.bottom + 2);
+      x.style.top = Math.max(minimo, topo) + 'px';
+    }catch(e){}
+  }
+
   function abrirFoto(src){
     if(!src) return;
     var img = el('anFotoImg');
@@ -13144,6 +13160,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     FOTO.esc = 1; FOTO.x = 0; FOTO.y = 0;
     aplicarFoto();
     el('anFoto').hidden = false;
+    posicionarX();
   }
 
   function fecharFoto(){
