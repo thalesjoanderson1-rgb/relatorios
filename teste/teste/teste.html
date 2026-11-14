@@ -5515,7 +5515,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.11';
+const CONTENT_VERSION = '4.12';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -5535,14 +5535,28 @@ function autoBackupBeforeSave(){
   try{
     const meta = JSON.parse(localStorage.getItem(AUTO_BK_KEY) || 'null');
     if(meta && Date.now() - Date.parse(meta.at) < 86400000) return;
-    const data = JSON.parse(localStorage.getItem(HKEY) || '[]');
+    const data = loadHistory();
     if(!Array.isArray(data) || !data.length) return;
-    for(let i = 3; i > 1; i--){
-      const p = localStorage.getItem(AUTO_BK_KEY + '_' + (i - 1));
-      if(p) localStorage.setItem(AUTO_BK_KEY + '_' + i, p);
-    }
-    localStorage.setItem(AUTO_BK_KEY + '_1', JSON.stringify({ at:new Date().toISOString(), data }));
-    localStorage.setItem(AUTO_BK_KEY, JSON.stringify({ at:new Date().toISOString(), count:data.length }));
+
+    // 1 cópia só, e sem miniaturas (elas são regeneradas quando preciso)
+    const limpo = data.map(function(e){
+      if(!e || typeof e !== 'object') return e;
+      const c = Object.assign({}, e);
+      const vids = entryVideos(c);
+      if(vids.length){
+        const sem = vids.map(function(v){ const o = Object.assign({}, v); delete o.thumb; return o; });
+        setEntryVideos(c, sem);
+      }
+      return c;
+    });
+
+    const json = JSON.stringify({ at:new Date().toISOString(), data: limpo });
+    if(json.length > 600000) return;   // backup grande demais: não come a cota
+
+    localStorage.setItem(AUTO_BK_KEY + '_1', json);
+    localStorage.removeItem(AUTO_BK_KEY + '_2');
+    localStorage.removeItem(AUTO_BK_KEY + '_3');
+    localStorage.setItem(AUTO_BK_KEY, JSON.stringify({ at:new Date().toISOString(), count:limpo.length }));
   }catch(e){}
 }
 
@@ -5593,8 +5607,44 @@ async function restoreAutoBackup(){
 
 let histCache = null;
 
+function nativeHist(){
+  try{
+    return !!(window.AndroidApp && typeof AndroidApp.historyRead === 'function' && typeof AndroidApp.historyWrite === 'function');
+  }catch(e){ return false; }
+}
+
 function loadHistory(){
   if(histCache) return histCache;
+
+  // 1) armazenamento nativo (arquivo no aparelho, sem limite de 5 MB)
+  if(nativeHist()){
+    try{
+      const salvo = AndroidApp.historyRead() || '';
+      if(salvo && salvo.length > 2){
+        const v = JSON.parse(salvo);
+        if(Array.isArray(v)){ histCache = v; return histCache; }
+      }
+    }catch(e){}
+
+    // 2) migração única: localStorage -> nativo (só apaga o antigo depois de conferir)
+    try{
+      const brutoLS = localStorage.getItem(HKEY);
+      if(brutoLS){
+        const v = JSON.parse(brutoLS);
+        if(Array.isArray(v) && v.length){
+          const escreveu = AndroidApp.historyWrite(JSON.stringify(v)) === true;
+          const confere = escreveu ? (AndroidApp.historyRead() || '') : '';
+          if(confere.length > 2){
+            localStorage.removeItem(HKEY);
+            histCache = v;
+            return histCache;
+          }
+        }
+      }
+    }catch(e){}
+  }
+
+  // 3) fallback: localStorage (PC ou app antigo)
   const bruto = localStorage.getItem(HKEY);
   try{
     const v = JSON.parse(bruto || '[]');
@@ -5622,7 +5672,12 @@ function saveHistory(h, opts){
   try{
     if(Array.isArray(h)) stampHistoryChanges(h);
     if(!opts || !opts.semBackup) autoBackupBeforeSave();
-    localStorage.setItem(HKEY, JSON.stringify(h));
+    const json = JSON.stringify(h);
+    let gravou = false;
+    if(nativeHist()){
+      try{ gravou = AndroidApp.historyWrite(json) === true; }catch(e){}
+    }
+    if(!gravou) localStorage.setItem(HKEY, json);
     histCache = Array.isArray(h) ? h : null;
     renderAutoBackup();
   }catch(e){
@@ -8747,6 +8802,11 @@ function limparThumbsAntigas(){
     if(mexeu){
       if(!saveHistory(h, { noSync: true, semBackup: true })) return;  // falhou? tenta na próxima
     }
+
+    try{
+      localStorage.removeItem(AUTO_BK_KEY + '_2');
+      localStorage.removeItem(AUTO_BK_KEY + '_3');
+    }catch(e){}
 
     localStorage.setItem('alii_thumb_clean_v2', '1');
   }catch(e){}
