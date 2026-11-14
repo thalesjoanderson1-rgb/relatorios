@@ -5513,7 +5513,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.07';
+const CONTENT_VERSION = '4.09';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -5619,7 +5619,7 @@ function saveHistory(h, opts){
   let ok = true;
   try{
     if(Array.isArray(h)) stampHistoryChanges(h);
-    autoBackupBeforeSave();
+    if(!opts || !opts.semBackup) autoBackupBeforeSave();
     localStorage.setItem(HKEY, JSON.stringify(h));
     histCache = Array.isArray(h) ? h : null;
     renderAutoBackup();
@@ -8704,6 +8704,53 @@ function aplicarThumbNaLista(id, data){
 }
 
 /* guarda o quadro dentro do relatório (a lista usa depois, sem rede) */
+/* Migração única: tira as miniaturas salvas no histórico e nos backups
+   (ocupavam ~60 KB por vídeo e estouravam a cota do localStorage).
+   Só apaga o campo "thumb" — relatório, texto, data, ID e fileId ficam. */
+function limparThumbsAntigas(){
+  try{
+    if(localStorage.getItem('alii_thumb_clean_v2') === '1') return;
+
+    // 1) backups primeiro (é o que dobrava o tamanho na hora de salvar)
+    for(var b = 1; b <= 3; b++){
+      var key = AUTO_BK_KEY + '_' + b;
+      var raw = localStorage.getItem(key);
+      if(!raw) continue;
+      var obj = null;
+      try{ obj = JSON.parse(raw); }catch(e){ continue; }
+      if(!obj || !Array.isArray(obj.data)) continue;
+      var mudouB = false;
+      for(var k = 0; k < obj.data.length; k++){
+        var vv = entryVideos(obj.data[k]);
+        var m2 = false;
+        for(var w = 0; w < vv.length; w++){ if(vv[w] && vv[w].thumb){ delete vv[w].thumb; m2 = true; } }
+        if(m2){ setEntryVideos(obj.data[k], vv); mudouB = true; }
+      }
+      if(mudouB){
+        try{ localStorage.setItem(key, JSON.stringify(obj)); }catch(e){}
+      }
+    }
+
+    // 2) histórico (sem criar backup novo, senão estoura de novo)
+    var mexeu = false;
+    var h = loadHistory();
+    for(var i = 0; i < h.length; i++){
+      var vids = entryVideos(h[i]);
+      var mudou = false;
+      for(var j = 0; j < vids.length; j++){
+        if(vids[j] && vids[j].thumb){ delete vids[j].thumb; mudou = true; mexeu = true; }
+      }
+      if(mudou) setEntryVideos(h[i], vids);
+    }
+    if(mexeu){
+      if(!saveHistory(h, { noSync: true, semBackup: true })) return;  // falhou? tenta na próxima
+    }
+
+    localStorage.setItem('alii_thumb_clean_v2', '1');
+  }catch(e){}
+}
+try{ setTimeout(limparThumbsAntigas, 0); }catch(e){}
+
 function guardarThumbNoRelatorio(e, idx, data){
   // A miniatura fica só em memória. Guardar o base64 dentro do histórico
   // enchia o armazenamento e impedia de salvar relatórios novos.
