@@ -3567,7 +3567,8 @@ textarea{resize:none!important}
       .vf-linha b{font-family:var(--mono);font-size:10px;color:#cfe0f5;font-weight:600}
       .vf-linha span{color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .vf-btn{width:100%;margin-top:9px;height:40px}
-      #sec-analises .an-acts button{flex:1;height:36px;font-size:12.5px}
+      #sec-analises .an-acts button{flex:1;height:36px;font-size:12.5px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+      #sec-analises .an-acts .an-ic{width:14px;height:14px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
       #sec-analises .an-ok{color:#8fe0b0!important;border-color:rgba(46,204,113,.4)!important;background:rgba(46,204,113,.1)!important}
       #sec-analises .an-bad{color:#ff9a9a!important;border-color:rgba(255,93,93,.4)!important;background:rgba(255,93,93,.1)!important}
       .an-overlay{position:fixed;inset:0;background:rgba(4,6,10,.8);display:flex;align-items:flex-end;justify-content:center;z-index:9998;padding:0}
@@ -3624,6 +3625,9 @@ textarea{resize:none!important}
       #sec-analises .an-conta button{margin-left:auto;background:none!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:6px 2px;height:auto;min-width:0;font-size:10.5px;color:#69788a;text-decoration:underline;flex:0 0 auto}
       #sec-analises .an-seg{border-radius:999px!important;background:transparent}
       #sec-analises .an-f{border-radius:999px!important}
+      #sec-analises .an-seg-f{display:flex;flex:1;gap:2px;padding:2px;background:var(--card2);border:1px solid var(--line);border-radius:10px!important}
+      #sec-analises .an-seg-f .an-f{flex:1;border:0!important;background:transparent!important;border-radius:8px!important;padding:6px 0;font-size:11.5px;color:var(--dim)}
+      #sec-analises .an-seg-f .an-f.on{background:#1b2734!important;color:#bcd9ff}
       /* cartão título (T1) */
       #sec-analises .an-tit{padding:9px 11px}
       #sec-analises .an-tit b{font-size:13px}
@@ -3742,9 +3746,11 @@ textarea{resize:none!important}
         <button class="an-seg" data-anvidmodo="principal" type="button">Recomendados</button>
       </div>
       <div class="an-filtros">
+        <div class="an-seg-f">
         <button class="an-f" data-anfiltro="0" type="button">Hoje</button>
         <button class="an-f" data-anfiltro="7" type="button">7 dias</button>
         <button class="an-f on" data-anfiltro="-1" type="button">Todos</button>
+        </div>
         <label class="an-tr" id="anTrWrap" hidden><span>Traduzir</span><span class="an-sw"><i></i></span></label>
         <button class="ghost an-refresh" id="anRecarregar" type="button" title="Recarregar">↻</button>
       </div>
@@ -5515,7 +5521,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.12';
+const CONTENT_VERSION = '4.13';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12923,9 +12929,9 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     var acoes = '';
     if(AN.tipo !== 3){
       acoes = '<div class="an-acts">'
-        + '<button class="ghost" data-anver="' + it.id + '" type="button">Ver</button>'
-        + '<button class="ghost an-bad" data-anrej="' + it.id + '" type="button">Rejeitar</button>'
-        + '<button class="ghost an-ok" data-anpass="' + it.id + '" type="button">Aprovar</button>'
+        + '<button class="ghost" data-anver="' + it.id + '" type="button"><svg class="an-ic" viewBox="0 0 24 24"><path d="M2.5 12s3.6-6 9.5-6 9.5 6 9.5 6-3.6 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.6"/></svg>Ver</button>'
+        + '<button class="ghost an-bad" data-anrej="' + it.id + '" type="button"><svg class="an-ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Rejeitar</button>'
+        + '<button class="ghost an-ok" data-anpass="' + it.id + '" type="button"><svg class="an-ic" viewBox="0 0 24 24"><path d="m4 12.5 5 5L20 6.5"/></svg>Aprovar</button>'
         + '</div>';
     }
     return '<div class="an-item' + extraClasse + '" data-anid="' + ident + '" data-uid="' + (it.userId || '') + '">'
