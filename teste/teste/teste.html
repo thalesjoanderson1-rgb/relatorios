@@ -3608,7 +3608,7 @@ textarea{resize:none!important}
       #anVplay .an-foto-x{position:absolute;top:12px;right:12px;z-index:2;min-width:0;line-height:1;font-size:13px;padding:6px 10px;border-radius:7px;border:1px solid rgba(255,107,107,.35);background:rgba(255,107,107,.1);color:#ff8a8a}
       #sec-analises .an-vthumb{position:relative}
       #sec-analises .an-vplay{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:18px;text-shadow:0 2px 6px rgba(0,0,0,.8);background:rgba(0,0,0,.18)}
-      #anFoto .an-foto-x{position:absolute;top:58px;right:12px;z-index:2;min-width:0;line-height:1;font-size:13px;padding:6px 10px;border-radius:7px;border:1px solid rgba(255,107,107,.22);background:rgba(255,107,107,.06);color:#FF8A8A}
+      #anFoto .an-foto-x{position:absolute;top:26px;right:12px;z-index:2;min-width:0;height:13px;line-height:11px;font-size:10px;padding:0 6px;border-radius:5px;border:1px solid rgba(255,107,107,.22);background:rgba(255,107,107,.06);color:#FF8A8A}
       #sec-analises .an-img img,#sec-analises .an-grande img{cursor:zoom-in}
 
       /* ====== VISUAL 3.92 — escolhas do usuário ====== */
@@ -5513,7 +5513,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.00';
+const CONTENT_VERSION = '4.03';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -13200,7 +13200,6 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
     caixa.addEventListener('touchend', function(e){
       if(e.touches.length === 0){
-        FOTO.toqueSimples = !FOTO.moveu && !FOTO.pinou;
         FOTO.d0 = 0;
         FOTO.arrastando = false;
         FOTO.pinou = false;
@@ -13213,8 +13212,9 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       e.preventDefault();
       e.stopPropagation();
       if(e.target && e.target.id === 'anFotoFechar'){ fecharFoto(); return; }
-      if(FOTO.toqueSimples !== false){ fecharFoto(); }
-      FOTO.toqueSimples = false;
+      // tocar NA FOTO não fecha; só tocar fora (na área escura) fecha
+      if(e.target === img) return;
+      fecharFoto();
     });
 
     img.addEventListener('dblclick', function(){
