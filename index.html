@@ -3567,7 +3567,8 @@ textarea{resize:none!important}
       .vf-linha b{font-family:var(--mono);font-size:10px;color:#cfe0f5;font-weight:600}
       .vf-linha span{color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .vf-btn{width:100%;margin-top:9px;height:40px}
-      #sec-analises .an-acts button{flex:1;height:36px;font-size:12.5px}
+      #sec-analises .an-acts button{flex:1;height:36px;font-size:12.5px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+      #sec-analises .an-acts .an-ic{width:14px;height:14px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
       #sec-analises .an-ok{color:#8fe0b0!important;border-color:rgba(46,204,113,.4)!important;background:rgba(46,204,113,.1)!important}
       #sec-analises .an-bad{color:#ff9a9a!important;border-color:rgba(255,93,93,.4)!important;background:rgba(255,93,93,.1)!important}
       .an-overlay{position:fixed;inset:0;background:rgba(4,6,10,.8);display:flex;align-items:flex-end;justify-content:center;z-index:9998;padding:0}
@@ -3624,6 +3625,18 @@ textarea{resize:none!important}
       #sec-analises .an-conta button{margin-left:auto;background:none!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:6px 2px;height:auto;min-width:0;font-size:10.5px;color:#69788a;text-decoration:underline;flex:0 0 auto}
       #sec-analises .an-seg{border-radius:999px!important;background:transparent}
       #sec-analises .an-f{border-radius:999px!important}
+      #sec-analises .an-seg-f{display:flex;flex:1;gap:2px;padding:2px;background:var(--card2);border:1px solid var(--line);border-radius:10px!important}
+      #sec-analises .an-seg-f .an-f{flex:1;border:0!important;background:transparent!important;border-radius:8px!important;padding:6px 0;font-size:11.5px;color:var(--dim)}
+      #sec-analises .an-seg-f .an-f.on{background:#1b2734!important;color:#bcd9ff}
+      /* ====== 4.14 — continuar de onde parei ====== */
+      #sec-analises .an-continuar{display:flex;align-items:center;gap:7px;width:100%;height:34px;border:1px solid rgba(77,163,255,.42);background:rgba(77,163,255,.1);border-radius:9px;color:#bcd9ff;font-size:11px;font-weight:650;padding:0 10px;margin:0 0 10px;font-family:inherit;cursor:pointer;text-align:left}
+      #sec-analises .an-continuar[hidden]{display:none!important}
+      #sec-analises .an-continuar svg{width:13px;height:13px;flex:0 0 auto;fill:currentColor;stroke:none}
+      #sec-analises .an-continuar .an-continuar-q{margin-left:auto;font-family:var(--mono);font-size:8px;color:#8fa1b5;font-weight:400;white-space:nowrap}
+      #sec-analises .an-item.an-destaque{box-shadow:0 0 0 1px rgba(77,163,255,.55),0 0 22px rgba(77,163,255,.12)}
+      #sec-analises .an-visto{position:absolute;left:5px;top:5px;z-index:2;font-family:var(--mono);font-size:7px;letter-spacing:.05em;text-transform:uppercase;color:#bcd9ff;background:rgba(8,18,30,.85);border:1px solid rgba(77,163,255,.55);border-radius:5px;padding:2px 5px;white-space:nowrap;pointer-events:none}
+      #sec-analises .an-item.an-flash{animation:anFlash 1.4s ease}
+      @keyframes anFlash{0%,100%{box-shadow:0 0 0 1px rgba(77,163,255,.55),0 0 22px rgba(77,163,255,.12)}50%{box-shadow:0 0 0 2px rgba(77,163,255,.95),0 0 32px rgba(77,163,255,.32)}}
       /* cartão título (T1) */
       #sec-analises .an-tit{padding:9px 11px}
       #sec-analises .an-tit b{font-size:13px}
@@ -3742,12 +3755,19 @@ textarea{resize:none!important}
         <button class="an-seg" data-anvidmodo="principal" type="button">Recomendados</button>
       </div>
       <div class="an-filtros">
+        <div class="an-seg-f">
         <button class="an-f" data-anfiltro="0" type="button">Hoje</button>
         <button class="an-f" data-anfiltro="7" type="button">7 dias</button>
         <button class="an-f on" data-anfiltro="-1" type="button">Todos</button>
+        </div>
         <label class="an-tr" id="anTrWrap" hidden><span>Traduzir</span><span class="an-sw"><i></i></span></label>
         <button class="ghost an-refresh" id="anRecarregar" type="button" title="Recarregar">↻</button>
       </div>
+      <button class="an-continuar" id="anContinuar" type="button" hidden>
+        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        Continuar de onde parei
+        <span class="an-continuar-q" id="anContinuarQ"></span>
+      </button>
       <div class="an-lista" id="anLista"></div>
       <div id="anFim" style="height:1px;margin:0"></div>
       <p class="hint" id="anFimMsg" hidden style="text-align:center;margin:10px 0">carregando mais…</p>
@@ -5515,7 +5535,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.11';
+const CONTENT_VERSION = '4.15';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -5535,14 +5555,28 @@ function autoBackupBeforeSave(){
   try{
     const meta = JSON.parse(localStorage.getItem(AUTO_BK_KEY) || 'null');
     if(meta && Date.now() - Date.parse(meta.at) < 86400000) return;
-    const data = JSON.parse(localStorage.getItem(HKEY) || '[]');
+    const data = loadHistory();
     if(!Array.isArray(data) || !data.length) return;
-    for(let i = 3; i > 1; i--){
-      const p = localStorage.getItem(AUTO_BK_KEY + '_' + (i - 1));
-      if(p) localStorage.setItem(AUTO_BK_KEY + '_' + i, p);
-    }
-    localStorage.setItem(AUTO_BK_KEY + '_1', JSON.stringify({ at:new Date().toISOString(), data }));
-    localStorage.setItem(AUTO_BK_KEY, JSON.stringify({ at:new Date().toISOString(), count:data.length }));
+
+    // 1 cópia só, e sem miniaturas (elas são regeneradas quando preciso)
+    const limpo = data.map(function(e){
+      if(!e || typeof e !== 'object') return e;
+      const c = Object.assign({}, e);
+      const vids = entryVideos(c);
+      if(vids.length){
+        const sem = vids.map(function(v){ const o = Object.assign({}, v); delete o.thumb; return o; });
+        setEntryVideos(c, sem);
+      }
+      return c;
+    });
+
+    const json = JSON.stringify({ at:new Date().toISOString(), data: limpo });
+    if(json.length > 600000) return;   // backup grande demais: não come a cota
+
+    localStorage.setItem(AUTO_BK_KEY + '_1', json);
+    localStorage.removeItem(AUTO_BK_KEY + '_2');
+    localStorage.removeItem(AUTO_BK_KEY + '_3');
+    localStorage.setItem(AUTO_BK_KEY, JSON.stringify({ at:new Date().toISOString(), count:limpo.length }));
   }catch(e){}
 }
 
@@ -5593,8 +5627,44 @@ async function restoreAutoBackup(){
 
 let histCache = null;
 
+function nativeHist(){
+  try{
+    return !!(window.AndroidApp && typeof AndroidApp.historyRead === 'function' && typeof AndroidApp.historyWrite === 'function');
+  }catch(e){ return false; }
+}
+
 function loadHistory(){
   if(histCache) return histCache;
+
+  // 1) armazenamento nativo (arquivo no aparelho, sem limite de 5 MB)
+  if(nativeHist()){
+    try{
+      const salvo = AndroidApp.historyRead() || '';
+      if(salvo && salvo.length > 2){
+        const v = JSON.parse(salvo);
+        if(Array.isArray(v)){ histCache = v; return histCache; }
+      }
+    }catch(e){}
+
+    // 2) migração única: localStorage -> nativo (só apaga o antigo depois de conferir)
+    try{
+      const brutoLS = localStorage.getItem(HKEY);
+      if(brutoLS){
+        const v = JSON.parse(brutoLS);
+        if(Array.isArray(v) && v.length){
+          const escreveu = AndroidApp.historyWrite(JSON.stringify(v)) === true;
+          const confere = escreveu ? (AndroidApp.historyRead() || '') : '';
+          if(confere.length > 2){
+            localStorage.removeItem(HKEY);
+            histCache = v;
+            return histCache;
+          }
+        }
+      }
+    }catch(e){}
+  }
+
+  // 3) fallback: localStorage (PC ou app antigo)
   const bruto = localStorage.getItem(HKEY);
   try{
     const v = JSON.parse(bruto || '[]');
@@ -5622,7 +5692,12 @@ function saveHistory(h, opts){
   try{
     if(Array.isArray(h)) stampHistoryChanges(h);
     if(!opts || !opts.semBackup) autoBackupBeforeSave();
-    localStorage.setItem(HKEY, JSON.stringify(h));
+    const json = JSON.stringify(h);
+    let gravou = false;
+    if(nativeHist()){
+      try{ gravou = AndroidApp.historyWrite(json) === true; }catch(e){}
+    }
+    if(!gravou) localStorage.setItem(HKEY, json);
     histCache = Array.isArray(h) ? h : null;
     renderAutoBackup();
   }catch(e){
@@ -8747,6 +8822,11 @@ function limparThumbsAntigas(){
     if(mexeu){
       if(!saveHistory(h, { noSync: true, semBackup: true })) return;  // falhou? tenta na próxima
     }
+
+    try{
+      localStorage.removeItem(AUTO_BK_KEY + '_2');
+      localStorage.removeItem(AUTO_BK_KEY + '_3');
+    }catch(e){}
 
     localStorage.setItem('alii_thumb_clean_v2', '1');
   }catch(e){}
@@ -12473,7 +12553,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 /* ---- Análises (capa) — painel do app ---- */
 (function(){
   var TAM = 30;
-  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1, vidModo: 'fila', ordenado: false };
+  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1, vidModo: 'fila', ordenado: false, ultimoVisto: null, continuarPendente: false, continuarTentativas: 0 };
 
   function el(id){ return document.getElementById(id); }
 
@@ -12484,6 +12564,94 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(n && n.parentNode !== document.body) document.body.appendChild(n);
   });
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+
+  // ---- último vídeo visto (modelo C) ----
+  var UK_ULTIMO = 'alii_an_ultimo_visto_v1';
+  function lerUltimoVisto(){
+    try{
+      var o = JSON.parse(localStorage.getItem(UK_ULTIMO) || 'null');
+      if(o && o.id) return { id: String(o.id), quando: String(o.quando || ''), ts: Number(o.ts) || 0 };
+    }catch(e){}
+    return null;
+  }
+  function gravarUltimoVisto(id, quando){
+    if(!id) return;
+    AN.ultimoVisto = { id: String(id), quando: String(quando || ''), ts: Date.now() };
+    try{ localStorage.setItem(UK_ULTIMO, JSON.stringify(AN.ultimoVisto)); }catch(e){}
+    aplicarUltimoVisto();
+  }
+  function limparUltimoVisto(){
+    AN.ultimoVisto = null;
+    try{ localStorage.removeItem(UK_ULTIMO); }catch(e){}
+    aplicarUltimoVisto();
+  }
+  function quandoUltimoVisto(){
+    var u = AN.ultimoVisto;
+    if(!u) return '';
+    return u.quando || (u.ts ? fmt(u.ts) : '');
+  }
+  function atualizarContinuar(){
+    var b = el('anContinuar');
+    if(!b) return;
+    var ok = !!(AN.tipo === 3 && AN.vidModo === 'fila' && AN.ultimoVisto && AN.itens.length);
+    b.hidden = !ok;
+    var q = el('anContinuarQ');
+    if(q) q.textContent = ok ? quandoUltimoVisto() : '';
+  }
+  function acharCardUltimo(){
+    var u = AN.ultimoVisto;
+    if(!u) return null;
+    var cards = document.querySelectorAll('#anLista .an-item');
+    for(var i = 0; i < cards.length; i++){
+      if(String(cards[i].getAttribute('data-anid')) === String(u.id)) return cards[i];
+    }
+    return null;
+  }
+  function irParaCard(card){
+    if(!card) return;
+    try{ card.scrollIntoView({ behavior:'smooth', block:'center' }); }catch(e){ try{ card.scrollIntoView(); }catch(_){} }
+    card.classList.remove('an-flash');
+    void card.offsetWidth;
+    card.classList.add('an-flash');
+    setTimeout(function(){ card.classList.remove('an-flash'); }, 1500);
+  }
+  function aplicarUltimoVisto(){
+    var u = AN.ultimoVisto;
+    var cards = document.querySelectorAll('#anLista .an-item');
+    for(var i = 0; i < cards.length; i++){
+      var card = cards[i];
+      var on = !!(u && AN.tipo === 3 && AN.vidModo === 'fila' && String(card.getAttribute('data-anid')) === String(u.id));
+      card.classList.toggle('an-destaque', on);
+      var thumb = card.querySelector('.an-vthumb');
+      if(!thumb) continue;
+      var selo = thumb.querySelector('.an-visto');
+      if(on && !selo){
+        selo = document.createElement('span');
+        selo.className = 'an-visto';
+        selo.textContent = 'último visto';
+        thumb.appendChild(selo);
+      } else if(!on && selo){
+        selo.parentNode.removeChild(selo);
+      }
+    }
+    atualizarContinuar();
+  }
+  function continuarDeOndeParei(){
+    if(!AN.ultimoVisto) return;
+    var card = acharCardUltimo();
+    if(card){ AN.continuarPendente = false; irParaCard(card); return; }
+    AN.continuarPendente = true;
+    AN.continuarTentativas = 0;
+    if(!AN.logado && ponte()) AN.logado = true;
+    if(AN.itens.length && AN.total && AN.itens.length >= AN.total){
+      AN.continuarPendente = false;
+      aviso('não encontrei o último vídeo visto — ele pode ter saído da lista');
+      limparUltimoVisto();
+      return;
+    }
+    carregarMais();
+  }
+  AN.ultimoVisto = lerUltimoVisto();
 
   // com camada aberta, a página de trás não rola
   (function travarFundo(){
@@ -12562,6 +12730,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     mostrar('anLoginBox');
     preencherCredenciais();
     el('anChip').textContent = 'desconectado';
+    atualizarContinuar();
   }
 
   // O painel mantém só uma sessão por conta: entrar no site derruba a do app.
@@ -12648,6 +12817,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(el('anFimMsg')) el('anFimMsg').hidden = true;
     el('anLista').innerHTML = '<p class="hint">carregando…</p>';
     el('anVazio').hidden = true;
+    atualizarContinuar();
     esperar('lista', 30000);
     enfileirar(1);
   }
@@ -12821,15 +12991,31 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     } else {
       el('anChip').textContent = AN.itens.length + ' de ' + AN.total;
     }
+    atualizarContinuar();
+    if(AN.continuarPendente){
+      var cardUltimo = acharCardUltimo();
+      if(cardUltimo){
+        AN.continuarPendente = false;
+        irParaCard(cardUltimo);
+      } else if((AN.total > 0 && AN.itens.length >= AN.total) || (AN.total === 0 && AN.contiguo >= 1) || (AN.continuarTentativas >= 10)){
+        AN.continuarPendente = false;
+        aviso('não encontrei o último vídeo visto nas primeiras páginas');
+      } else {
+        AN.continuarTentativas++;
+        carregarMais();
+      }
+    }
   }
 
   function cardHtml(it){
     var g = it.gender === 2 ? 'Feminino' : (it.gender === 1 ? 'Masculino' : '—');
+    var ehUltimo = !!(AN.tipo === 3 && AN.vidModo === 'fila' && AN.ultimoVisto && String(AN.ultimoVisto.id) === String(it.videoId));
     var corpo;
     if(AN.tipo === 3){
       var chipRec = (AN.vidModo === 'principal') ? ' <span class="an-vchip">recomendado</span>' : '';
       corpo = '<div class="an-vid">'
         + '<div class="an-vthumb" data-anvplay="' + esc(it.videoUrl || '') + '" title="ver vídeo">'
+        +   (ehUltimo ? '<span class="an-visto">último visto</span>' : '')
         +   (it.cover ? '<img loading="lazy" decoding="async" src="' + esc(it.cover) + '" alt="">' : '🎬')
         +   '<span class="an-vplay">▶</span>'
         + '</div>'
@@ -12858,14 +13044,15 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     }
     var ident = AN.tipo === 3 ? it.videoId : it.id;
     var extraClasse = (AN.tipo === 3 && Number(it.isDelete) === 1) ? ' an-apagado' : '';
+    if(ehUltimo) extraClasse += ' an-destaque';
     var nomeTopo = AN.tipo === 3 ? ('user ' + (it.userId || '')) : (it.nickname || '');
     var metaTopo = AN.tipo === 3 ? ('vídeo ' + (it.videoId || '')) : (esc(it.guild || '—') + ' · ' + g);
     var acoes = '';
     if(AN.tipo !== 3){
       acoes = '<div class="an-acts">'
-        + '<button class="ghost" data-anver="' + it.id + '" type="button">Ver</button>'
-        + '<button class="ghost an-bad" data-anrej="' + it.id + '" type="button">Rejeitar</button>'
-        + '<button class="ghost an-ok" data-anpass="' + it.id + '" type="button">Aprovar</button>'
+        + '<button class="ghost" data-anver="' + it.id + '" type="button"><svg class="an-ic" viewBox="0 0 24 24"><path d="M2.5 12s3.6-6 9.5-6 9.5 6 9.5 6-3.6 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.6"/></svg>Ver</button>'
+        + '<button class="ghost an-bad" data-anrej="' + it.id + '" type="button"><svg class="an-ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Rejeitar</button>'
+        + '<button class="ghost an-ok" data-anpass="' + it.id + '" type="button"><svg class="an-ic" viewBox="0 0 24 24"><path d="m4 12.5 5 5L20 6.5"/></svg>Aprovar</button>'
         + '</div>';
     }
     return '<div class="an-item' + extraClasse + '" data-anid="' + ident + '" data-uid="' + (it.userId || '') + '">'
@@ -12878,13 +13065,6 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   function anexar(itens){
     if(!itens || !itens.length) return;
-    if(AN.tipo === 3){
-      itens = itens.filter(function(it){
-        if(Number(it.isDelete) !== 1) return true;
-        return AN.uid && String(it.operatorId || '') === String(AN.uid);
-      });
-      if(!itens.length) return;
-    }
     var box = el('anLista');
     var vazio = box.querySelector('.hint');
     if(vazio) box.innerHTML = '';
@@ -12896,9 +13076,10 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   function render(){
     var box = el('anLista');
     box.innerHTML = '';
-    if(!AN.itens.length){ el('anVazio').hidden = false; return; }
+    if(!AN.itens.length){ el('anVazio').hidden = false; atualizarContinuar(); return; }
     el('anVazio').hidden = true;
     anexar(AN.itens);
+    atualizarContinuar();
   }
 
   function porId(id){
@@ -13311,6 +13492,13 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(!alvo.closest('#sec-analises') && !alvo.closest('.an-overlay')) return;
 
     var b;
+    if((b = alvo.closest('[data-anvplay]'))){
+      if(AN.tipo === 3 && AN.vidModo === 'fila'){
+        var cardV = b.closest('.an-item');
+        if(cardV) gravarUltimoVisto(cardV.getAttribute('data-anid') || '', (cardV.querySelector('.an-hora') || {}).textContent || '');
+      }
+      return;
+    }
     if((b = alvo.closest('[data-anver]'))){ e.preventDefault(); ver(porId(b.getAttribute('data-anver'))); return; }
     if((b = alvo.closest('[data-anrej]'))){ e.preventDefault(); abrirRejeitar(porId(b.getAttribute('data-anrej'))); return; }
     if((b = alvo.closest('[data-anpass]'))){ e.preventDefault(); confirmar(porId(b.getAttribute('data-anpass')), 1, -1); return; }
@@ -13376,6 +13564,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   });
 
   ligar('anRecarregar', function(){ carregar(); });
+  ligar('anContinuar', continuarDeOndeParei);
   ligar('anVerFechar', function(){ el('anVer').hidden = true; });
   ligar('anVerRej', function(){ var it = AN.alvo; el('anVer').hidden = true; abrirRejeitar(it); });
   ligar('anVerPass', function(){ var it = AN.alvo; el('anVer').hidden = true; confirmar(it, 1, -1); });
