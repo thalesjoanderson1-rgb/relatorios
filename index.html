@@ -3571,6 +3571,7 @@ textarea{resize:none!important}
       #sec-analises .an-acts .an-ic{width:14px;height:14px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
       #sec-analises .an-ok{color:#8fe0b0!important;border-color:rgba(46,204,113,.4)!important;background:rgba(46,204,113,.1)!important}
       #sec-analises .an-bad{color:#ff9a9a!important;border-color:rgba(255,93,93,.4)!important;background:rgba(255,93,93,.1)!important}
+      #sec-analises .an-vacts button.an-rec{color:#8fa1b5;border-color:var(--line);background:var(--card2);opacity:.6;cursor:default}
       .an-overlay{position:fixed;inset:0;background:rgba(4,6,10,.8);display:flex;align-items:flex-end;justify-content:center;z-index:9998;padding:0}
       .an-overlay[hidden]{display:none}
       .an-overlay.centro{align-items:center;padding:16px}
@@ -5535,7 +5536,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.15';
+const CONTENT_VERSION = '4.16';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -13012,7 +13013,8 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     var ehUltimo = !!(AN.tipo === 3 && AN.vidModo === 'fila' && AN.ultimoVisto && String(AN.ultimoVisto.id) === String(it.videoId));
     var corpo;
     if(AN.tipo === 3){
-      var chipRec = (AN.vidModo === 'principal') ? ' <span class="an-vchip">recomendado</span>' : '';
+      var rec = Number(it.seq) === 1;
+      var chipRec = (AN.vidModo === 'principal' || rec) ? ' <span class="an-vchip">recomendado</span>' : '';
       corpo = '<div class="an-vid">'
         + '<div class="an-vthumb" data-anvplay="' + esc(it.videoUrl || '') + '" title="ver vídeo">'
         +   (ehUltimo ? '<span class="an-visto">último visto</span>' : '')
@@ -13027,8 +13029,11 @@ Seus relatórios e vídeos continuam salvos.</span></div>
               ? '<button class="ghost" type="button" disabled>🗑 removido</button>'
               : (AN.vidModo === 'principal'
                   ? '<button class="ghost an-bad" data-anvtirar="' + it.videoId + '" type="button">Remover do recomendado</button>'
-                  : '<button class="ghost" data-anprincipal="' + it.videoId + '" type="button">Recomendar</button>'
-                    + '<button class="ghost an-bad" data-anvdel="' + it.videoId + '" type="button">Excluir</button>'))
+                  : (rec
+                      ? '<button class="ghost an-rec" type="button" disabled>✓ recomendado</button>'
+                        + '<button class="ghost an-bad" data-anvdel="' + it.videoId + '" type="button">Excluir</button>'
+                      : '<button class="ghost" data-anprincipal="' + it.videoId + '" type="button">Recomendar</button>'
+                        + '<button class="ghost an-bad" data-anvdel="' + it.videoId + '" type="button">Excluir</button>')))
         +   '</div>'
         + '</div></div>';
     } else if(AN.tipo === 2){
@@ -13808,6 +13813,21 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   window.__vidFecharPlayer = fecharPlayer;
 
+  function marcarRecomendado(botao){
+    if(!botao) return;
+    botao.textContent = '✓ recomendado';
+    botao.disabled = true;
+    botao.classList.add('an-rec');
+    var card = botao.closest('.an-item');
+    var tit = card ? card.querySelector('.an-vtitle') : null;
+    if(tit && !tit.querySelector('.an-vchip')){
+      var chip = document.createElement('span');
+      chip.className = 'an-vchip';
+      chip.textContent = 'recomendado';
+      tit.appendChild(chip);
+    }
+  }
+
   window.__anVideoRecomendadoConf = function(json){
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
     var p = window.__vidRec;
@@ -13815,8 +13835,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(!p) return;
     if(r && r.ok && r.confirmado){
       if(p.seq === 1){
-        p.botao.textContent = '✓ recomendado';
-        p.botao.disabled = true;
+        marcarRecomendado(p.botao);
         aviso('✓ Vídeo recomendado (confirmado)');
       } else {
         var card = p.botao.closest('.an-item');
@@ -13837,8 +13856,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(!p) return;
     if(r && r.ok){
       if(p.seq === 1){
-        p.botao.textContent = '✓ recomendado';
-        p.botao.disabled = true;
+        marcarRecomendado(p.botao);
         aviso('✓ Vídeo recomendado');
       } else {
         var card = p.botao.closest('.an-item');
