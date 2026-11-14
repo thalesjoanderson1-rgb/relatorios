@@ -1295,6 +1295,12 @@
   #histViewVideos .hist-vcard{display:flex;flex-direction:column;align-items:stretch;gap:5px;width:136px;padding:6px;background:var(--surface2);border:1px solid var(--line);border-radius:12px;box-shadow:none;text-align:left}
   #histViewVideos .hist-vcard:hover{border-color:rgba(79,140,255,.4);background:var(--surface2)}
   .hist-vthumb{position:relative;display:block;width:100%;height:74px;border-radius:8px;background:linear-gradient(135deg,#1B2A3F,#10141B);background-size:cover;background-position:center;overflow:hidden}
+  /* miniatura: vídeo inteiro (contain) + fundo desfocado da mesma imagem */
+  .hist-vthumb.tem-thumb,.hist-thumb.tem-thumb{background-size:cover;background-position:center;background-repeat:no-repeat}
+  .hist-vthumb .thumb-img,.hist-thumb .thumb-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:2;display:block}
+  .hist-vthumb.tem-thumb::before,.hist-thumb.tem-thumb::before{
+    content:"";position:absolute;inset:-14%;background-image:inherit;background-size:cover;background-position:center;
+    filter:blur(12px) brightness(.45);z-index:1;pointer-events:none;display:block!important;animation:none!important}
   .hist-vplay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.32);color:#fff}
   .hist-vplay svg{width:18px;height:18px}
   .hist-vlabel{font-size:10px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -5504,7 +5510,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.94';
+const CONTENT_VERSION = '3.95';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -7094,8 +7100,7 @@ window.onThumbReady = function(key, data){
   for(let i = 0; i < els.length; i++){
     const k = els[i].getAttribute('data-thumb-key');
     if(k === key || (fid && els[i].getAttribute('data-thumb-fid') === fid)){
-      els[i].style.backgroundImage = "url('" + data + "')";
-      els[i].classList.add('tem-thumb');
+      pintarThumb(els[i], data);
       if(fid && k) thumbMem[k] = data;   // mesma chave da ficha
     }
   }
@@ -7197,9 +7202,7 @@ function aplicarThumbEl(el, data){
   if(el.classList.contains('hist-thumb')){
     applyHistThumb(el, data);
   } else {
-    el.style.backgroundImage = "url('" + data + "')";
-    el.style.backgroundSize = 'cover';
-    el.style.backgroundPosition = 'center';
+    pintarThumb(el, data);
   }
   el.classList.add('tem-thumb');
   const idRel = el.getAttribute('data-entry-id');
@@ -7216,23 +7219,23 @@ function ligarThumb(el, e, i, tentativa){
   if(d.v.uri) el.setAttribute('data-thumb-src', d.v.uri);
   if(!el.getAttribute('data-entry-id')) el.setAttribute('data-entry-id', String(e.id));
 
-  const pronto = (d.key && thumbMem[d.key]) || d.v.thumb || '';
+  const pronto = (d.key && thumbMem[d.key]) || thumbValida(d.v.thumb);
   if(pronto){ aplicarThumbEl(el, pronto); return; }
 
   const n = tentativa || 0;
   try{
-    if(d.v.uri && window.AndroidApp && typeof AndroidApp.requestVideoThumb === 'function'){
-      AndroidApp.requestVideoThumb(d.v.uri);
-    }
+    // Drive primeiro: é a mesma imagem que aparece no site
     if(d.fid && window.AndroidApp && typeof AndroidApp.requestCloudThumb === 'function' && !thumbPedindo['f:' + d.fid]){
-      // o arquivo local pode ter sido apagado depois do upload
-      setTimeout(function(){
-        if((d.key && thumbMem[d.key]) || el.classList.contains('tem-thumb')) return;
-        try{
-          thumbPedindo['f:' + d.fid] = 1;
-          AndroidApp.requestCloudThumb(d.fid);
-        }catch(err){}
-      }, d.v.uri ? 1200 : 0);
+      thumbPedindo['f:' + d.fid] = 1;
+      AndroidApp.requestCloudThumb(d.fid);
+      if(d.v.uri && typeof AndroidApp.requestVideoThumb === 'function'){
+        setTimeout(function(){
+          if((d.key && thumbMem[d.key]) || el.classList.contains('tem-thumb')) return;
+          try{ AndroidApp.requestVideoThumb(d.v.uri); }catch(err){}
+        }, 2500);
+      }
+    } else if(d.v.uri && window.AndroidApp && typeof AndroidApp.requestVideoThumb === 'function'){
+      AndroidApp.requestVideoThumb(d.v.uri);
     }
   }catch(err){}
 
@@ -7260,7 +7263,7 @@ function renderHistVideos(e){
     const where = (v.uri && !v.remote) ? '' : ' · Drive';
     const fidI = cloudIds[i] || v.fileId || (i === 0 ? fidDoRelatorio(e, v, cloudIds) : '');
     const key = thumbKeyFor(v, fidI);
-    const thumb = (key ? thumbMem[key] : '') || v.thumb || '';
+    const thumb = (key ? thumbMem[key] : '') || thumbValida(v.thumb);
     html += `<div class="hist-vslot">
       <button class="hist-vcard" data-hplay="${i}" title="Assistir vídeo ${i + 1}">
         <span class="hist-vthumb"${key ? ` data-thumb-key="${esc(key)}"` : ''}${fidI ? ` data-thumb-fid="${esc(fidI)}"` : ''}${v.uri ? ` data-thumb-src="${esc(v.uri)}"` : ''}${thumb ? ` style="background-image:url('${thumb}')"` : ''}>
@@ -8582,12 +8585,32 @@ function renderStats(){
 let histThumbIO = null;
 let histThumbQueue2 = [];
 
+function thumbValida(t){
+  var s = String(t || '');
+  if(!s) return '';
+  // miniaturas antigas saiam 180x1 (bug de divisao inteira) e ficam minusculas
+  if(s.indexOf('data:image') === 0 && s.length < 4000) return '';
+  return s;
+}
+
+function pintarThumb(el, data){
+  if(!el || !data) return;
+  el.style.backgroundImage = "url('" + data + "')";
+  el.classList.add('tem-thumb');
+  var img = el.querySelector('img.thumb-img');
+  if(!img){
+    img = document.createElement('img');
+    img.className = 'thumb-img';
+    img.alt = '';
+    el.appendChild(img);
+  }
+  if(img.getAttribute('src') !== data) img.setAttribute('src', data);
+}
+
 function applyHistThumb(el, data){
   if(!el || !data) return;
   el.textContent = '';
-  el.style.backgroundImage = "url('" + data + "')";
-  el.style.backgroundSize = 'cover';
-  el.style.backgroundPosition = 'center';
+  pintarThumb(el, data);
 }
 
 function pumpHistThumbs(){
@@ -8604,29 +8627,20 @@ function pumpHistThumbs(){
     return;
   }
   try{
-    if(v && v.uri && typeof AndroidApp.requestVideoThumb === 'function'){
+    var fCloud = fid || (key && key.indexOf('cloud:') === 0 ? key.slice(6) : '');
+    if(fCloud && typeof AndroidApp.requestCloudThumb === 'function' && !thumbPedindo['f:' + fCloud]){
+      thumbPedindo['f:' + fCloud] = 1;
+      AndroidApp.requestCloudThumb(fCloud);
+      if(v && v.uri && typeof AndroidApp.requestVideoThumb === 'function'){
+        setTimeout(function(){
+          if(thumbMem[key]) return;
+          try{ AndroidApp.requestVideoThumb(v.uri); }catch(e){}
+        }, 2500);
+      }
+    } else if(v && v.uri && typeof AndroidApp.requestVideoThumb === 'function'){
       if(!thumbPedindo[String(v.uri)]){
         thumbPedindo[String(v.uri)] = 1;
         AndroidApp.requestVideoThumb(v.uri);
-      }
-      // o arquivo local pode ter sido apagado depois do upload: se nada chegar,
-      // tenta a miniatura do Drive (antes ficava cinza para sempre)
-      if(fid){
-        setTimeout(function(){
-          if(thumbMem[key]) return;
-          try{
-            if(typeof AndroidApp.requestCloudThumb === 'function' && !thumbPedindo['f:' + fid]){
-              thumbPedindo['f:' + fid] = 1;
-              AndroidApp.requestCloudThumb(fid);
-            }
-          }catch(e){}
-        }, 1400);
-      }
-    } else if(fid || key.indexOf('cloud:') === 0){
-      const f = fid || key.slice(6);
-      if(typeof AndroidApp.requestCloudThumb === 'function' && !thumbPedindo['f:' + f]){
-        thumbPedindo['f:' + f] = 1;
-        AndroidApp.requestCloudThumb(f);
       }
     }
   }catch(e){}
