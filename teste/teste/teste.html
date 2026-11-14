@@ -3669,6 +3669,16 @@ textarea{resize:none!important}
       #anConfOk.an-ok{background:#2ecc71!important;border-color:#2ecc71!important;color:#05200f!important}
       /* ação de rejeitar/excluir desabilitada continua vermelha (só mais apagada) */
       #anRejEnviar:disabled,#anVidOk:disabled{opacity:1!important;color:#c97070!important;border-color:rgba(255,93,93,.3)!important;background:rgba(255,93,93,.07)!important}
+      /* traduzir títulos (aba Título) */
+      #sec-analises .an-tr{display:inline-flex;align-items:center;gap:7px;margin-left:auto;font-size:11px;color:var(--dim);cursor:pointer;user-select:none}
+      #sec-analises .an-tr[hidden]{display:none}
+      #sec-analises .an-sw{width:34px;height:20px;border-radius:999px;background:#1b2531;border:1px solid var(--line);position:relative;flex:0 0 auto;transition:background .15s,border-color .15s}
+      #sec-analises .an-sw i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#5c6b7c;transition:left .15s,background .15s}
+      #sec-analises .an-tr.on{color:#bcd9ff}
+      #sec-analises .an-tr.on .an-sw{background:rgba(77,163,255,.25);border-color:rgba(77,163,255,.55)}
+      #sec-analises .an-tr.on .an-sw i{left:16px;background:#8fc0ff}
+      #sec-analises .an-tr + .an-refresh{margin-left:6px}
+      #sec-analises .an-tr-selo{display:block;margin-top:3px;font-family:var(--mono);font-size:7.5px;letter-spacing:.06em;text-transform:uppercase;color:#8fc0ff}
     </style>
 
     <div class="v7-pagehead">
@@ -3726,6 +3736,7 @@ textarea{resize:none!important}
         <button class="an-f" data-anfiltro="0" type="button">Hoje</button>
         <button class="an-f" data-anfiltro="7" type="button">7 dias</button>
         <button class="an-f on" data-anfiltro="-1" type="button">Todos</button>
+        <label class="an-tr" id="anTrWrap" hidden><span>Traduzir</span><span class="an-sw"><i></i></span></label>
         <button class="ghost an-refresh" id="anRecarregar" type="button" title="Recarregar">↻</button>
       </div>
       <div class="an-lista" id="anLista"></div>
@@ -5493,7 +5504,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '3.93';
+const CONTENT_VERSION = '3.94';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12582,6 +12593,123 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     enfileirar(1);
   }
 
+  // ---- traduzir o título enviado (aba Título) ----
+  var TR = { on: false, cache: {}, pend: {}, ativos: 0, fila: [] };
+  try{ TR.on = localStorage.getItem('alii_tr_titulo') === '1'; }catch(e){}
+
+  var TR_KEY = 'alii_tr_cache_v1';
+  function trLer(){ try{ return JSON.parse(localStorage.getItem(TR_KEY) || '{}'); }catch(e){ return {}; } }
+  function trGravar(m){ try{ var k = Object.keys(m); if(k.length > 400) delete m[k[0]]; localStorage.setItem(TR_KEY, JSON.stringify(m)); }catch(e){} }
+
+  function trCache(txt){
+    if(Object.prototype.hasOwnProperty.call(TR.cache, txt)) return TR.cache[txt];
+    var v = '';
+    try{ v = trLer()[txt] || ''; }catch(e){}
+    TR.cache[txt] = v;
+    return v;
+  }
+
+  function trGuardar(txt, pt){
+    TR.cache[txt] = pt;
+    try{ var m = trLer(); m[txt] = pt; trGravar(m); }catch(e){}
+  }
+
+  function trTraduzir(txt){
+    return new Promise(function(res, rej){
+      var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=pt&dt=t&q=' + encodeURIComponent(txt);
+      var ctl = (typeof AbortController === 'function') ? new AbortController() : null;
+      var to = ctl ? setTimeout(function(){ try{ ctl.abort(); }catch(e){} }, 6000) : null;
+      fetch(url, {cache:'no-store', signal: ctl ? ctl.signal : undefined}).then(function(r){
+        if(!r.ok) throw new Error('http ' + r.status);
+        return r.json();
+      }).then(function(j){
+        if(to) clearTimeout(to);
+        var t = (Array.isArray(j) && Array.isArray(j[0]))
+          ? j[0].map(function(x){ return (x && x[0]) ? x[0] : ''; }).join('').trim()
+          : '';
+        res(t);
+      }).catch(function(e){ if(to) clearTimeout(to); rej(e); });
+    });
+  }
+
+  function mostrarTraduzir(){
+    var w = el('anTrWrap');
+    if(!w) return;
+    w.hidden = (AN.tipo !== 2);
+    w.classList.toggle('on', !!TR.on);
+  }
+
+  function pedirTraducao(txt){
+    if(!txt) return;
+    if(trCache(txt) || TR.pend[txt]) return;
+    TR.pend[txt] = true;
+    TR.fila.push(txt);
+    bombearTr();
+  }
+
+  function bombearTr(){
+    while(TR.ativos < 3 && TR.fila.length){
+      (function(t){
+        TR.ativos++;
+        trTraduzir(t).then(function(pt){
+          TR.ativos--;
+          TR.pend[t] = false;
+          var limpo = String(pt || '').trim();
+          if(limpo) trGuardar(t, limpo);
+          aplicarTraducao();
+          bombearTr();
+        }).catch(function(){
+          TR.ativos--;
+          TR.pend[t] = false;
+          bombearTr();
+        });
+      })(TR.fila.shift());
+    }
+  }
+
+  function aplicarTraducao(){
+    try{ aplicarTraducaoInterno(); }catch(e){}
+  }
+
+  function aplicarTraducaoInterno(){
+    if(!TR.on || AN.tipo !== 2) return;
+    var cards = document.querySelectorAll('#anLista .an-item');
+    for(var i = 0; i < cards.length; i++){
+      var card = cards[i];
+      var id = card.getAttribute('data-anid');
+      var it = null;
+      for(var j = 0; j < AN.itens.length; j++){
+        if(String(AN.itens[j].id) === String(id)){ it = AN.itens[j]; break; }
+      }
+      if(!it) continue;
+      var box = card.querySelector('.an-tit.novo');
+      var b = box ? box.querySelector('b') : null;
+      if(!b) continue;
+      var original = it.checkTitle || '';
+      if(!original) continue;
+      var pt = trCache(original);
+      if(!pt){ pedirTraducao(original); continue; }
+      if(b.textContent !== pt) b.textContent = pt;
+      if(pt !== original && !box.querySelector('.an-tr-selo')){
+        var selo = document.createElement('span');
+        selo.className = 'an-tr-selo';
+        selo.textContent = 'traduzido';
+        box.appendChild(selo);
+      }
+    }
+  }
+
+  function ligarTraduzir(){
+    TR.on = !TR.on;
+    try{ localStorage.setItem('alii_tr_titulo', TR.on ? '1' : '0'); }catch(e){}
+    mostrarTraduzir();
+    if(TR.on) aplicarTraducao();
+    else render();
+  }
+
+  var trWrapEl = el('anTrWrap');
+  if(trWrapEl) trWrapEl.addEventListener('click', function(e){ e.preventDefault(); ligarTraduzir(); });
+
   function montar(){
     var totalPaginas = Math.max(1, AN.alvoPaginas || 1);
     var prefixo = 0;
@@ -12680,6 +12808,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(vazio) box.innerHTML = '';
     box.insertAdjacentHTML('beforeend', itens.map(cardHtml).join(''));
     el('anVazio').hidden = true;
+    aplicarTraducao();
   }
 
   function render(){
@@ -13096,6 +13225,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       if(vt) vt.style.display = (tp === 3) ? 'block' : 'none';
       if(tp === AN.tipo) return;
       AN.tipo = tp;
+      mostrarTraduzir();
       document.querySelectorAll('#sec-analises [data-antipo]').forEach(function(x){ x.classList.toggle('on', x === b); });
       carregar();
       return;
