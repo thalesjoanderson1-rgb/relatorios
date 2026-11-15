@@ -2943,6 +2943,40 @@ textarea{resize:none!important}
   .hist-item{padding:11px 12px}
 }
 </style>
+<style id="a-ui-style">
+/* ============================================================
+   A — EVOLUÇÃO: base do Design System (SOMENTE TESTE)
+   Apenas aparência: tipografia, toque e correção do botão mobile.
+   Para voltar: remover este bloco.
+   ============================================================ */
+body #sec-analises .an-lbl{font-size:11px!important;letter-spacing:.09em!important;margin:12px 0 5px!important}
+body #sec-analises .an-input{height:44px!important;font-size:14px!important}
+body #sec-analises .an-chip{font-size:10.5px!important;letter-spacing:.05em!important;padding:5px 10px!important}
+body #sec-analises .an-seg{min-height:44px!important;padding:10px 0!important;font-size:12.5px!important}
+body #sec-analises .an-f{min-height:44px!important;padding:0 12px!important;font-size:12px!important}
+body #sec-analises .an-refresh{width:44px!important;height:44px!important}
+body #sec-analises .an-continuar{height:44px!important;font-size:12px!important}
+body #sec-analises .an-continuar .an-continuar-q{font-size:10px!important}
+body #sec-analises .an-id,
+body #sec-analises .an-hora,
+body #sec-analises .an-vmeta{font-size:11px!important}
+body #sec-analises .an-vtitle{font-size:13px!important}
+body #sec-analises .an-acts button,
+body #sec-analises .an-vacts button{height:44px!important;font-size:12px!important}
+body #sec-analises .an-vacts button.an-rec{white-space:nowrap!important;font-size:11.5px!important;padding:0 6px!important}
+body #sec-analises .an-botoes button{height:44px!important}
+body #sec-analises .an-slot{width:44px!important;height:48px!important}
+body #sec-analises .an-conta button{min-height:44px!important;display:inline-flex!important;align-items:center!important}
+body #sec-analises .an-vchip{font-size:10px!important;padding:3px 8px!important}
+body #sec-analises .an-tit span{font-size:10px!important}
+body #sec-analises .an-img b{font-size:9.5px!important}
+body #sec-analises .an-visto{font-size:9px!important}
+body .side-nav button{min-height:44px!important}
+body .v7-more-row{min-height:60px!important}
+@media (max-width:520px){
+  body #sec-analises .an-vacts button.an-rec{font-size:11px!important;padding:0 4px!important}
+}
+</style>
 </head>
 <body>
 <style id="bootSplashCss">
@@ -5536,7 +5570,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.16';
+const CONTENT_VERSION = '4.18';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
