@@ -3757,6 +3757,10 @@ body #anVersao{font-size:11px!important}
       #sec-analises .an-ok{color:#8fe0b0!important;border-color:rgba(46,204,113,.4)!important;background:rgba(46,204,113,.1)!important}
       #sec-analises .an-bad{color:#ff9a9a!important;border-color:rgba(255,93,93,.4)!important;background:rgba(255,93,93,.1)!important}
       #sec-analises .an-vacts button.an-rec{color:#8fa1b5;border-color:var(--line);background:var(--card2);opacity:.6;cursor:default}
+      #sec-analises .an-item.an-diverge-card{border-left-color:var(--warn)!important}
+      #sec-analises .an-diverge{margin-top:9px;border:1px solid rgba(255,176,32,.35);background:rgba(255,176,32,.07);border-radius:10px;padding:8px 9px}
+      #sec-analises .an-diverge b{display:block;font-size:11.5px;color:#ffd18a;font-weight:700}
+      #sec-analises .an-diverge span{display:block;font-size:10.5px;color:var(--dim);margin-top:2px;line-height:1.4}
       .an-overlay{position:fixed;inset:0;background:rgba(4,6,10,.8);display:flex;align-items:flex-end;justify-content:center;z-index:9998;padding:0}
       .an-overlay[hidden]{display:none}
       .an-overlay.centro{align-items:center;padding:16px}
@@ -3786,6 +3790,18 @@ body #anVersao{font-size:11px!important}
       .an-d b{font-size:12px;font-weight:600;word-break:break-word}
       .an-aviso{position:fixed;left:12px;right:12px;bottom:78px;background:#16202b;border:1px solid #2a3949;border-radius:12px;padding:11px 13px;font-size:12.5px;color:var(--txt);z-index:9999;box-shadow:0 12px 30px rgba(0,0,0,.5);display:none}
       .an-aviso.on{display:block}
+      .an-aviso.on.structured{display:flex;align-items:flex-start;gap:9px}
+      .an-aviso.ok{border-color:rgba(46,230,166,.42);background:#0f1a17}
+      .an-aviso.warn{border-color:rgba(255,176,32,.45);background:#1c1710}
+      .an-aviso.bad{border-color:rgba(255,93,93,.45);background:#1c1111}
+      .an-aviso .av-ic{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;flex:0 0 auto;font-size:13px;font-weight:800}
+      .an-aviso.ok .av-ic{color:#8fe0b0;background:rgba(46,230,166,.12);border:1px solid rgba(46,230,166,.35)}
+      .an-aviso.warn .av-ic{color:#ffd18a;background:rgba(255,176,32,.12);border:1px solid rgba(255,176,32,.38)}
+      .an-aviso.bad .av-ic{color:#ff9a9a;background:rgba(255,93,93,.12);border:1px solid rgba(255,93,93,.38)}
+      .an-aviso.bad .av-tt b{color:#ffb3b3}
+      .an-aviso .av-tt{min-width:0}
+      .an-aviso .av-tt b{display:block;font-size:12.5px;font-weight:700;line-height:1.3}
+      .an-aviso .av-tt small{display:block;font-size:11px;line-height:1.4;color:var(--dim);margin-top:2px}
       #anFoto{position:fixed;inset:0;background:transparent;z-index:10000;display:flex;align-items:center;justify-content:center;overflow:hidden}
       #anFoto[hidden]{display:none}
       #anFoto img{max-width:100%;max-height:100%;object-fit:contain;transform-origin:center center;touch-action:none;will-change:transform}
@@ -5721,7 +5737,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.18';
+const CONTENT_VERSION = '4.19';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12756,7 +12772,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 /* ---- Análises (capa) — painel do app ---- */
 (function(){
   var TAM = 30;
-  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1, vidModo: 'fila', ordenado: false, ultimoVisto: null, continuarPendente: false, continuarTentativas: 0 };
+  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, confirmando: null, confTentativa: 0, confTimer: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1, vidModo: 'fila', ordenado: false, ultimoVisto: null, continuarPendente: false, continuarTentativas: 0 };
 
   function el(id){ return document.getElementById(id); }
 
@@ -12881,11 +12897,16 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   function ponte(){ return !!(window.AndroidApp && typeof AndroidApp.anStatus === 'function'); }
   function fmt(ms){ try{ return new Date(ms).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }); }catch(e){ return ''; } }
 
-  function aviso(txt){
+  function aviso(txt, kind, sub){
     var a = el('anAviso'); if(!a) return;
-    a.textContent = txt; a.classList.add('on');
+    a.className = 'an-aviso on' + (kind ? ' ' + kind + ' structured' : '');
+    if(kind){
+      a.innerHTML = '<span class="av-ic">' + (kind === 'ok' ? '✓' : kind === 'bad' ? '×' : '!') + '</span><div class="av-tt"><b>' + esc(txt) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
+    } else {
+      a.textContent = txt;
+    }
     clearTimeout(AN.avisoTimer);
-    AN.avisoTimer = setTimeout(function(){ a.classList.remove('on'); }, 4500);
+    AN.avisoTimer = setTimeout(function(){ a.classList.remove('on'); }, kind ? 5000 : 4500);
   }
 
   function mostrar(qual){
@@ -13252,6 +13273,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     var ident = AN.tipo === 3 ? it.videoId : it.id;
     var extraClasse = (AN.tipo === 3 && Number(it.isDelete) === 1) ? ' an-apagado' : '';
     if(ehUltimo) extraClasse += ' an-destaque';
+    if(it._diverge) extraClasse += ' an-diverge-card';
     var nomeTopo = AN.tipo === 3 ? ('user ' + (it.userId || '')) : (it.nickname || '');
     var metaTopo = AN.tipo === 3 ? ('vídeo ' + (it.videoId || '')) : (esc(it.guild || '—') + ' · ' + g);
     var acoes = '';
@@ -13262,11 +13284,18 @@ Seus relatórios e vídeos continuam salvos.</span></div>
         + '<button class="ghost an-ok" data-anpass="' + it.id + '" type="button"><svg class="an-ic" viewBox="0 0 24 24"><path d="m4 12.5 5 5L20 6.5"/></svg>Aprovar</button>'
         + '</div>';
     }
+    var statusExtra = '';
+    if(it._diverge){
+      statusExtra = '<div class="an-diverge"><b>Motivo diferente no painel</b><span>Painel: ' + esc(it._divergePainel || '—') + ' · Você escolheu: ' + esc(it._divergeEscolhido || '—') + '</span></div>';
+    } else if(it._pendente){
+      statusExtra = '<div class="an-diverge" style="border-color:rgba(255,176,32,.25);background:rgba(255,176,32,.04)"><b>Confirmação pendente</b><span>Toque em ↻ para conferir no painel.</span></div>';
+    }
     return '<div class="an-item' + extraClasse + '" data-anid="' + ident + '" data-uid="' + (it.userId || '') + '">'
       + '<div class="an-h"><span class="an-id">#' + esc(ident) + '</span><span class="an-nome">' + esc(nomeTopo) + '</span><span class="an-hora">' + esc(it.quando) + '</span></div>'
       + '<div class="an-meta">' + metaTopo + '</div>'
       + corpo
       + acoes
+      + statusExtra
       + '</div>';
   }
 
@@ -13320,9 +13349,10 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     el('anVer').hidden = false;
   }
 
-  function motivosDoTipo(){
+  function motivosDoTipo(tipo){
     if(!AN.motivos) return [];
-    return AN.tipo === 2 ? (AN.motivos.titulo || []) : (AN.motivos.capa || []);
+    var t = (tipo === undefined || tipo === null) ? AN.tipo : tipo;
+    return Number(t) === 2 ? (AN.motivos.titulo || []) : (AN.motivos.capa || []);
   }
 
   function pedirMotivos(cb){
@@ -13340,7 +13370,13 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     el('anEscolhido').textContent = 'nenhum motivo selecionado';
     el('anRejEnviar').disabled = true;
     el('anRej').hidden = false;
-    pedirMotivos(function(){ pintarMotivos(''); });
+    var ops = el('anOps'); if(ops) ops.scrollTop = 0;
+    var sheet = el('anRej').querySelector('.an-sheet'); if(sheet) sheet.scrollTop = 0;
+    pedirMotivos(function(){
+      pintarMotivos('');
+      var o = el('anOps'); if(o) o.scrollTop = 0;
+      var s = el('anRej').querySelector('.an-sheet'); if(s) s.scrollTop = 0;
+    });
   }
 
   function pintarMotivos(termo){
@@ -13400,6 +13436,8 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   function confirmar(it, state, motivo){
     if(!it) return;
+    it._diverge = false;
+    it._pendente = false;
     var rej = (state === 2);
     var coisa = AN.tipo === 2 ? 'o título' : 'a capa';
     el('anConfTitulo').textContent = (rej ? 'Rejeitar ' : 'Aprovar ') + coisa + '?';
@@ -13415,17 +13453,17 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     }
     if(rej){
       corpo += '<div class="an-motivo"><span>motivo ' + (motivo + 1) + '</span><b>'
-        + esc(motivosDoTipo()[motivo] || '') + '</b></div>';
+        + esc(motivosDoTipo(AN.tipo)[motivo] || '') + '</b></div>';
     } else {
       corpo += '<p class="hint" style="margin:0">' + (AN.tipo === 2 ? 'O título será aprovado no painel.' : 'A capa será aprovada no painel.') + '</p>';
     }
     el('anConfCorpo').innerHTML = corpo;
-    el('anConfOk').textContent = rej ? 'Confirmar rejeição' : 'Confirmar';
+    el('anConfOk').textContent = rej ? 'Confirmar rejeição' : 'Confirmar aprovação';
     el('anConfOk').classList.toggle('an-bad', rej);
     el('anConfOk').classList.toggle('an-ok', !rej);
     el('anConfOk').disabled = false;
     el('anConf').hidden = false;
-    AN.pendente = { it: it, state: state, motivo: motivo };
+    AN.pendente = { it: it, state: state, motivo: motivo, tipo: AN.tipo };
   }
 
   function enviar(){
@@ -13435,7 +13473,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     el('anConfOk').disabled = true;
     el('anConfOk').textContent = 'enviando…';
     esperar('acao');
-    AndroidApp.anDecidir(p.it.id, p.it.userId, p.it.roomId, p.state, p.state === 2 ? p.motivo : -1, AN.tipo);
+    AndroidApp.anDecidir(p.it.id, p.it.userId, p.it.roomId, p.state, p.state === 2 ? p.motivo : -1, p.tipo);
   }
 
   window.__anLogin = function(json){
@@ -13512,6 +13550,98 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(f) f(); else pintarMotivos(el('anBusca') ? el('anBusca').value : '');
   };
 
+  function normalizaMotivo(s){ return String(s || '').trim().toLowerCase(); }
+
+  function compararMotivo(p, rmotivo){
+    var lista = motivosDoTipo(p.tipo);
+    var escolhido = lista[p.motivo] || '';
+    var n = Number(rmotivo);
+    if(!lista.length || !isFinite(n)){
+      return { ok: true, painel: '', escolhido: escolhido };
+    }
+    if(n === Number(p.motivo)){
+      return { ok: true, painel: lista[n] || escolhido, escolhido: escolhido };
+    }
+    if(n - 1 === Number(p.motivo)){
+      return { ok: true, painel: lista[n - 1] || escolhido, escolhido: escolhido };
+    }
+    if(n >= 0 && n < lista.length && normalizaMotivo(lista[n]) === normalizaMotivo(escolhido)){
+      return { ok: true, painel: lista[n], escolhido: escolhido };
+    }
+    if(n - 1 >= 0 && n - 1 < lista.length && normalizaMotivo(lista[n - 1]) === normalizaMotivo(escolhido)){
+      return { ok: true, painel: lista[n - 1], escolhido: escolhido };
+    }
+    if(n >= 0 && n < lista.length){
+      return { ok: false, painel: lista[n], escolhido: escolhido };
+    }
+    if(n - 1 >= 0 && n - 1 < lista.length){
+      return { ok: false, painel: lista[n - 1], escolhido: escolhido };
+    }
+    return { ok: true, painel: '', escolhido: escolhido };
+  }
+
+  function acharItem(p){
+    if(!p || !p.it) return null;
+    for(var i = 0; i < AN.itens.length; i++){
+      if(Number(AN.itens[i].id) === Number(p.it.id)) return AN.itens[i];
+    }
+    return null;
+  }
+
+  function sucessoConfirmacao(p, motivoTxt){
+    AN.confirmando = null;
+    AN.confTentativa = 0;
+    AN.pendente = null;
+    clearTimeout(AN.confTimer);
+    AN.ocupado = false;
+    if(p){
+      AN.itens = AN.itens.filter(function(x){ return Number(x.id) !== Number(p.it.id); });
+      AN.total = Math.max(0, (AN.total || 1) - 1);
+      render();
+      el('anChip').textContent = AN.total + ' pendentes';
+    }
+    fecharTudo();
+    var rej = p && Number(p.state) === 2;
+    var titulo = rej ? 'Rejeitada' : 'APROVADA';
+    aviso(titulo + (motivoTxt ? ' · ' + motivoTxt : ''), rej ? 'bad' : 'ok', 'Confirmado no painel · #' + (p && p.it ? p.it.id : '—'));
+  }
+
+  function falhaConferencia(msg){
+    clearTimeout(AN.confTimer);
+    var p = AN.confirmando;
+    AN.confirmando = null;
+    AN.confTentativa = 0;
+    AN.pendente = null;
+    AN.ocupado = false;
+    if(p){
+      var it = acharItem(p);
+      if(it){ it._pendente = true; render(); }
+    }
+    fecharTudo();
+    aviso('Enviado, mas não confirmei no painel', 'warn', (msg || 'toque em ↻ para conferir'));
+  }
+
+  function conferirAgora(){
+    var p = AN.confirmando;
+    if(!p) return;
+    clearTimeout(AN.confTimer);
+    AN.confTimer = setTimeout(function(){ falhaConferencia('o painel não respondeu'); }, 9000);
+    try{ AndroidApp.anConferir(p.it.id, p.state, p.tipo || AN.tipo); }
+    catch(e){ clearTimeout(AN.confTimer); falhaConferencia('falha ao conferir'); }
+  }
+
+  function retryConferencia(msg){
+    if(AN.confTentativa < 3){
+      AN.confTentativa++;
+      var b = el('anConfOk');
+      if(b) b.textContent = 'conferindo de novo…';
+      clearTimeout(AN.confTimer);
+      AN.confTimer = setTimeout(conferirAgora, 800);
+    } else {
+      falhaConferencia(msg);
+    }
+  }
+
   window.__anDecidir = function(json){
     clearTimeout(AN.timer);
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
@@ -13523,36 +13653,62 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       else aviso((r && r.msg) || 'não foi possível enviar');
       return;
     }
-    el('anConfOk').textContent = 'conferindo no painel…';
     var p = AN.pendente;
-    if(p) AndroidApp.anConferir(p.it.id, p.state, AN.tipo);
+    if(!p) return;
+    AN.confirmando = p;
+    AN.confTentativa = 1;
+    AN.ocupado = true;
+    el('anConfOk').textContent = 'conferindo no painel…';
+    conferirAgora();
   };
 
   window.__anConferir = function(json){
-    clearTimeout(AN.timer);
+    clearTimeout(AN.confTimer);
+    var p = AN.confirmando;
+    if(!p) return;
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
-    var p = AN.pendente;
-    AN.pendente = null;
-    el('anConf').hidden = true;
-    el('anVer').hidden = true;
-    el('anRej').hidden = true;
-    if(p){
-      AN.itens = AN.itens.filter(function(x){ return Number(x.id) !== Number(p.it.id); });
-      AN.total = Math.max(0, (AN.total || 1) - 1);
-      render();
-      el('anChip').textContent = AN.total + ' pendentes';
+    if(r && r.expirado){
+      AN.confirmando = null;
+      AN.confTentativa = 0;
+      AN.ocupado = false;
+      fecharTudo();
+      acessoEncerrado();
+      return;
     }
     if(r && r.ok && r.achou){
-      if(p && p.state === 2 && Number(r.motivo) !== Number(p.motivo)){
-        aviso('rejeitada, mas o motivo no painel é outro — confira!');
-      } else {
-        aviso((p && p.state === 2 ? '✓ Rejeitada' : '✓ Passou') + ' e confirmado no painel');
+      if(Number(r.state) !== Number(p.state)){
+        retryConferencia('o painel devolveu outro estado');
+        return;
       }
-    } else if(r && r.expirado){
-      acessoEncerrado();
-    } else {
-      aviso('enviado, mas não confirmei no painel — toque em ↻');
+      if(Number(p.state) === 2){
+        var cmp = compararMotivo(p, r.motivo);
+        if(!cmp.ok){
+          var it = acharItem(p);
+          if(it){
+            it._diverge = true;
+            it._divergePainel = cmp.painel;
+            it._divergeEscolhido = cmp.escolhido;
+            render();
+          }
+          AN.confirmando = null;
+          AN.confTentativa = 0;
+          AN.pendente = null;
+          AN.ocupado = false;
+          fecharTudo();
+          aviso('Motivo diferente no painel', 'warn', 'Painel: ' + (cmp.painel || 'outro motivo') + ' · Você escolheu: ' + (cmp.escolhido || '—'));
+          return;
+        }
+        sucessoConfirmacao(p, cmp.escolhido);
+      } else {
+        sucessoConfirmacao(p, '');
+      }
+      return;
     }
+    if(r && r.ok && !r.achou){
+      retryConferencia('não encontrei o item no painel');
+      return;
+    }
+    retryConferencia((r && r.msg) || 'não consegui confirmar no painel');
   };
 
   window.__anBack = function(){
