@@ -5570,7 +5570,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.18';
+const CONTENT_VERSION = '4.19';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12089,7 +12089,7 @@ function initComposer(){
   if(!sec || sec.querySelector('.nx-gen-head')) return;
   var head = document.createElement('div');
   head.className = 'nx-gen-head';
-  head.innerHTML = '<b>Notificações</b>';
+  head.innerHTML = '<b>Relatório</b>';
   sec.insertBefore(head, sec.firstChild);
   var ta = document.getElementById('input');
   if(!ta) return;
