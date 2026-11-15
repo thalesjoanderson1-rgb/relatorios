@@ -5737,7 +5737,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.31';
+const CONTENT_VERSION = '4.32';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -8516,10 +8516,69 @@ function shiftWeek(delta){
   renderHistory();
 }
 
+function normSev(s){
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, ' ');
+}
+const SEV_ALIASES = {
+  'nudez': 'Sexual Content and Sexual Acts',
+  'pelada': 'Sexual Content and Sexual Acts',
+  'pelado': 'Sexual Content and Sexual Acts',
+  'nua': 'Sexual Content and Sexual Acts',
+  'nu': 'Sexual Content and Sexual Acts',
+  'nus': 'Sexual Content and Sexual Acts',
+  'nuas': 'Sexual Content and Sexual Acts',
+  'cigarro': 'Smoking',
+  'vape': 'Smoking',
+  'narguile': 'Smoking',
+  'bebida': 'Alcohol',
+  'cerveja': 'Alcohol',
+  'vinho': 'Alcohol',
+  'maconha': 'Drugs',
+  'cocaina': 'Drugs',
+  'aposta': 'Gambling',
+  'roleta': 'Gambling',
+  'arma': 'Violence and Extremism',
+  'agressao': 'Violence and Extremism',
+  'briga': 'Violence and Extremism',
+  'tatuagem': 'Body Markings',
+  'piercing': 'Body Markings',
+  'celular': 'Use of Devices',
+  'telefone': 'Use of Devices',
+  'tablet': 'Use of Devices',
+  'videogame': 'Use of Devices',
+  'comida': 'Eating',
+  'deitado': 'Lying Down Broadcast',
+  'cama': 'Lying Down Broadcast',
+  'dormindo': 'Inactive / Fake Broadcast',
+  'parada': 'Inactive / Fake Broadcast',
+  'politica': 'Political or Sensitive Religious Content',
+  'religiao': 'Political or Sensitive Religious Content',
+  'igreja': 'Political or Sensitive Religious Content',
+  'whatsapp': 'Solicitation / External Redirection',
+  'telegram': 'Solicitation / External Redirection',
+  'instagram': 'Solicitation / External Redirection',
+  'biquini': 'Vulgar or Suggestive Content',
+  'praia': 'Vulgar or Suggestive Content',
+  'piscina': 'Vulgar or Suggestive Content',
+  'reveladora': 'Vulgar or Suggestive Content',
+  'perigoso': 'Dangerous Behavior',
+  'sugestivo': 'Suggestive Content with Sexual Appeal',
+  'simulcast': 'Simulcast / Multi-Platform',
+  'multiplataforma': 'Simulcast / Multi-Platform'
+};
 function sevFor(name){
   const n = cleanEnd(name);
-  const hit = VIOLATIONS.find(v => v[0] === n);
-  return hit ? hit[1] : '🟡';
+  const nn = normSev(n);
+  let hit = VIOLATIONS.find(v => v[0] === n || v[3] === n || normSev(v[0]) === nn || normSev(v[3]) === nn);
+  if(!hit){
+    const alvo = SEV_ALIASES[nn];
+    if(alvo) hit = VIOLATIONS.find(v => v[0] === alvo);
+  }
+  if(hit) return hit[1];
+  if(/(nudez|pelad|sexual|sexo|genital|seios|pornograf|adulto|\b(nu|nua|nus|nuas)\b|arma|violencia|agress|briga|sangue|drog|maconha|cocaina|aposta|roleta|politic|religia|igreja|whatsapp|telegram|instagram|aliciamento)/.test(nn)) return '🔴';
+  if(/(simulcast|multitela|multiplataforma|perigoso|sugestivo)/.test(nn)) return '🟠';
+  if(/(fum|cigarro|vape|narguile|alcool|bebida|cerveja|vinho|comida|alimentacao|deitad|cama|celular|telefone|tablet|videogame|tatuagem|piercing|dormindo|parada|crianc|menor|sem camisa|torso nu|biquini|praia|piscina|reveladora)/.test(nn)) return '🟡';
+  return '🟡';
 }
 
 function entryTemplate(e){
