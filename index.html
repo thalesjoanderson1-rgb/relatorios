@@ -5737,7 +5737,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.20';
+const CONTENT_VERSION = '4.21';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12830,9 +12830,39 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     }
     return null;
   }
+  function acharScroller(el){
+    var p = el ? el.parentElement : null;
+    while(p && p !== document.body){
+      var cs = getComputedStyle(p);
+      if(/(auto|scroll)/.test(cs.overflowY) && p.scrollHeight > p.clientHeight + 2) return p;
+      p = p.parentElement;
+    }
+    return document.scrollingElement || document.documentElement;
+  }
   function irParaCard(card){
     if(!card) return;
-    try{ card.scrollIntoView({ behavior:'smooth', block:'center' }); }catch(e){ try{ card.scrollIntoView(); }catch(_){} }
+    var cards = document.querySelectorAll('#anLista .an-item');
+    for(var i = 0; i < cards.length; i++){
+      cards[i].style.contentVisibility = 'visible';
+      if(cards[i] === card) break;
+    }
+    void document.body.offsetHeight;
+    var sc = acharScroller(card);
+    function alinhar(){
+      var r = card.getBoundingClientRect();
+      if(!r || !r.height) return;
+      var base = sc === document.scrollingElement ? 0 : sc.getBoundingClientRect().top;
+      var top = sc.scrollTop + (r.top - base) - (sc.clientHeight - r.height) / 2 - 24;
+      top = Math.max(0, Math.min(top, sc.scrollHeight - sc.clientHeight));
+      sc.scrollTop = top;
+    }
+    alinhar();
+    clearTimeout(irParaCard._t1);
+    clearTimeout(irParaCard._t2);
+    clearTimeout(irParaCard._t3);
+    irParaCard._t1 = setTimeout(alinhar, 250);
+    irParaCard._t2 = setTimeout(alinhar, 700);
+    irParaCard._t3 = setTimeout(alinhar, 1200);
     card.classList.remove('an-flash');
     void card.offsetWidth;
     card.classList.add('an-flash');
