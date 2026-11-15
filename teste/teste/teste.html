@@ -2943,128 +2943,6 @@ textarea{resize:none!important}
   .hist-item{padding:11px 12px}
 }
 </style>
-<style id="c-ui-style">
-/* ============================================================
-   C UI — REDESIGN (SOMENTE TESTE)
-   Ativado por body.c-ui; o visual anterior continua intacto.
-   ============================================================ */
-.c-only{display:none!important}
-body.c-ui .c-only{display:block!important}
-body.c-ui a.c-only,body.c-ui button.c-only,body.c-ui .c-row.c-only{display:flex!important}
-body.c-ui .c-hoje.c-only{display:block!important}
-body.c-ui .c-fila-filtros.c-fila-on{display:flex!important}
-body.c-ui #sec-inicio > :not(.c-hoje){display:none!important}
-body.c-ui .quick{display:none!important}
-body.c-ui .side-nav button[data-tab="semana"],
-body.c-ui .side-nav button[data-tab="organizador"],
-body.c-ui .side-nav button[data-tab="regras"]{display:none!important}
-body.c-ui .side-nav button.c-only{display:flex!important}
-
-/* tipografia e toque */
-body.c-ui .v7-pagehead h2,
-body.c-ui #sec-regras-head h2,
-body.c-ui #sec-analises .v7-pagehead h2{font-size:24px!important;font-weight:800!important;letter-spacing:-.6px!important}
-body.c-ui #sec-mais h2,
-body.c-ui .c-hoje h2{font-size:26px!important;font-weight:800!important;letter-spacing:-.7px!important}
-body.c-ui #sec-gerar h2{font-size:20px!important}
-body.c-ui .an-chip,
-body.c-ui .v7-weekchip,
-body.c-ui .an-vchip,
-body.c-ui .an-visto,
-body.c-ui .v7-trend{font-size:10px!important;letter-spacing:.04em!important}
-body.c-ui .an-lbl,
-body.c-ui .c-section,
-body.c-ui .v7-eyebrow{font-size:11px!important;letter-spacing:.08em!important}
-body.c-ui .hint,
-body.c-ui .bento-s,
-body.c-ui .an-vmeta,
-body.c-ui .an-hora,
-body.c-ui .an-id{font-size:11px!important}
-body.c-ui button,
-body.c-ui .v7-btn,
-body.c-ui .an-f,
-body.c-ui .seg span,
-body.c-ui .v7-more-row{min-height:44px!important}
-body.c-ui .an-acts button,
-body.c-ui .an-vacts button{height:44px!important;font-size:12px!important;white-space:nowrap!important}
-body.c-ui .an-acts .an-ic{width:16px!important;height:16px!important}
-body.c-ui .an-input,
-body.c-ui .an-busca,
-body.c-ui #input,
-body.c-ui select{min-height:44px!important;font-size:14px!important}
-body.c-ui .an-slot{width:44px!important;height:44px!important}
-body.c-ui .an-item,
-body.c-ui .v7-card,
-body.c-ui .v7-more,
-body.c-ui .v7-drive,
-body.c-ui .an-card,
-body.c-ui .v7-shortcut{border-radius:14px!important}
-body.c-ui .an-item .an-vtitle{font-size:13px!important}
-body.c-ui .an-op{min-height:48px!important;font-size:13px!important}
-body.c-ui .an-sheet,
-body.c-ui .dlg-card,
-body.c-ui .picker-card{border-radius:20px!important}
-body.c-ui .an-botoes button{height:48px!important;font-size:13px!important}
-body.c-ui .v7-more-row{min-height:60px!important}
-body.c-ui .v7-more-row .bento-t{font-size:14px!important}
-body.c-ui .v7-more-row .bento-s{font-size:11px!important}
-body.c-ui .bottom-nav a{min-height:52px!important;font-size:9px!important}
-body.c-ui .bottom-nav .v7-navicon svg{width:20px!important;height:20px!important}
-body.c-ui .side-nav button{min-height:44px!important;font-size:13px!important}
-
-/* dashboard Hoje */
-.c-hoje{padding:0 0 22px}
-.c-hoje-head{display:flex;align-items:flex-start;gap:10px;margin:0 0 14px}
-.c-hoje-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#7f90a3;margin:0 0 4px}
-.c-hoje-head h2{font-size:30px!important;line-height:1;margin:0}
-.c-hoje-sub{font-size:11px;color:var(--dim);margin:5px 0 0}
-.c-status{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:8px;color:#8fe0b0;border:1px solid rgba(46,204,113,.4);background:rgba(46,204,113,.08);border-radius:999px;padding:3px 7px;white-space:nowrap}
-.c-status:before{content:"";width:4px;height:4px;border-radius:50%;background:var(--ok)}
-.c-hoje-sum{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
-.c-hoje-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
-.c-hoje-card span{font-size:10px;color:var(--dim);display:block}
-.c-hoje-card b{display:block;font-size:30px;line-height:1.1;letter-spacing:-.8px;margin-top:3px}
-.c-hoje-card small{font-size:10px;color:var(--dim);display:block;margin-top:2px}
-.c-cont{display:flex;align-items:center;gap:9px;width:100%;min-height:58px;border:1px solid rgba(77,163,255,.42);background:rgba(77,163,255,.1);border-radius:14px;color:#bcd9ff;padding:9px 11px;margin:0 0 10px;font-family:inherit;text-align:left}
-.c-cont>span{width:30px;height:30px;border-radius:50%;background:rgba(77,163,255,.16);display:grid;place-items:center;font-size:11px;flex:0 0 auto}
-.c-cont b{display:block;font-size:12.5px}
-.c-cont small{display:block;font-family:var(--mono);font-size:8px;color:#8fa1b5;margin-top:2px}
-.c-cont em{margin-left:auto;font-style:normal;color:#8fa1b5;font-size:16px}
-.c-label{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#7f90a3;margin:14px 2px 7px}
-.c-hoje-actions,.c-hoje-tools{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.c-action,.c-tool{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:left;font-family:inherit;color:var(--txt);min-height:62px}
-.c-action b,.c-tool b{display:block;font-size:12px}
-.c-action small,.c-tool small{display:block;font-size:10px;color:var(--dim);margin-top:2px}
-.c-recent{display:flex;align-items:center;gap:8px;width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px;margin-top:10px;font-family:inherit;color:var(--txt);text-align:left;min-height:48px}
-.c-recent b{font-size:12px}
-.c-recent span{margin-left:auto;font-size:10px;color:var(--dim)}
-.c-recent em{font-style:normal;color:#8fa1b5}
-
-/* Mais em seções + interruptor Visual */
-.c-visual-card{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin:0 0 12px}
-.c-visual-card b{font-size:13px}
-.c-visual-card small{display:block;font-size:11px;color:var(--dim);margin-top:2px}
-.c-visual-card .switch{margin-left:auto;flex:0 0 auto}
-.c-section{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#7f90a3;margin:16px 2px 7px}
-.c-sair{color:#ff9a9a!important}
-.c-sair .bento-t{color:#ff9a9a!important}
-.c-sair .bento-s{color:#b98282!important}
-
-/* Fila: filtros de status */
-.c-fila-filtros{display:none;gap:5px;margin:0 0 9px;flex-wrap:wrap}
-body.c-ui .c-fila-filtros{display:flex!important}
-.c-fila-filtros button{flex:1;min-height:38px;border:1px solid var(--line);background:var(--card2);color:var(--dim);border-radius:9px;font-family:inherit;font-size:10.5px;font-weight:650;padding:0 4px}
-.c-fila-filtros button.on{background:rgba(77,163,255,.14);border-color:rgba(77,163,255,.5);color:#bcd9ff}
-.c-fila-filtros b{font-family:var(--mono);font-size:8px;color:#8fa1b5;margin-left:3px}
-
-@media (max-width:520px){
-  .c-hoje-head h2{font-size:27px!important}
-  .c-hoje-card b{font-size:27px}
-  .c-action,.c-tool{min-height:66px}
-  body.c-ui .c-fila-filtros.c-fila-on{display:grid!important;grid-template-columns:1fr 1fr}
-  .c-fila-filtros button{min-height:40px;font-size:10px}
-}
-</style>
 </head>
 <body>
 <style id="bootSplashCss">
@@ -3132,7 +3010,6 @@ body.c-ui .c-fila-filtros{display:flex!important}
     <button data-tab="analises" aria-label="Análises"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="m8.5 12.2 2.4 2.4 4.6-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Análises</button>
     <button data-tab="semana" aria-label="Semana"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Semana</button>
     <button data-tab="historico" aria-label="Histórico"><svg viewBox="0 0 24 24" fill="none"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M3.5 4.5V9H8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.4l3 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Histórico</button>
-    <button data-tab="mais" class="c-only" aria-label="Mais"><svg viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg>Mais</button>
     <button data-tab="organizador" aria-label="Organizador"><svg viewBox="0 0 24 24" fill="none"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h9.5A1.5 1.5 0 0 1 16 7.5v9A1.5 1.5 0 0 1 14.5 18H5a1.5 1.5 0 0 1-1.5-1.5z" stroke="currentColor" stroke-width="1.7"/><path d="M16 10.5 20.5 8v8L16 13.5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Vídeos apagados</button>
     <button data-tab="regras" aria-label="Regras"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="7" r="2.2" stroke="currentColor" stroke-width="1.7"/><circle cx="8" cy="17" r="2.2" stroke="currentColor" stroke-width="1.7"/></svg>Regras</button>
   </nav>
@@ -3170,33 +3047,6 @@ body.c-ui .c-fila-filtros{display:flex!important}
   </nav>
 
   <section id="sec-inicio" data-panel="inicio">
-    <div class="c-hoje c-only" id="cHoje">
-      <div class="c-hoje-head">
-        <div><p class="c-hoje-eyebrow" id="cDate">Hoje</p><h2>Hoje</h2><p class="c-hoje-sub">Seu dia em um só lugar.</p></div>
-        <span class="c-status" id="cStatus">online</span>
-      </div>
-      <div class="c-hoje-sum">
-        <div class="c-hoje-card"><span>Semana</span><b id="cWeekCount">0</b><small>relatórios</small></div>
-        <div class="c-hoje-card"><span>Fila</span><b id="cFilaCount">—</b><small>para analisar</small></div>
-      </div>
-      <button class="c-cont" id="cContinuar" type="button"><span>▶</span><div><b>Continuar de onde parei</b><small id="cContinuarTime">sem vídeo marcado</small></div><em>›</em></button>
-      <h3 class="c-label">Ações</h3>
-      <div class="c-hoje-actions">
-        <button class="c-action" data-tab="gerar" type="button"><b>Novo relatório</b><small>uma violação por linha</small></button>
-        <button class="c-action" id="cVideo" type="button"><b>Relatório com vídeo</b><small>gravar e anexar</small></button>
-        <button class="c-action" id="cGravar" type="button"><b>Gravar tela</b><small>violação na hora</small></button>
-        <button class="c-action" data-tab="organizador" type="button"><b>Vídeos apagados</b><small>organizar motivos</small></button>
-      </div>
-      <h3 class="c-label">Ferramentas</h3>
-      <div class="c-hoje-tools">
-        <button class="c-tool" data-tab="semana" type="button"><b>Semana</b><small>contador e backup</small></button>
-        <button class="c-tool" data-tab="regras" type="button"><b>Regras</b><small>revisão e frases</small></button>
-        <button class="c-tool" data-tab="historico" type="button"><b>Histórico</b><small>todos os relatórios</small></button>
-        <button class="c-tool" data-tab="mais" type="button"><b>Backup</b><small>Drive e exportar</small></button>
-      </div>
-      <button class="c-recent" data-tab="historico" type="button"><b>Recentes</b><span>Ver histórico</span><em>›</em></button>
-    </div>
-
     <div class="v7-pagehead">
       <h2>Início</h2>
       <span class="v7-weekchip wk2" id="homeWeekChip"><small>Semana</small><b>—</b></span>
@@ -3550,11 +3400,6 @@ body.c-ui .c-fila-filtros{display:flex!important}
 
   <section class="card v7-more" id="sec-mais" data-panel="mais">
     <h2>Mais</h2>
-    <div class="c-visual-card">
-      <div><b>Visual</b><small>Novo visual (C) — desligue para voltar ao anterior</small></div>
-      <label class="switch"><input type="checkbox" id="cVisualToggle"><i></i></label>
-    </div>
-    <h3 class="c-section c-only">Ferramentas</h3>
     <div class="v7-more-list">
       <button class="v7-more-row" id="btnPreviewUpdate"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4"/><path d="M5 17v2.5h14V17"/></svg></span><span class="bento-tb"><span class="bento-t">Atualização</span><span class="bento-s">verificar se existem novas atualizações</span></span><em>›</em></button>
       <button class="v7-more-row" data-tab="semana"><span class="bento-ic"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></span><span class="bento-tb"><span class="bento-t">Semana</span><span class="bento-s">contador, gráfico e backup</span></span><em>›</em></button>
@@ -3562,11 +3407,9 @@ body.c-ui .c-fila-filtros{display:flex!important}
       <button class="v7-more-row" data-tab="regras"><span class="bento-ic"><svg viewBox="0 0 24 24"><path d="M7 4h10v16H7z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><span class="bento-tb"><span class="bento-t">Regras</span><span class="bento-s">revisão de relatório e frases</span></span><em>›</em></button>
       <button class="v7-more-row wide" id="btnCacheClear" type="button"><span class="bento-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5h6v2M8 7l1 13h6l1-13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="bento-tb"><span class="bento-t">Limpar cache de vídeos</span><span class="bento-s">cache + originais das gravações — não apaga o histórico</span></span><span class="cache-size" id="cacheSizeChip">0 MB</span></button>
     </div>
-    <h3 class="c-section c-only">Preferências</h3>
     <label class="switch-row" style="margin:10px 2px 0"><span class="switch"><input type="checkbox" id="recOpenReport" checked><i></i></span><span>Abrir relatório com vídeo ao parar</span></label>
     <p class="hint" style="margin:12px 2px 0">Tudo fica salvo no aparelho. Use <b>Semana → Exportar histórico</b> para backup.</p>
 
-    <h3 class="c-section c-only">Integrações</h3>
     <div class="drive-split">
     <div class="v7-drive drive-settings">
       <div class="v7-drive-head">
@@ -3622,7 +3465,6 @@ body.c-ui .c-fila-filtros{display:flex!important}
       </div>
     </div>
 
-    <h3 class="c-section c-only">Dados e backup</h3>
     <div class="sync-backup-split">
     <div class="v7-drive" id="syncCard">
       <div class="v7-drive-head">
@@ -3660,8 +3502,6 @@ body.c-ui .c-fila-filtros{display:flex!important}
     </div>
     </div>
 
-    <h3 class="c-section c-only">Conta e sobre</h3>
-    <button class="v7-more-row c-sair c-only" id="cSair" type="button"><span class="bento-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M10 5H5v14h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 8l4 4-4 4M8 12h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="bento-tb"><span class="bento-t">Sair da conta</span><span class="bento-s">encerrar a sessão do painel</span></span><em>›</em></button>
     <p class="hint" id="appVersion" style="text-align:center;margin:16px 0 4px">Criação de relatórios</p>
   </section>
 
@@ -3923,12 +3763,6 @@ body.c-ui .c-fila-filtros{display:flex!important}
         </div>
         <label class="an-tr" id="anTrWrap" hidden><span>Traduzir</span><span class="an-sw"><i></i></span></label>
         <button class="ghost an-refresh" id="anRecarregar" type="button" title="Recarregar">↻</button>
-      </div>
-      <div class="c-fila-filtros c-only" id="cFilaFiltros">
-        <button type="button" data-cfila="todos" class="on">Todos <b>0</b></button>
-        <button type="button" data-cfila="pendentes">Pendentes <b>0</b></button>
-        <button type="button" data-cfila="recomendados">Recomendados <b>0</b></button>
-        <button type="button" data-cfila="apagados">Apagados <b>0</b></button>
       </div>
       <button class="an-continuar" id="anContinuar" type="button" hidden>
         <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -5702,7 +5536,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.17';
+const CONTENT_VERSION = '4.16';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -13226,7 +13060,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
         + '<button class="ghost an-ok" data-anpass="' + it.id + '" type="button"><svg class="an-ic" viewBox="0 0 24 24"><path d="m4 12.5 5 5L20 6.5"/></svg>Aprovar</button>'
         + '</div>';
     }
-    return '<div class="an-item' + extraClasse + '" data-anid="' + ident + '" data-uid="' + (it.userId || '') + '" data-seq="' + (Number(it.seq) === 1 ? 1 : 0) + '" data-del="' + (Number(it.isDelete) === 1 ? 1 : 0) + '">'
+    return '<div class="an-item' + extraClasse + '" data-anid="' + ident + '" data-uid="' + (it.userId || '') + '">'
       + '<div class="an-h"><span class="an-id">#' + esc(ident) + '</span><span class="an-nome">' + esc(nomeTopo) + '</span><span class="an-hora">' + esc(it.quando) + '</span></div>'
       + '<div class="an-meta">' + metaTopo + '</div>'
       + corpo
@@ -14165,95 +13999,5 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 })();
 </script>
 
-<script>
-/* ============================================================
-   C UI — comportamento (SOMENTE TESTE)
-   ============================================================ */
-(function(){
-  var KEY = 'alii_ui_c';
-  function $(id){ return document.getElementById(id); }
-  function setC(on){
-    document.body.classList.toggle('c-ui', !!on);
-    var t = $('cVisualToggle'); if(t) t.checked = !!on;
-    try{ localStorage.setItem(KEY, on ? '1' : '0'); }catch(e){}
-    if(typeof cAplicar === 'function') cAplicar();
-  }
-  var saved = null; try{ saved = localStorage.getItem(KEY); }catch(e){}
-  setC(saved !== '0');
-  var t = $('cVisualToggle');
-  if(t) t.addEventListener('change', function(){ setC(t.checked); });
-
-  function syncC(){
-    var w = $('homeWeekCount'), cw = $('cWeekCount');
-    if(w && cw) cw.textContent = (w.textContent || '0').trim();
-    var chip = $('anChip'), cf = $('cFilaCount');
-    if(chip && cf){ var m = (chip.textContent || '').match(/\d+/); cf.textContent = m ? m[0] : '—'; }
-    var u = null; try{ u = JSON.parse(localStorage.getItem('alii_an_ultimo_visto_v1') || 'null'); }catch(e){}
-    var ct = $('cContinuarTime');
-    if(ct) ct.textContent = (u && u.quando) ? u.quando : 'sem vídeo marcado';
-    var st = $('cStatus'); if(st) st.textContent = navigator.onLine ? 'online' : 'offline';
-  }
-  syncC(); setInterval(syncC, 1500);
-  try{
-    var d = new Date();
-    var cd = $('cDate');
-    if(cd) cd.textContent = d.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'2-digit' });
-  }catch(e){}
-
-  var cont = $('cContinuar');
-  if(cont) cont.addEventListener('click', function(){
-    var a = document.querySelector('[data-tab="analises"]'); if(a) a.click();
-    setTimeout(function(){ var b = $('anContinuar'); if(b && !b.hidden) b.click(); }, 800);
-  });
-  var cv = $('cVideo'); if(cv) cv.addEventListener('click', function(){ var b = $('homeNewVideo'); if(b) b.click(); });
-  var cg = $('cGravar'); if(cg) cg.addEventListener('click', function(){ var b = $('btnScreenRecord'); if(b) b.click(); });
-  var cs = $('cSair'); if(cs) cs.addEventListener('click', function(){ var b = $('anSair'); if(b) b.click(); });
-
-  function cAtiva(){
-    var v = document.querySelector('[data-antipo="3"]');
-    var f = document.querySelector('[data-anvidmodo="fila"]');
-    return document.body.classList.contains('c-ui') && v && v.classList.contains('on') && f && f.classList.contains('on');
-  }
-  function cAplicar(){
-    var row = $('cFilaFiltros'); if(!row) return;
-    var on = cAtiva();
-    row.classList.toggle('c-fila-on', on);
-    var cards = document.querySelectorAll('#anLista .an-item');
-    if(!on){
-      for(var j=0;j<cards.length;j++) cards[j].style.display = '';
-      return;
-    }
-    var active = row.querySelector('[data-cfila].on');
-    var modo = active ? active.getAttribute('data-cfila') : 'todos';
-    var counts = { todos:0, pendentes:0, recomendados:0, apagados:0 };
-    for(var i=0;i<cards.length;i++){
-      var c = cards[i];
-      var seq = c.getAttribute('data-seq') === '1';
-      var del = c.getAttribute('data-del') === '1';
-      var show = modo === 'todos' || (modo === 'pendentes' && !seq && !del) || (modo === 'recomendados' && seq) || (modo === 'apagados' && del);
-      c.style.display = show ? '' : 'none';
-      counts.todos++;
-      if(seq) counts.recomendados++;
-      else if(del) counts.apagados++;
-      else counts.pendentes++;
-    }
-    ['todos','pendentes','recomendados','apagados'].forEach(function(k){
-      var b = row.querySelector('[data-cfila="' + k + '"] b');
-      if(b) b.textContent = counts[k];
-    });
-  }
-  document.addEventListener('click', function(e){
-    var b = e.target && e.target.closest ? e.target.closest('#cFilaFiltros [data-cfila]') : null;
-    if(b){
-      document.querySelectorAll('#cFilaFiltros [data-cfila]').forEach(function(x){ x.classList.toggle('on', x === b); });
-      cAplicar();
-    }
-    if(e.target && e.target.closest && e.target.closest('[data-antipo],[data-anvidmodo]')) setTimeout(cAplicar, 250);
-  });
-  var lista = $('anLista');
-  if(lista && window.MutationObserver){ new MutationObserver(function(){ cAplicar(); }).observe(lista, { childList:true }); }
-  cAplicar();
-})();
-</script>
 </body>
 </html>
