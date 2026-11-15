@@ -3119,6 +3119,27 @@ body #anVersao{font-size:11px!important}
   body .v7-weekchip.wk2 small{font-size:11px!important}
 }
 </style>
+<style id="an-f2-style">
+/* F++ — filtros da auditoria em cards horizontais (somente aparência) */
+body #sec-analises .an-segs{gap:8px!important}
+body #sec-analises .an-seg{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  gap:7px!important;padding:10px 8px!important;border-radius:12px!important;
+  background:#0E1117!important;border:1px solid var(--line)!important;
+  color:var(--txt)!important;font-size:11px!important;font-weight:500!important;
+  min-width:0!important;box-shadow:none!important;
+}
+body #sec-analises .an-seg svg{
+  width:16px;height:16px;flex:0 0 auto;stroke:currentColor;fill:none;
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:#8FA0B4;
+}
+body #sec-analises .an-seg .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.1}
+body #sec-analises .an-seg.on{
+  background:#152439!important;border-color:#6FA8DC!important;color:#EAF4FF!important;
+  box-shadow:0 0 0 1px rgba(111,168,220,.18)!important;
+}
+body #sec-analises .an-seg.on svg{color:#9CC8F0}
+</style>
 </head>
 <body>
 <style id="bootSplashCss">
@@ -3948,13 +3969,13 @@ body #anVersao{font-size:11px!important}
         <button class="ghost" id="anSair" type="button">Sair</button>
       </div>
       <div class="an-segs">
-        <button class="an-seg on" data-antipo="1" type="button">Capa</button>
-        <button class="an-seg" data-antipo="2" type="button">Título</button>
-        <button class="an-seg" data-antipo="3" type="button">Vídeos</button>
+        <button class="an-seg on" data-antipo="1" type="button"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2.5"/><path d="m8 15 3-3 2 2 3-4 3 5"/></svg><span class="lbl">Capa</span></button>
+        <button class="an-seg" data-antipo="2" type="button"><svg viewBox="0 0 24 24"><path d="M6 6h12M12 6v12"/><path d="M9 18h6"/></svg><span class="lbl">Título</span></button>
+        <button class="an-seg" data-antipo="3" type="button"><svg viewBox="0 0 24 24"><rect x="3.5" y="6" width="17" height="12" rx="2.5"/><path d="m10.2 9.8 4.4 2.2-4.4 2.2z"/></svg><span class="lbl">Vídeos</span></button>
       </div>
       <div class="an-segs" id="anVidModo" style="display:none;margin-top:-4px">
-        <button class="an-seg on" data-anvidmodo="fila" type="button">Para analisar</button>
-        <button class="an-seg" data-anvidmodo="principal" type="button">Recomendados</button>
+        <button class="an-seg on" data-anvidmodo="fila" type="button"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4-4"/></svg><span class="lbl">Para analisar</span></button>
+        <button class="an-seg" data-anvidmodo="principal" type="button"><svg viewBox="0 0 24 24"><path d="m12 4 2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4L7.5 17.8l.9-5L4.8 9.3l5-.7z"/></svg><span class="lbl">Recomendados</span></button>
       </div>
       <div class="an-filtros">
         <div class="an-seg-f">
@@ -5737,7 +5758,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.32';
+const CONTENT_VERSION = '4.33';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
