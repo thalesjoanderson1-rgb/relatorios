@@ -3793,9 +3793,12 @@ body #anVersao{font-size:11px!important}
       .an-aviso.on.structured{display:flex;align-items:flex-start;gap:9px}
       .an-aviso.ok{border-color:rgba(46,230,166,.42);background:#0f1a17}
       .an-aviso.warn{border-color:rgba(255,176,32,.45);background:#1c1710}
+      .an-aviso.bad{border-color:rgba(255,93,93,.45);background:#1c1111}
       .an-aviso .av-ic{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;flex:0 0 auto;font-size:13px;font-weight:800}
       .an-aviso.ok .av-ic{color:#8fe0b0;background:rgba(46,230,166,.12);border:1px solid rgba(46,230,166,.35)}
       .an-aviso.warn .av-ic{color:#ffd18a;background:rgba(255,176,32,.12);border:1px solid rgba(255,176,32,.38)}
+      .an-aviso.bad .av-ic{color:#ff9a9a;background:rgba(255,93,93,.12);border:1px solid rgba(255,93,93,.38)}
+      .an-aviso.bad .av-tt b{color:#ffb3b3}
       .an-aviso .av-tt{min-width:0}
       .an-aviso .av-tt b{display:block;font-size:12.5px;font-weight:700;line-height:1.3}
       .an-aviso .av-tt small{display:block;font-size:11px;line-height:1.4;color:var(--dim);margin-top:2px}
@@ -5734,7 +5737,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.24';
+const CONTENT_VERSION = '4.28';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12898,7 +12901,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     var a = el('anAviso'); if(!a) return;
     a.className = 'an-aviso on' + (kind ? ' ' + kind + ' structured' : '');
     if(kind){
-      a.innerHTML = '<span class="av-ic">' + (kind === 'ok' ? '✓' : '!') + '</span><div class="av-tt"><b>' + esc(txt) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
+      a.innerHTML = '<span class="av-ic">' + (kind === 'ok' ? '✓' : kind === 'bad' ? '×' : '!') + '</span><div class="av-tt"><b>' + esc(txt) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
     } else {
       a.textContent = txt;
     }
@@ -13367,7 +13370,13 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     el('anEscolhido').textContent = 'nenhum motivo selecionado';
     el('anRejEnviar').disabled = true;
     el('anRej').hidden = false;
-    pedirMotivos(function(){ pintarMotivos(''); });
+    var ops = el('anOps'); if(ops) ops.scrollTop = 0;
+    var sheet = el('anRej').querySelector('.an-sheet'); if(sheet) sheet.scrollTop = 0;
+    pedirMotivos(function(){
+      pintarMotivos('');
+      var o = el('anOps'); if(o) o.scrollTop = 0;
+      var s = el('anRej').querySelector('.an-sheet'); if(s) s.scrollTop = 0;
+    });
   }
 
   function pintarMotivos(termo){
@@ -13449,7 +13458,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       corpo += '<p class="hint" style="margin:0">' + (AN.tipo === 2 ? 'O título será aprovado no painel.' : 'A capa será aprovada no painel.') + '</p>';
     }
     el('anConfCorpo').innerHTML = corpo;
-    el('anConfOk').textContent = rej ? 'Confirmar rejeição' : 'Confirmar';
+    el('anConfOk').textContent = rej ? 'Confirmar rejeição' : 'Confirmar aprovação';
     el('anConfOk').classList.toggle('an-bad', rej);
     el('anConfOk').classList.toggle('an-ok', !rej);
     el('anConfOk').disabled = false;
@@ -13592,7 +13601,9 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       el('anChip').textContent = AN.total + ' pendentes';
     }
     fecharTudo();
-    aviso((p && Number(p.state) === 2 ? 'Rejeitada' : 'Passou') + (motivoTxt ? ' · ' + motivoTxt : ''), 'ok', 'Confirmado no painel');
+    var rej = p && Number(p.state) === 2;
+    var titulo = rej ? 'Rejeitada' : 'APROVADA';
+    aviso(titulo + (motivoTxt ? ' · ' + motivoTxt : ''), rej ? 'bad' : 'ok', 'Confirmado no painel · #' + (p && p.it ? p.it.id : '—'));
   }
 
   function falhaConferencia(msg){
