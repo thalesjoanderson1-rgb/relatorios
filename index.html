@@ -5737,7 +5737,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.19';
+const CONTENT_VERSION = '4.20';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -5889,6 +5889,7 @@ function loadHistory(){
     return histCache;
   }
 }
+try{ window.loadHistory = loadHistory; }catch(e){}
 function saveHistory(h, opts){
   let ok = true;
   try{
@@ -12135,7 +12136,10 @@ switchTab('inicio', true);
 'use strict';
 var HKEY = 'alii_history_v1';
 function hist(){
-  try{ return JSON.parse(localStorage.getItem(HKEY) || '[]'); }catch(e){ return []; }
+  try{
+    if(typeof window.loadHistory === 'function') return window.loadHistory();
+    return JSON.parse(localStorage.getItem(HKEY) || '[]');
+  }catch(e){ return []; }
 }
 function pad2(n){ return (n < 10 ? '0' : '') + n; }
 function spDay(offset){
