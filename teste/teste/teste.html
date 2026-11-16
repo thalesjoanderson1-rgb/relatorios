@@ -5758,7 +5758,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.33';
+const CONTENT_VERSION = '4.34';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12856,7 +12856,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 /* ---- Análises (capa) — painel do app ---- */
 (function(){
   var TAM = 30;
-  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, confirmando: null, confTentativa: 0, confTimer: null, avisoTimer: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1, vidModo: 'fila', ordenado: false, ultimoVisto: null, continuarPendente: false, continuarTentativas: 0 };
+  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, confirmando: null, confTentativa: 0, confTimer: null, avisoTimer: null, conferindoEnvio: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1, vidModo: 'fila', ordenado: false, ultimoVisto: null, continuarPendente: false, continuarTentativas: 0 };
 
   function el(id){ return document.getElementById(id); }
 
@@ -13479,6 +13479,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   function abrirRejeitar(it){
     if(!it) return;
     AN.alvo = it; AN.motivo = null;
+    AN.motivos = null; // sempre busca a lista atual do painel
     el('anRejSub').textContent = '#' + it.id + ' · ' + (it.nickname || '');
     el('anBusca').value = '';
     el('anEscolhido').textContent = 'nenhum motivo selecionado';
@@ -13580,14 +13581,25 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     AN.pendente = { it: it, state: state, motivo: motivo, tipo: AN.tipo };
   }
 
+  function mandarDecisao(p){
+    el('anConfOk').textContent = 'enviando…';
+    esperar('acao');
+    AndroidApp.anDecidir(p.it.id, p.it.userId, p.it.roomId, p.state, p.state === 2 ? p.motivo : -1, p.tipo);
+  }
+
   function enviar(){
     var p = AN.pendente;
     if(!p || AN.ocupado) return;
     AN.ocupado = true;
     el('anConfOk').disabled = true;
-    el('anConfOk').textContent = 'enviando…';
+    el('anConfOk').textContent = 'conferindo…';
     esperar('acao');
-    AndroidApp.anDecidir(p.it.id, p.it.userId, p.it.roomId, p.state, p.state === 2 ? p.motivo : -1, p.tipo);
+    if(p.state === 2 && p.motivo >= 0 && window.AndroidApp && typeof AndroidApp.anMotivos === 'function'){
+      AN.conferindoEnvio = { p: p, texto: motivosDoTipo(p.tipo)[p.motivo] || '' };
+      AndroidApp.anMotivos();
+      return;
+    }
+    mandarDecisao(p);
   }
 
   window.__anLogin = function(json){
@@ -13657,9 +13669,39 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   window.__anMotivos = function(json){
     clearTimeout(AN.timer);
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
+    var ce = AN.conferindoEnvio;
+    if(ce && !(r && r.ok)){
+      AN.conferindoEnvio = null;
+      AN.ocupado = false;
+      var b = el('anConfOk');
+      if(b){ b.disabled = false; b.textContent = 'Confirmar'; }
+      if(r && r.expirado){ fecharTudo(); acessoEncerrado(); return; }
+      aviso((r && r.msg) || 'não consegui conferir a lista de motivos');
+      return;
+    }
     if(r && r.ok){ AN.motivos = { capa: r.capa || [], titulo: r.titulo || [] }; }
     else if(r && r.expirado){ fecharTudo(); acessoEncerrado(); return; }
     else { el('anOps').innerHTML = '<p class="hint">' + esc((r && r.msg) || 'não foi possível carregar os motivos') + '</p>'; return; }
+    if(ce){
+      AN.conferindoEnvio = null;
+      var lista = motivosDoTipo(ce.p.tipo);
+      var idx = -1;
+      for(var i = 0; i < lista.length; i++){
+        if(normalizaMotivo(lista[i]) === normalizaMotivo(ce.texto)){ idx = i; break; }
+      }
+      if(idx >= 0){
+        ce.p.motivo = idx; // mesmo motivo, posição nova
+        mandarDecisao(ce.p);
+      } else {
+        AN.ocupado = false;
+        AN.pendente = null;
+        el('anConf').hidden = true;
+        AN.motivos = null;
+        aviso('O motivo não existe mais no painel', 'warn', 'Escolha outro motivo.');
+        abrirRejeitar(ce.p.it);
+      }
+      return;
+    }
     var f = AN.aguardando; AN.aguardando = null;
     if(f) f(); else pintarMotivos(el('anBusca') ? el('anBusca').value : '');
   };
@@ -13830,7 +13872,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(el('anVid') && !el('anVid').hidden){ el('anVid').hidden = true; return true; }
     if(el('anSim') && !el('anSim').hidden){ el('anSim').hidden = true; SIM.cb = null; return true; }
     if(el('anFoto') && !el('anFoto').hidden){ fecharFoto(); return true; }
-    if(el('anConf') && !el('anConf').hidden){ el('anConf').hidden = true; AN.pendente = null; return true; }
+    if(el('anConf') && !el('anConf').hidden){ el('anConf').hidden = true; AN.pendente = null; AN.conferindoEnvio = null; AN.ocupado = false; return true; }
     if(el('anRej') && !el('anRej').hidden){ el('anRej').hidden = true; return true; }
     if(el('anVer') && !el('anVer').hidden){ el('anVer').hidden = true; return true; }
     return false;
