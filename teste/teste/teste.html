@@ -3163,8 +3163,8 @@ body #sec-analises .an-seg.on svg{color:#9CC8F0}
 /* filtros compactos + botão atualizar com ícone e giro */
 body #sec-analises .an-seg-f{padding:2px!important;gap:2px!important;border-radius:10px!important}
 body #sec-analises .an-f{min-height:28px!important;height:28px!important;padding:0 4px!important;font-size:10.2px!important;border-radius:8px!important;line-height:1!important}
-body #sec-analises .an-refresh{width:32px!important;height:32px!important;min-width:32px!important;padding:0!important;border-radius:9px!important;display:flex!important;align-items:center!important;justify-content:center!important}
-body #sec-analises .an-refresh svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+body #sec-analises .an-refresh{width:32px!important;height:32px!important;min-width:32px!important;padding:0!important;border-radius:9px!important;display:flex!important;align-items:center!important;justify-content:center!important;line-height:0!important;font-size:0!important;text-align:center!important}
+body #sec-analises .an-refresh svg{display:block!important;width:14px!important;height:14px!important;margin:0!important;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 body #sec-analises .an-refresh.girando svg{animation:anGirar .8s cubic-bezier(.4,0,.2,1)}
 @keyframes anGirar{to{transform:rotate(360deg)}}
 </style>
@@ -5802,7 +5802,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.42';
+const CONTENT_VERSION = '4.43';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
