@@ -5799,7 +5799,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.39';
+const CONTENT_VERSION = '4.40';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -13089,7 +13089,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   }
 
   function fecharTudo(){
-    ['anVer','anRej','anConf'].forEach(function(id){ var n = el(id); if(n) n.hidden = true; });
+    ['anVer','anRej','anConf','anRec'].forEach(function(id){ var n = el(id); if(n) n.hidden = true; });
   }
 
   function preencherCredenciais(){
@@ -13989,6 +13989,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   window.__anBack = function(){
     if(el('anVplay') && !el('anVplay').hidden){ if(window.__vidFecharPlayer) window.__vidFecharPlayer(); return true; }
     if(el('anVid') && !el('anVid').hidden){ el('anVid').hidden = true; return true; }
+    if(el('anRec') && !el('anRec').hidden){ el('anRec').hidden = true; REC_CB = null; return true; }
     if(el('anSim') && !el('anSim').hidden){ el('anSim').hidden = true; SIM.cb = null; return true; }
     if(el('anFoto') && !el('anFoto').hidden){ fecharFoto(); return true; }
     if(el('anConf') && !el('anConf').hidden){ el('anConf').hidden = true; AN.pendente = null; AN.conferindoEnvio = null; AN.ocupado = false; return true; }
