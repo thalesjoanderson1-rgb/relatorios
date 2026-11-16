@@ -5802,7 +5802,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.35';
+const CONTENT_VERSION = '4.36';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12902,6 +12902,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 /* ---- Análises (capa) — painel do app ---- */
 (function(){
   var TAM = 10;
+  var VID_TAM = 100;
   var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, confirmando: null, confTentativa: 0, confTimer: null, avisoTimer: null, conferindoEnvio: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1, vidModo: 'fila', ordenado: false, ultimoVisto: null, continuarPendente: false, continuarTentativas: 0 };
 
   function el(id){ return document.getElementById(id); }
@@ -13164,8 +13165,8 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   function pedir(pagina){
     AN.emVoo = (AN.emVoo || 0) + 1;
     if(AN.tipo === 3){
-      if(AN.vidModo === 'principal') AndroidApp.anVideoPrincipal(pagina, TAM);
-      else AndroidApp.anVideosListar(pagina, TAM);
+      if(AN.vidModo === 'principal') AndroidApp.anVideoPrincipal(pagina, VID_TAM);
+      else AndroidApp.anVideosListar(pagina, VID_TAM);
     } else AndroidApp.anListar(pagina, TAM, AN.filtro, AN.tipo);
   }
 
