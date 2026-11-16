@@ -1799,6 +1799,9 @@
     box-shadow:0 16px 36px rgba(0,0,0,.55);transform:translate(-50%,-70px);opacity:0;
     pointer-events:none;transition:transform .18s ease,opacity .18s ease}
   #pullRefresh svg{width:14px;height:14px;color:var(--accent)}
+  #pullRefresh.girando{box-shadow:0 0 0 1px rgba(77,163,255,.18),0 0 18px rgba(77,163,255,.18),0 16px 36px rgba(0,0,0,.55)}
+  #pullRefresh.girando svg{animation:pullGirar .8s linear infinite;filter:drop-shadow(0 0 4px rgba(77,163,255,.7))}
+  @keyframes pullGirar{to{transform:rotate(360deg)}}
 
   /* ── alinhamento e tamanhos iguais ─────────────────────────────────── */
   .v7-pagehead{margin-left:0 !important;margin-right:0 !important}
@@ -5799,7 +5802,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.29';
+const CONTENT_VERSION = '4.30';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -12065,6 +12068,7 @@ window.onDriveError = function(o){
   let startY = 0, startX = 0, pulling = false, dist = 0;
   const allowed = () => activeTab === 'inicio' || activeTab === 'historico';
   const hide = () => {
+    el.classList.remove('girando');
     el.style.transform = 'translate(-50%,-70px)';
     el.style.opacity = '0';
   };
@@ -12097,6 +12101,7 @@ window.onDriveError = function(o){
     pulling = false;
     if(dist > 70){
       el.querySelector('span').textContent = 'Atualizando...';
+      el.classList.add('girando');
       el.style.transform = 'translate(-50%,8px)';
       el.style.opacity = '1';
       try{
