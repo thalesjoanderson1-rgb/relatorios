@@ -5803,7 +5803,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.50';
+const CONTENT_VERSION = '4.51';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -7777,7 +7777,10 @@ function anexarVideoNaFicha(entry){
 }
 
 window.travarFundoHist = function(ligar){
-  try{ document.body.classList.toggle('hist-travado', !!ligar); }catch(e){}
+  try{
+    document.documentElement.classList.toggle('hist-travado', !!ligar);
+    document.body.classList.toggle('hist-travado', !!ligar);
+  }catch(e){}
 };
 
 /* ao compartilhar, fecha a ficha para o progresso não ficar atrás dela */
@@ -14816,9 +14819,9 @@ body #sec-gerar #input{border-radius:var(--r-field)!important;font-size:13px!imp
 #bootSplash .bs-ring2{border-color:rgba(111,168,220,.10)!important}
 #bootSplash .bs-ring{border-color:rgba(111,168,220,.22)!important}
 /* ficha do relatório: o fundo não rola junto */
-body.hist-travado{overflow:hidden!important;overscroll-behavior:none!important;touch-action:none!important}
-body.hist-travado .nx-sheet-card,body.hist-travado #histView{touch-action:pan-y!important;overscroll-behavior:contain!important}
-body.hist-travado .nx-sheet-backdrop{touch-action:none!important}
+html.hist-travado,body.hist-travado{overflow:hidden!important;overscroll-behavior:none!important;touch-action:none!important}
+html.hist-travado .nx-sheet-card,body.hist-travado .nx-sheet-card,html.hist-travado #histView,body.hist-travado #histView{touch-action:pan-y!important;overscroll-behavior:contain!important}
+html.hist-travado .nx-sheet-backdrop,body.hist-travado .nx-sheet-backdrop{touch-action:none!important}
 .nx-sheet-backdrop{touch-action:none!important}
 .nx-sheet-card,#histView{overscroll-behavior:contain}
 </style>
