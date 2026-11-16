@@ -3139,6 +3139,13 @@ body #sec-analises .an-seg.on{
   box-shadow:0 0 0 1px rgba(111,168,220,.18)!important;
 }
 body #sec-analises .an-seg.on svg{color:#9CC8F0}
+/* skeleton enquanto o motivo é traduzido */
+#sec-analises #anOps .sk{
+  display:inline-block;width:72%;height:11px;border-radius:6px;
+  background:linear-gradient(90deg,#1A2029 25%,#232C38 50%,#1A2029 75%);
+  background-size:200% 100%;animation:anSk 1.3s linear infinite;
+}
+@keyframes anSk{to{background-position:-200% 0}}
 </style>
 </head>
 <body>
@@ -5758,7 +5765,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.34';
+const CONTENT_VERSION = '4.35';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -13188,7 +13195,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   try { prepararRolagem(); } catch(e) {}
 
   // ---- traduzir o título enviado (aba Título) ----
-  var TR = { on: false, cache: {}, pend: {}, ativos: 0, fila: [] };
+  var TR = { on: false, cache: {}, pend: {}, ativos: 0, fila: [], cbs: {} };
   try{ TR.on = localStorage.getItem('alii_tr_titulo') === '1'; }catch(e){}
 
   var TR_KEY = 'alii_tr_cache_v1';
@@ -13233,9 +13240,15 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     w.classList.toggle('on', !!TR.on);
   }
 
-  function pedirTraducao(txt){
+  function pedirTraducao(txt, cb){
     if(!txt) return;
-    if(trCache(txt) || TR.pend[txt]) return;
+    var pronto = trCache(txt);
+    if(pronto){ if(cb) cb(pronto); return; }
+    if(cb){
+      if(!TR.cbs[txt]) TR.cbs[txt] = [];
+      TR.cbs[txt].push(cb);
+    }
+    if(TR.pend[txt]) return;
     TR.pend[txt] = true;
     TR.fila.push(txt);
     bombearTr();
@@ -13249,12 +13262,19 @@ Seus relatórios e vídeos continuam salvos.</span></div>
           TR.ativos--;
           TR.pend[t] = false;
           var limpo = String(pt || '').trim();
-          if(limpo) trGuardar(t, limpo);
+          if(limpo){
+            trGuardar(t, limpo);
+            var cbs = TR.cbs[t]; delete TR.cbs[t];
+            if(cbs) cbs.forEach(function(f){ try{ f(limpo); }catch(e){} });
+            atualizarMotivosTraduzidos();
+          }
           aplicarTraducao();
           bombearTr();
         }).catch(function(){
           TR.ativos--;
           TR.pend[t] = false;
+          var cbs = TR.cbs[t]; delete TR.cbs[t];
+          if(cbs) cbs.forEach(function(f){ try{ f(''); }catch(e){} });
           bombearTr();
         });
       })(TR.fila.shift());
@@ -13469,6 +13489,12 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     return Number(t) === 2 ? (AN.motivos.titulo || []) : (AN.motivos.capa || []);
   }
 
+  /** Texto exibido: tradução do Google (cache). Sem cache ainda = "traduzindo…". */
+  function motivoVisivel(i, tipo){
+    var orig = motivosDoTipo(tipo)[i] || '';
+    return trCache(orig) || '';
+  }
+
   function pedirMotivos(cb){
     if(AN.motivos){ cb(); return; }
     AN.aguardando = cb;
@@ -13496,18 +13522,42 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   function pintarMotivos(termo){
     var t = String(termo || '').toLowerCase();
-    var html = motivosDoTipo().map(function(txt, i){
-      if(t && String(txt).toLowerCase().indexOf(t) < 0) return '';
+    var lista = motivosDoTipo();
+    var html = lista.map(function(txt, i){
+      var vis = motivoVisivel(i);
+      if(t && vis && String(vis).toLowerCase().indexOf(t) < 0) return '';
       var sel = (AN.motivo === i) ? ' sel' : '';
-      return '<button class="an-op' + sel + '" data-anmotivo="' + i + '" type="button"><span class="n">' + (i + 1) + '</span>' + esc(txt) + '</button>';
+      var dentro = vis ? esc(vis) : '<span class="sk"></span>';
+      return '<button class="an-op' + sel + '" data-anmotivo="' + i + '" type="button"><span class="n">' + (i + 1) + '</span><span class="mt">' + dentro + '</span></button>';
     }).join('');
     el('anOps').innerHTML = html || '<p class="hint">nenhum motivo encontrado</p>';
+    lista.forEach(function(txt){
+      if(txt && !trCache(txt)) pedirTraducao(txt);
+    });
+  }
+
+  /** Atualiza só os itens da lista que já foram traduzidos (sem repintar tudo). */
+  function atualizarMotivosTraduzidos(){
+    try{
+      var ops = el('anOps'); if(!ops) return;
+      var lista = motivosDoTipo();
+      for(var i = 0; i < lista.length; i++){
+        var pt = trCache(lista[i]);
+        if(!pt) continue;
+        var b = ops.querySelector('[data-anmotivo="' + i + '"] .mt');
+        if(b && b.textContent !== pt) b.textContent = pt;
+      }
+      if(AN.motivo !== null && AN.motivo >= 0){
+        var sel = trCache(lista[AN.motivo]);
+        if(sel) el('anEscolhido').textContent = 'motivo ' + (AN.motivo + 1) + ' · ' + sel;
+      }
+    }catch(e){}
   }
 
   function escolherMotivo(i){
     AN.motivo = i;
     pintarMotivos(el('anBusca').value);
-    el('anEscolhido').textContent = 'motivo ' + (i + 1) + ' · ' + (motivosDoTipo()[i] || '');
+    el('anEscolhido').textContent = 'motivo ' + (i + 1) + ' · ' + (motivoVisivel(i) || 'traduzindo…');
     el('anRejEnviar').disabled = false;
   }
 
@@ -13551,6 +13601,18 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   function confirmar(it, state, motivo){
     if(!it) return;
+    if(state === 2){
+      var orig = motivosDoTipo(AN.tipo)[motivo] || '';
+      if(orig && !trCache(orig)){
+        el('anRej').hidden = true;
+        aviso('Traduzindo o motivo…');
+        pedirTraducao(orig, function(pt){
+          if(!pt){ aviso('Não foi possível traduzir o motivo', 'bad'); abrirRejeitar(it); return; }
+          confirmar(it, state, motivo);
+        });
+        return;
+      }
+    }
     it._diverge = false;
     it._pendente = false;
     var rej = (state === 2);
@@ -13568,7 +13630,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     }
     if(rej){
       corpo += '<div class="an-motivo"><span>motivo ' + (motivo + 1) + '</span><b>'
-        + esc(motivosDoTipo(AN.tipo)[motivo] || '') + '</b></div>';
+        + esc(motivoVisivel(motivo) || '') + '</b></div>';
     } else {
       corpo += '<p class="hint" style="margin:0">' + (AN.tipo === 2 ? 'O título será aprovado no painel.' : 'A capa será aprovada no painel.') + '</p>';
     }
