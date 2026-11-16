@@ -1640,7 +1640,7 @@
   .subhead{font-size:11px;font-weight:500;color:var(--dim);letter-spacing:0;text-transform:none}
 
   /* ── 1.50: movimento, estados e leitura ─────────────────────────────── */
-  [data-panel].panel-active{animation:panelIn .18s ease both}
+  [data-panel].panel-active{animation:panelIn .18s ease}
   @keyframes panelIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
   button,.v7-btn,.v7-shortcut,.v7-more-row,.hist-item,.hist-vcard{
@@ -5802,7 +5802,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.33';
+const CONTENT_VERSION = '4.34';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
