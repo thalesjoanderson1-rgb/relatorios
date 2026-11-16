@@ -4671,7 +4671,7 @@ window.onAndroidBack = function(){
     const histView = $('#histViewWrap');
     if(mostrando(histView)){
       histView.style.display = 'none';
-      travarFundoHist(false);
+      window.travarFundoHist(false);
       return true;
     }
 
@@ -5803,7 +5803,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.49';
+const CONTENT_VERSION = '4.50';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -7776,16 +7776,16 @@ function anexarVideoNaFicha(entry){
   }catch(e){ toast('Erro ao abrir o editor de vídeo'); }
 }
 
-function travarFundoHist(ligar){
+window.travarFundoHist = function(ligar){
   try{ document.body.classList.toggle('hist-travado', !!ligar); }catch(e){}
-}
+};
 
 /* ao compartilhar, fecha a ficha para o progresso não ficar atrás dela */
 function fecharFichaAoCompartilhar(){
   try{
     const w = $('#histViewWrap');
     if(w && w.style.display && w.style.display !== 'none') w.style.display = 'none';
-    travarFundoHist(false);
+    window.travarFundoHist(false);
   }catch(e){}
 }
 
@@ -7794,7 +7794,7 @@ function showHistView(e){
   histViewEntry = e;
   pre.textContent = entryTemplate(e);
   renderHistVideos(e);
-  travarFundoHist(true);
+  window.travarFundoHist(true);
   wrap.style.display = 'block';
 }
 
@@ -8819,7 +8819,7 @@ function renderHome(){
       const wrap = $('#histViewWrap'), pre = $('#histView');
       if(wrap && pre){
         pre.textContent = entryTemplate(e);
-        travarFundoHist(true);
+        window.travarFundoHist(true);
         wrap.style.display = 'block';
       }
       switchTab('historico');
@@ -10880,7 +10880,7 @@ function bind(){
     if(!histViewEntry){ toast('Abra um relatório primeiro'); return; }
     showTranslation(cleanEnd(histViewEntry.details || ''));
   });
-  $('#btnCloseHist').addEventListener('click', ()=>{ $('#histViewWrap').style.display = 'none'; travarFundoHist(false); });
+  $('#btnCloseHist').addEventListener('click', ()=>{ $('#histViewWrap').style.display = 'none'; window.travarFundoHist(false); });
   $('#btnReview').addEventListener('click', async ()=>{
     const btn = $('#btnReview');
     const lbl = btn.textContent;
@@ -12450,7 +12450,7 @@ function initSheet(){
   function close(){
     wrap.style.display = 'none';
     wrap.removeAttribute('data-id');
-    travarFundoHist(false);
+    window.travarFundoHist(false);
   }
   var x = document.getElementById('nxSheetClose');
   if(x) x.addEventListener('click', close);
