@@ -5802,7 +5802,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.47';
+const CONTENT_VERSION = '4.48';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -14660,6 +14660,155 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   window.__vidPintarFila = pintarFila;
 })();
 </script>
+
+<style id="visual-unificado-448">
+/* ALII — camada visual unificada (teste 4.48)
+   Apenas aparência: cores, tipografia, raios, bordas e sombras.
+   Não altera lógica, IDs, classes usadas por JS, posições ou fluxo. */
+:root{
+  --bg:#0A0E13;--card:#121923;--card2:#0A0E13;--surface:#121923;--surface2:#0A0E13;
+  --line:rgba(244,248,252,.14);--line-soft:rgba(244,248,252,.07);
+  --txt:#F4F8FC;--dim:#B3C0CE;--muted:#748396;
+  --accent:#6FA8DC;--accent2:#5E97FF;--accentText:#0A0E13;
+  --ok:#2EE6A6;--warn:#FFB020;--bad:#FF5D5D;
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --r-card:14px;--r-btn:10px;--r-field:10px;--r-sheet:18px;--r-pill:999px;
+  --shadow-card:0 14px 34px -28px rgba(0,0,0,.9);
+  --shadow-float:0 16px 40px rgba(0,0,0,.55);
+}
+html,body,button,input,textarea,select,.btn,.v7-btn{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important}
+body{background:var(--bg)!important;color:var(--txt)!important}
+
+/* 1. Superfícies e cartões */
+.card,.v7-card,.v7-drive,.v7-stat,.v7-shortcut,.v7-hero,.v7-more-row,.result,
+.hist-item,.empty-state,.dlg-card,.share-busy-card,.picker-card,.onboard-card,
+.stats-card,.hist-selbar,.toast,.stats-kpi,.bk-auto-box,.org-order,.backup-warn,
+.pending,.report,.v7-empty,.nx-activity,#sec-gerar,#results{
+  border-radius:var(--r-card)!important;
+  border-color:var(--line)!important;
+  box-shadow:var(--shadow-card)!important;
+}
+.card,.v7-card,.v7-drive,.v7-stat,.v7-shortcut,.result,.hist-item,.empty-state,
+.dlg-card,.share-busy-card,.picker-card,.onboard-card,.stats-card,.stats-kpi,
+.bk-auto-box,.org-order,.backup-warn,.pending,.report,.v7-empty,.nx-activity{
+  background:var(--card)!important;background-image:none!important;
+}
+.v7-hero,#sec-inicio .v7-actions .v7-btn.v7-act{
+  background:var(--card)!important;background-image:none!important;
+}
+#sec-inicio .v7-hero{
+  background:var(--card)!important;background-image:none!important;
+  border:1px solid var(--line)!important;border-radius:var(--r-card)!important;
+  box-shadow:var(--shadow-card)!important;
+}
+#sec-inicio .v7-actions .v7-btn.v7-act{border-radius:var(--r-btn)!important}
+#sec-inicio .v7-actions .v7-btn.primary.v7-act{
+  background:var(--card)!important;background-image:none!important;
+  border-color:var(--line)!important;border-radius:var(--r-btn)!important;box-shadow:none!important;
+}
+#sec-inicio .v7-actions .v7-btn.v7-act{border-color:var(--line)!important;box-shadow:none!important;padding:8px 12px!important}
+#sec-inicio .v7-actions .v7-act-txt small{
+  white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25!important;
+}
+.v7-more-row{background:var(--card)!important;border-color:var(--line)!important}
+
+/* 2. Títulos */
+.card h2,.v7-card h2{font-size:18px!important;font-weight:600!important;letter-spacing:-.01em!important}
+#sec-inicio h2,#sec-analises h2,#sec-historico h2,#sec-mais h2,#sec-contador h2,
+#sec-gerar h2,#sec-organizador h2,#sec-regras-head h2{
+  font-size:26px!important;font-weight:800!important;letter-spacing:-.02em!important;
+}
+.dlg-card h3,.onboard-card h2,.share-busy-card b,#updateTitle{font-size:19px!important;font-weight:700!important}
+
+/* 3. Botões */
+button,.btn,.v7-btn,.tool-btn,.hist-btn,.dlg-acts button,.an-botoes button,
+.picker-opt,.picker-cancel,.bk-pick,.seg,.seg span{border-radius:var(--r-btn)!important}
+button.primary,.v7-btn.primary,.btn.primary,.dlg-acts button.primary,
+.tool-btn.active,#btnGenerate,#btnOrganize,#anEntrar,#anConfOk,#onboardOk,
+#bkApply,#updateNow{
+  background:var(--accent)!important;background-image:none!important;
+  border-color:var(--accent)!important;color:var(--accentText)!important;
+  box-shadow:none!important;
+}
+#anRecSim{
+  background:rgba(46,204,113,.14)!important;background-image:none!important;
+  border-color:rgba(46,204,113,.55)!important;color:#8FE0B0!important;box-shadow:none!important;
+}
+body #sec-gerar #btnGenerate{
+  background:var(--accent)!important;background-image:none!important;
+  border-color:var(--accent)!important;color:var(--accentText)!important;
+  border-radius:var(--r-btn)!important;box-shadow:none!important;
+}
+#sec-mais button{font-size:13px!important}
+button.danger:not(:disabled),.danger:not(:disabled),#anSimSim{
+  background:var(--bad)!important;border-color:var(--bad)!important;color:#160B0B!important;
+}
+button.ghost,.v7-btn.secondary,.btn.ghost,.tool-btn{
+  background:transparent!important;border-color:var(--line)!important;color:var(--dim)!important;
+}
+body .an-ok,#sec-analises .an-ok{
+  background:rgba(46,204,113,.10)!important;border-color:rgba(46,204,113,.40)!important;color:#8FE0B0!important;
+}
+body .an-bad,#sec-analises .an-bad{
+  background:rgba(255,93,93,.10)!important;border-color:rgba(255,93,93,.40)!important;color:#FF9A9A!important;
+}
+
+/* 4. Campos */
+input:not([type]),input[type=text],input[type=search],select,textarea,
+#input,#orgInput,#histSearch,#anUser,#anPass,.an-input{
+  border-radius:var(--r-field)!important;border:1px solid var(--line)!important;
+  background:var(--bg)!important;color:var(--txt)!important;
+  font-family:'Inter',system-ui,sans-serif!important;font-size:13px!important;
+}
+#input{font-family:var(--mono)!important}
+body #sec-gerar #input{border-radius:var(--r-field)!important;font-size:13px!important;font-family:var(--mono)!important}
+#sec-analises #anLoginBox #anUser,#sec-analises #anLoginBox #anPass{
+  border-radius:var(--r-field)!important;background:var(--bg)!important;border-color:var(--line)!important;
+  font-size:13px!important;
+}
+#sec-analises #anLoginBox #anEntrar{border-radius:var(--r-btn)!important}
+
+/* 5. Chips */
+.chip,.tag,.an-chip,.v7-weekchip,.hist-action,.hist-vbadge,.badge,.v7-cloud,.hist-cloud{
+  border-radius:var(--r-pill)!important;
+  font-family:'Inter',system-ui,sans-serif!important;
+  font-size:11px!important;padding:3px 9px!important;
+}
+.an-chip{letter-spacing:.04em!important}
+
+/* 6. Modais, folhas e avisos */
+.dlg-card,.onboard-card,.share-busy-card,.picker-card,.bk-sheet .nx-sheet-card{
+  background:var(--card)!important;border:1px solid var(--line)!important;
+}
+.dlg-card,.onboard-card,.share-busy-card,.picker-card{border-radius:var(--r-card)!important}
+.bk-sheet .nx-sheet-card{border-radius:var(--r-sheet) var(--r-sheet) 0 0!important}
+.an-sheet{background:var(--card)!important;border-color:var(--line)!important}
+.an-overlay.centro .an-sheet{border-radius:var(--r-card)!important}
+#updateWrap>div:first-child,#updateDoneChip>div{
+  background:var(--card)!important;background-image:none!important;
+  border:1px solid var(--line)!important;border-radius:var(--r-card)!important;
+  box-shadow:none!important;font-family:'Inter',system-ui,sans-serif!important;
+}
+#updateWrap #updateIcon{background:var(--accent)!important;background-image:none!important;box-shadow:none!important}
+#updateDoneChip>div>div:first-child>div:first-child{background:var(--accent)!important;background-image:none!important;box-shadow:none!important}
+#updateNow,#updateDoneOk{background:var(--accent)!important;background-image:none!important;color:var(--accentText)!important;box-shadow:none!important}
+.toast{
+  background:var(--card)!important;border:1px solid var(--line)!important;
+  border-radius:var(--r-card)!important;color:var(--txt)!important;box-shadow:var(--shadow-float)!important;
+}
+
+/* 7. Estatísticas e rótulos */
+.stats-kpi{background:var(--card)!important;border-radius:var(--r-card)!important}
+.stats-kpi span,.v7-stat small{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25!important}
+.stats-kpi span{font-family:'Inter',system-ui,sans-serif!important;letter-spacing:.06em!important}
+
+/* 8. Cores residuais */
+.bk-mode.on{border-color:rgba(46,230,166,.50)!important;background:rgba(46,230,166,.07)!important}
+#sec-historico .hist-filters button{background:var(--card)!important;border-color:var(--line)!important}
+#histFilterPanel select,#histFilterPanel button{border-color:var(--line)!important}
+#bootSplash .bs-ring2{border-color:rgba(111,168,220,.10)!important}
+#bootSplash .bs-ring{border-color:rgba(111,168,220,.22)!important}
+</style>
 
 </body>
 </html>
