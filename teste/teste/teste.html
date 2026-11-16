@@ -3146,6 +3146,24 @@ body #sec-analises .an-seg.on svg{color:#9CC8F0}
   background-size:200% 100%;animation:anSk 1.3s linear infinite;
 }
 @keyframes anSk{to{background-position:-200% 0}}
+/* confirmação do Recomendar (verde do selo "recomendado") */
+#anRec .an-rec-top{padding:22px 20px 16px;text-align:center}
+#anRec .an-rec-ico{width:52px;height:52px;margin:0 auto 12px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(120% 120% at 50% 0%,rgba(46,204,113,.16),rgba(46,204,113,.05));
+  border:1px solid rgba(46,204,113,.45)}
+#anRec .an-rec-ico svg{width:24px;height:24px;fill:none;stroke:#8fe0b0;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#anRec .an-sh-top h3{font-size:17px}
+#anRec .an-sh-top p{font-size:12.5px;line-height:1.5}
+#anRec .an-botoes .an-rec-ok{border:1px solid rgba(46,204,113,.55);background:rgba(46,204,113,.14);color:#8fe0b0}
+#anRec .an-botoes .an-rec-ok:hover{background:rgba(46,204,113,.2)}
+/* filtros compactos + botão atualizar com ícone e giro */
+body #sec-analises .an-seg-f{padding:2px!important;gap:2px!important;border-radius:10px!important}
+body #sec-analises .an-f{min-height:28px!important;height:28px!important;padding:0 4px!important;font-size:10.2px!important;border-radius:8px!important;line-height:1!important}
+body #sec-analises .an-refresh{width:32px!important;height:32px!important;min-width:32px!important;padding:0!important;border-radius:9px!important;display:flex!important;align-items:center!important;justify-content:center!important}
+body #sec-analises .an-refresh svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+body #sec-analises .an-refresh.girando svg{animation:anGirar .8s cubic-bezier(.4,0,.2,1)}
+@keyframes anGirar{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -3987,11 +4005,11 @@ body #sec-analises .an-seg.on svg{color:#9CC8F0}
       <div class="an-filtros">
         <div class="an-seg-f">
         <button class="an-f" data-anfiltro="0" type="button">Hoje</button>
-        <button class="an-f" data-anfiltro="7" type="button">7 dias</button>
+        <button class="an-f" data-anfiltro="7" type="button">Últimos 7 dias</button>
         <button class="an-f on" data-anfiltro="-1" type="button">Todos</button>
         </div>
         <label class="an-tr" id="anTrWrap" hidden><span>Traduzir</span><span class="an-sw"><i></i></span></label>
-        <button class="ghost an-refresh" id="anRecarregar" type="button" title="Recarregar">↻</button>
+        <button class="ghost an-refresh" id="anRecarregar" type="button" title="Recarregar" aria-label="Atualizar"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/></svg></button>
       </div>
       <button class="an-continuar" id="anContinuar" type="button" hidden>
         <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -4083,6 +4101,22 @@ body #sec-analises .an-seg.on svg{color:#9CC8F0}
           <div class="an-botoes">
             <button class="ghost" id="anSimNao" type="button">Cancelar</button>
             <button class="danger" id="anSimSim" type="button">Confirmar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="an-overlay centro" id="anRec" hidden>
+      <div class="an-sheet an-rec-card" style="max-width:320px">
+        <div class="an-sh-top an-rec-top">
+          <div class="an-rec-ico"><svg viewBox="0 0 24 24"><path d="m12 4 2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4L7.5 17.8l.9-5L4.8 9.3l5-.7z"/></svg></div>
+          <h3>Recomendar vídeo</h3>
+          <p>O vídeo vai para a aba <b>Recomendados</b>. Deseja continuar?</p>
+        </div>
+        <div class="an-rodape">
+          <div class="an-botoes">
+            <button class="ghost" id="anRecNao" type="button">Cancelar</button>
+            <button class="an-rec-ok" id="anRecSim" type="button">Recomendar</button>
           </div>
         </div>
       </div>
@@ -5765,7 +5799,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.37';
+const CONTENT_VERSION = '4.39';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -14167,7 +14201,14 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     });
   });
 
-  ligar('anRecarregar', function(){ carregar(); });
+  ligar('anRecarregar', function(){
+    var rb = el('anRecarregar');
+    if(rb && !rb.classList.contains('girando')){
+      rb.classList.add('girando');
+      setTimeout(function(){ rb.classList.remove('girando'); }, 850);
+    }
+    carregar();
+  });
   ligar('anContinuar', continuarDeOndeParei);
   ligar('anVerFechar', function(){ el('anVer').hidden = true; });
   ligar('anVerRej', function(){ var it = AN.alvo; el('anVer').hidden = true; abrirRejeitar(it); });
@@ -14192,6 +14233,19 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     var f = SIM.cb;
     SIM.cb = null;
     el('anSim').hidden = true;
+    if(f) f();
+  });
+
+  var REC_CB = null;
+  function confirmarRecomendar(cb){
+    REC_CB = cb || null;
+    el('anRec').hidden = false;
+  }
+  ligar('anRecNao', function(){ el('anRec').hidden = true; REC_CB = null; });
+  ligar('anRecSim', function(){
+    var f = REC_CB;
+    REC_CB = null;
+    el('anRec').hidden = true;
     if(f) f();
   });
 
@@ -14554,9 +14608,11 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(b.hasAttribute('data-anprincipal')){
       e.preventDefault();
       var vidP = b.getAttribute('data-anprincipal');
-      b.disabled = true; b.textContent = 'pondo…';
-      window.__vidRec = { id: vidP, seq: 1, botao: b };
-      AndroidApp.anVideoRecomendarConf(vidP, 1);
+      confirmarRecomendar(function(){
+        b.disabled = true; b.textContent = 'pondo…';
+        window.__vidRec = { id: vidP, seq: 1, botao: b };
+        AndroidApp.anVideoRecomendarConf(vidP, 1);
+      });
       return;
     }
     if(b.hasAttribute('data-anvtirar')){
