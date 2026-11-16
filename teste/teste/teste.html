@@ -1793,12 +1793,12 @@
   #results .result{animation:resultIn .22s ease both}
   @keyframes resultIn{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:none}}
 
-  #pullRefresh{position:fixed;left:50%;top:12px;z-index:190;display:flex;align-items:center;gap:7px;
-    padding:9px 13px;border-radius:999px;background:rgba(12,18,28,.95);
-    border:1px solid rgba(135,170,225,.2);color:var(--dim);font:600 11px/1 inherit;
+  #pullRefresh{position:fixed;left:50%;top:12px;z-index:190;display:flex;align-items:center;gap:5px;
+    padding:6px 9px;border-radius:999px;background:rgba(12,18,28,.95);
+    border:1px solid rgba(135,170,225,.2);color:var(--dim);font:600 9.5px/1 inherit;
     box-shadow:0 16px 36px rgba(0,0,0,.55);transform:translate(-50%,-70px);opacity:0;
     pointer-events:none;transition:transform .18s ease,opacity .18s ease}
-  #pullRefresh svg{width:14px;height:14px;color:var(--accent)}
+  #pullRefresh svg{width:11px;height:11px;color:var(--accent)}
   #pullRefresh.girando{box-shadow:0 0 0 1px rgba(77,163,255,.18),0 0 18px rgba(77,163,255,.18),0 16px 36px rgba(0,0,0,.55)}
   #pullRefresh.girando svg{animation:pullGirar .8s linear infinite;filter:drop-shadow(0 0 4px rgba(77,163,255,.7))}
   @keyframes pullGirar{to{transform:rotate(360deg)}}
@@ -5802,7 +5802,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.41';
+const CONTENT_VERSION = '4.42';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
