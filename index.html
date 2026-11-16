@@ -5802,7 +5802,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.32';
+const CONTENT_VERSION = '4.33';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -14243,10 +14243,10 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   });
 
   var REC_CB = null;
-  function confirmarRecomendar(cb){
+  window.confirmarRecomendar = function(cb){
     REC_CB = cb || null;
     el('anRec').hidden = false;
-  }
+  };
   ligar('anRecNao', function(){ el('anRec').hidden = true; REC_CB = null; });
   ligar('anRecSim', function(){
     var f = REC_CB;
