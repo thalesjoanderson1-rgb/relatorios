@@ -3168,6 +3168,79 @@ body #sec-analises .an-refresh svg{display:block!important;width:14px!important;
 body #sec-analises .an-refresh.girando svg{animation:anGirar .8s cubic-bezier(.4,0,.2,1)}
 @keyframes anGirar{to{transform:rotate(360deg)}}
 </style>
+<style>
+/* ===== Meta semanal ===== */
+.week-goal{background:linear-gradient(180deg,rgba(111,168,220,.10),var(--card) 70%);border:1px solid rgba(111,168,220,.28);border-radius:16px;padding:13px 14px;margin:10px 0 12px}
+.week-goal.hit{border-color:rgba(46,230,166,.35);background:linear-gradient(180deg,rgba(46,230,166,.08),var(--card) 70%)}
+.week-goal-head{display:flex;align-items:center;gap:8px}
+.week-goal-k{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:800}
+.week-goal-edit{margin-left:auto;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--dim);display:grid;place-items:center;cursor:pointer;padding:0!important}
+.week-goal-edit svg{width:14px;height:14px}
+.week-goal-main{display:flex;align-items:flex-end;gap:8px;margin-top:2px}
+.week-goal-main #weekCount{font-size:44px!important;line-height:1;letter-spacing:-.04em}
+.week-goal-target{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.week-goal-target span:first-child{font-size:14px;color:var(--dim)}
+.week-goal-pct{font-size:11px;font-weight:800;color:var(--accent);background:rgba(111,168,220,.12);border:1px solid rgba(111,168,220,.3);border-radius:999px;padding:3px 8px}
+.week-goal.hit .week-goal-pct{color:#8FE0B0;background:rgba(46,230,166,.1);border-color:rgba(46,230,166,.3)}
+.week-goal-bar{height:10px;border-radius:999px;background:#0A1017;border:1px solid rgba(255,255,255,.06);overflow:hidden;margin-top:9px}
+.week-goal-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#4DA3FF,#6FA8DC);transition:width .35s ease}
+.week-goal-bar i.green{background:linear-gradient(90deg,#1FBF86,#2EE6A6);box-shadow:0 0 14px rgba(46,230,166,.35)}
+.week-goal-bar i.amber{background:linear-gradient(90deg,#D98A12,#F5A524)}
+.week-goal-bar i.gray{background:#5B6B7E}
+.week-goal-sub{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;color:var(--dim);font-size:10.5px}
+.week-goal-sub b{color:var(--txt);font-weight:800}
+.week-goal-hit{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:9px;font-weight:800;letter-spacing:.08em;color:#8FE0B0;background:rgba(46,230,166,.1);border:1px solid rgba(46,230,166,.3);border-radius:999px;padding:3px 8px}
+.week-goal-hit[hidden]{display:none}
+.week-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 12px}
+.week-stat-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}
+.week-stat-head{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.week-stat-head b{font-size:12px}
+.week-stat-head span{margin-left:auto;font-size:10px;color:var(--dim)}
+.week-hbar{margin-top:8px}
+.week-hbar-l{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--dim);margin-bottom:4px}
+.week-hbar-l span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.week-hbar-l b{color:var(--txt);font-weight:800}
+.week-hbar-t{height:7px;border-radius:999px;background:#0A1017;overflow:hidden}
+.week-hbar-t i{display:block;height:100%;border-radius:999px}
+.week-top{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.week-top:last-child{border-bottom:0}
+.week-av{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#2E5F8A,#6FA8DC);display:grid;place-items:center;font-size:10px;font-weight:800;color:#06101A;flex:0 0 auto}
+.week-nm{font-size:11px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.week-ct{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+.week-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.week-chip{font-size:9px;font-weight:700;padding:3px 7px;border-radius:999px;border:1px solid var(--line);background:var(--surface2);color:var(--dim)}
+.week-chip.ok{color:#8FE0B0;border-color:rgba(46,230,166,.28);background:rgba(46,230,166,.07)}
+.week-chip.warn{color:#FFD18A;border-color:rgba(245,165,36,.3);background:rgba(245,165,36,.07)}
+.week-chip.bad{color:#FFB3B3;border-color:rgba(255,93,93,.3);background:rgba(255,93,93,.07)}
+.week-empty{font-size:10.5px;color:var(--dim);padding:6px 0}
+@media(max-width:520px){.week-stats{grid-template-columns:1fr}}
+.goal-overlay{position:fixed;inset:0;background:rgba(4,6,10,.78);display:flex;align-items:flex-end;justify-content:center;z-index:9998;padding:0}
+.goal-overlay[hidden]{display:none}
+.goal-sheet{width:100%;max-width:440px;background:#101821;border:1px solid #263241;border-radius:20px 20px 0 0;padding:14px 16px 18px}
+.goal-handle{width:38px;height:4px;border-radius:999px;background:#2A3949;margin:0 auto 12px}
+.goal-sheet h3{font-size:16px;margin:0 0 3px}
+.goal-sheet p{font-size:11.5px;color:var(--dim);margin:0 0 12px}
+.goal-opts{display:flex;gap:7px;flex-wrap:wrap}
+.goal-opt{border:1px solid var(--line);background:var(--surface2);color:var(--dim);border-radius:10px;padding:9px 12px;font-size:12px;font-weight:800;cursor:pointer}
+.goal-opt.on{border-color:rgba(111,168,220,.55);background:rgba(111,168,220,.14);color:#BCD9FF}
+.goal-custom{display:none;width:100%;height:42px;margin-top:9px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--txt);padding:0 11px;font-size:14px;outline:none}
+.goal-custom.on{display:block}
+.goal-btns{display:flex;gap:8px;margin-top:14px}
+.goal-btns button{flex:1;height:40px;border-radius:10px;font-size:12px;font-weight:800}
+.goal-btns .primary{border:1px solid rgba(111,168,220,.45);background:rgba(111,168,220,.14);color:#BCD9FF}
+.home-goal{margin-top:8px;max-width:320px}
+.home-goal-bar{height:7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+.home-goal-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#4DA3FF,#6FA8DC)}
+.home-goal-bar i.green{background:linear-gradient(90deg,#1FBF86,#2EE6A6)}
+.home-goal-bar i.amber{background:linear-gradient(90deg,#D98A12,#F5A524)}
+.home-goal-bar i.gray{background:#5B6B7E}
+.home-goal-text{font-size:10.5px;color:var(--dim);margin-top:5px}
+.side-week-bar{height:5px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:6px}
+.side-week-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#4DA3FF,#6FA8DC)}
+.side-week-bar i.green{background:linear-gradient(90deg,#1FBF86,#2EE6A6)}
+.side-week-bar i.amber{background:linear-gradient(90deg,#D98A12,#F5A524)}
+.side-week-bar i.gray{background:#5B6B7E}
+</style>
 </head>
 <body>
 <style id="bootSplashCss">
@@ -3241,6 +3314,7 @@ body #sec-analises .an-refresh.girando svg{animation:anGirar .8s cubic-bezier(.4
   <div class="side-week">
     <small>Semana</small>
     <b id="sideWeek">—</b>
+    <div class="side-week-bar"><i id="sideWeekBar"></i></div>
     <span id="sideWeekCount">0 relatórios</span>
   </div>
 </aside>
@@ -3282,6 +3356,10 @@ body #sec-analises .an-refresh.girando svg{animation:anGirar .8s cubic-bezier(.4
         <span class="v7-eyebrow">Relatórios na semana</span>
         <div class="v7-bignum" id="homeWeekCount">0</div>
         <div class="v7-herosub" id="homeWeekSub">vs — na semana passada</div>
+        <div class="home-goal" id="homeGoal">
+          <div class="home-goal-bar"><i id="homeGoalBar"></i></div>
+          <div class="home-goal-text" id="homeGoalText">Meta 0/50 · 0% · faltam 50</div>
+        </div>
         <span class="v7-trend" id="homeTrend">—</span>
       </div>
       <div class="hero-right nx-activity nx-in-hero">
@@ -3432,6 +3510,25 @@ body #sec-analises .an-refresh.girando svg{animation:anGirar .8s cubic-bezier(.4
 
   <section class="card" id="sec-contador" data-panel="semana">
     <h2>Contador da semana <span style="text-transform:none;letter-spacing:0;color:var(--dim)">— pela data da infração</span></h2>
+    <div class="week-goal" id="weekGoalCard">
+      <div class="week-goal-head">
+        <div class="week-goal-k">Meta da semana</div>
+        <button class="week-goal-edit" id="btnEditGoal" type="button" title="Editar meta" aria-label="Editar meta">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 20h4l10-10-4-4L4 16v4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m13 6 4 4" stroke="currentColor" stroke-width="1.7"/></svg>
+        </button>
+      </div>
+      <div class="week-goal-main">
+        <div class="week-count" id="weekCount">0</div>
+        <div class="week-goal-target"><span id="goalTarget">/ 50</span><span class="week-goal-pct" id="goalPct">0%</span></div>
+      </div>
+      <div class="week-goal-bar"><i id="goalBarFill"></i></div>
+      <div class="week-goal-sub">
+        <span>Faltam <b id="goalRemain">50</b></span>
+        <span>Média <b id="goalAvg">0/dia</b></span>
+        <span>Sequência <b id="goalStreak">0 sem.</b></span>
+      </div>
+      <div class="week-goal-hit" id="goalHit" hidden>✓ META BATIDA</div>
+    </div>
     <div class="week-split">
       <div class="week-box week-left">
         <div style="display:flex;justify-content:flex-end">
@@ -3442,13 +3539,24 @@ body #sec-analises .an-refresh.girando svg{animation:anGirar .8s cubic-bezier(.4
             <button class="ghost" id="btnCurWeek">Semana atual</button>
           </div>
         </div>
-        <div class="week-count" id="weekCount">0</div>
         <div class="hint" id="weekLabel"></div>
         <div class="hint" id="weekRange" style="font-size:11.5px"></div>
         <div class="chart-summary" id="chartSummary"></div>
       </div>
       <div class="week-box week-right">
+        <div class="week-stat-head"><b>Relatórios por dia</b><span id="weekDayTotal">0</span></div>
         <div class="chart" id="weekChart"></div>
+      </div>
+    </div>
+    <div class="week-stats">
+      <div class="week-stat-card">
+        <div class="week-stat-head"><b>Por violação</b><span id="weekViolTotal">0</span></div>
+        <div id="weekViolations"></div>
+      </div>
+      <div class="week-stat-card">
+        <div class="week-stat-head"><b>Top streamers</b><span>na semana</span></div>
+        <div id="weekTopStreamers"></div>
+        <div class="week-actions" id="weekActions"></div>
       </div>
     </div>
     <div class="hint" style="margin-top:8px">O gráfico é da semana selecionada. O histórico abaixo mostra <b>todos</b> os registros — use a busca para achar os antigos.</div>
@@ -4338,7 +4446,7 @@ function animateNum(el, value){
   const to = Math.max(0, Math.round(+value || 0));
   const from = +el.getAttribute('data-n') || 0;
   el.setAttribute('data-n', to);
-  if(from === to){ el.textContent = String(to); return; }
+  if(from === to || el.offsetParent === null){ el.textContent = String(to); return; }
   const start = performance.now();
   const dur = 420;
   function tick(t){
@@ -5803,7 +5911,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.52';
+const CONTENT_VERSION = '4.53';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -8562,6 +8670,58 @@ function currentWeekObj(){
   return weekOf(pad2(n.d)+'/'+pad2(n.m)+'/'+n.y);
 }
 
+/* ===== meta semanal ===== */
+const WEEK_GOAL_KEY = 'alii_week_goal_v1';
+function loadWeekGoal(){
+  try{
+    const v = parseInt(localStorage.getItem(WEEK_GOAL_KEY) || '50', 10);
+    return (Number.isFinite(v) && v >= 1 && v <= 999) ? v : 50;
+  }catch(e){ return 50; }
+}
+function saveWeekGoal(v){
+  try{ localStorage.setItem(WEEK_GOAL_KEY, String(v)); }catch(e){}
+}
+let weekGoal = loadWeekGoal();
+
+function weekEntriesOf(h, w){
+  return (h || []).filter(e => {
+    const wk = weekOf(e.date);
+    return wk && wk.year === w.year && wk.week === w.week;
+  });
+}
+function weekGoalStreak(h, w, goal){
+  if(!goal || goal < 1) return 0;
+  const counts = new Map();
+  for(const e of (h || [])){
+    const wk = weekOf(e.date);
+    if(wk){
+      const key = wk.year * 100 + wk.week;
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+  }
+  const nowW = currentWeekObj();
+  const isCurrent = w.year === nowW.year && w.week === nowW.week;
+  const countOf = (x) => counts.get(x.year * 100 + x.week) || 0;
+  const prevOf = (x) => {
+    const start = isoWeekStart(x.year, x.week);
+    const prev = new Date(start.getTime() - 7 * 86400000);
+    return weekOf(pad2(prev.getUTCDate()) + '/' + pad2(prev.getUTCMonth() + 1) + '/' + prev.getUTCFullYear());
+  };
+  let streak = 0;
+  if(countOf(w) >= goal){
+    streak = 1;
+  } else if(!isCurrent){
+    return 0;
+  }
+  let cur = prevOf(w);
+  while(cur && streak < 520){
+    if(countOf(cur) < goal) break;
+    streak++;
+    cur = prevOf(cur);
+  }
+  return streak;
+}
+
 function isoWeekStart(year, week){
   const jan4 = new Date(Date.UTC(year, 0, 4));
   const day = (jan4.getUTCDay() + 6) % 7;
@@ -8728,11 +8888,23 @@ function renderHome(){
   }).length : 0;
   const diff = total - prevTotal;
 
+  const goal = weekGoal;
+  const todayIdx = dayList.findIndex(d => d.date === todayStr);
+  const daysElapsed = Math.max(1, todayIdx >= 0 ? todayIdx + 1 : 7);
+  const goalPct = goal > 0 ? Math.min(999, Math.round(total / goal * 100)) : 0;
+  const goalRemain = Math.max(0, goal - total);
+  const goalExpected = goal * daysElapsed / 7;
+  let goalColor = 'blue';
+  if(total === 0) goalColor = 'gray';
+  else if(total >= goal) goalColor = 'green';
+  else if(total >= goalExpected) goalColor = 'blue';
+  else goalColor = 'amber';
+
   const wc = $('#homeWeekCount');
   if(wc) animateNum(wc, total);
 
   const chip = $('#homeWeekChip');
-  if(chip) chip.innerHTML = `<small>Semana ${cur.week}</small><b>${total}</b>`;
+  if(chip) chip.innerHTML = `<small>Semana ${cur.week}</small><b>${total}/${goal}</b>`;
 
   const trend = $('#homeTrend');
   if(trend){
@@ -8757,6 +8929,11 @@ function renderHome(){
       ? 'vs ' + prevTotal + ' na semana passada'
       : (total ? 'sem dados na semana passada' : 'nenhum relatório ainda');
   }
+
+  const hg = $('#homeGoalBar');
+  if(hg){ hg.style.width = Math.min(100, goalPct) + '%'; hg.className = goalColor; }
+  const ht = $('#homeGoalText');
+  if(ht) ht.textContent = `Meta ${total}/${goal} · ${goalPct}% · faltam ${goalRemain}`;
 
   const days = $('#homeDays');
   if(days){
@@ -9277,18 +9454,33 @@ function renderHistory(){
   const max = Math.max(1, ...dayList.map(d => d.n));
   const bestIdx = dayList.reduce((bi,d,i,arr) => d.n > arr[bi].n ? i : bi, 0);
   const best = dayList[bestIdx];
-  const avg = total / 7;
   const nowD = nowSP();
   const todayStr = pad2(nowD.d) + '/' + pad2(nowD.m) + '/' + nowD.y;
+  const todayIdx = dayList.findIndex(d => d.date === todayStr);
+  const isCurrent = w.year === cur.year && w.week === cur.week;
+  const daysElapsed = isCurrent ? Math.max(1, todayIdx >= 0 ? todayIdx + 1 : 7) : 7;
+  const avg = total / 7;
+  const goal = weekGoal;
+  const goalPct = goal > 0 ? Math.min(999, Math.round(total / goal * 100)) : 0;
+  const goalRemain = Math.max(0, goal - total);
+  const goalStreak = weekGoalStreak(h, w, goal);
+  const goalExpected = goal * daysElapsed / 7;
+  let goalColor = 'blue';
+  if(total === 0) goalColor = 'gray';
+  else if(total >= goal) goalColor = 'green';
+  else if(total >= goalExpected) goalColor = 'blue';
+  else goalColor = 'amber';
 
   animateNum($('#weekCount'), total);
   $('#weekLabel').textContent = `Semana ${w.week} · ${w.year}`;
   $('#weekRange').textContent = `${dayList[0].short} a ${dayList[6].short}`;
-  $('#weekBadge').innerHTML = `Semana <b>${w.week}</b> · <b>${total}</b> relatório(s)`;
+  $('#weekBadge').innerHTML = `Semana <b>${w.week}</b> · <b>${total}</b>/${goal} relatório(s)`;
   const sw = $('#sideWeek');
-  if(sw) sw.textContent = String(w.week);
+  if(sw) sw.textContent = `${total}/${goal}`;
   const sc = $('#sideWeekCount');
-  if(sc) sc.textContent = `${total} relatório(s) · ${w.year}`;
+  if(sc) sc.textContent = `${goalPct}% · faltam ${goalRemain}`;
+  const sbar = $('#sideWeekBar');
+  if(sbar){ sbar.style.width = Math.min(100, goalPct) + '%'; sbar.className = goalColor; }
 
   $('#chartSummary').innerHTML =
     `<span class="chip">Total <b>${total}</b></span>` +
@@ -9302,6 +9494,69 @@ function renderHistory(){
       <div class="lbl">${d.label}<br>${d.short}</div>
     </div>
   `).join('') + (total === 0 ? '<div class="chart-empty">Sem relatórios nesta semana</div>' : '');
+
+  // meta + estatísticas da semana
+  const gc = $('#weekGoalCard');
+  if(gc) gc.classList.toggle('hit', total >= goal && goal > 0);
+  const gt = $('#goalTarget'); if(gt) gt.textContent = '/ ' + goal;
+  const gp = $('#goalPct'); if(gp) gp.textContent = goalPct + '%';
+  const gf = $('#goalBarFill'); if(gf){ gf.style.width = Math.min(100, goalPct) + '%'; gf.className = goalColor; }
+  const gr = $('#goalRemain'); if(gr) gr.textContent = goalRemain;
+  const ga = $('#goalAvg'); if(ga) ga.textContent = avg.toFixed(1).replace('.', ',') + '/dia';
+  const gs = $('#goalStreak'); if(gs) gs.textContent = goalStreak + ' sem.';
+  const gh = $('#goalHit'); if(gh) gh.hidden = !(total >= goal && goal > 0);
+
+  const weekEntries = weekEntriesOf(h, w);
+  const violMap = new Map();
+  for(const e of weekEntries){
+    const name = cleanEnd(e.violation) || 'Outros';
+    violMap.set(name, (violMap.get(name) || 0) + 1);
+  }
+  const violSorted = [...violMap.entries()].sort((a,b) => b[1] - a[1]);
+  const violTop = violSorted.slice(0, 3);
+  const violOther = violSorted.slice(3).reduce((s,x) => s + x[1], 0);
+  if(violOther) violTop.push(['Outros', violOther]);
+  const violMax = violTop.length ? violTop[0][1] : 1;
+  const violColors = ['#4DA3FF', '#F5A524', '#9B8CFF', '#5B6B7E'];
+  const vEl = $('#weekViolations');
+  if(vEl){
+    vEl.innerHTML = violTop.length
+      ? violTop.map(([name,n],i) => `<div class="week-hbar"><div class="week-hbar-l"><span>${esc(name)}</span><b>${n}</b></div><div class="week-hbar-t"><i style="width:${Math.max(4, Math.round(n / violMax * 100))}%;background:${violColors[i % violColors.length]}"></i></div></div>`).join('')
+      : '<div class="week-empty">Sem relatórios nesta semana.</div>';
+  }
+  const vt = $('#weekViolTotal'); if(vt) vt.textContent = weekEntries.length;
+
+  const streamerMap = new Map();
+  for(const e of weekEntries){
+    const id = String(e.streamer || '—');
+    streamerMap.set(id, (streamerMap.get(id) || 0) + 1);
+  }
+  const streamerTop = [...streamerMap.entries()].sort((a,b) => b[1] - a[1]).slice(0, 3);
+  const stEl = $('#weekTopStreamers');
+  if(stEl){
+    stEl.innerHTML = streamerTop.length
+      ? streamerTop.map(([id,n]) => `<div class="week-top"><span class="week-av">${esc(id.slice(0,1))}</span><span class="week-nm">#${esc(id)}</span><span class="week-ct">${n}</span></div>`).join('')
+      : '<div class="week-empty">Sem relatórios nesta semana.</div>';
+  }
+
+  let actClosed = 0, actWarning = 0, actNone = 0, actOther = 0;
+  for(const e of weekEntries){
+    const a = String(e.action || '').toLowerCase();
+    if(a.includes('closed')) actClosed++;
+    else if(a.includes('warning')) actWarning++;
+    else if(!a || a.includes('none')) actNone++;
+    else actOther++;
+  }
+  const actEl = $('#weekActions');
+  if(actEl){
+    const chips = [];
+    if(actClosed) chips.push(`<span class="week-chip bad">Live encerrada ${actClosed}</span>`);
+    if(actWarning) chips.push(`<span class="week-chip warn">Advertência ${actWarning}</span>`);
+    if(actNone) chips.push(`<span class="week-chip ok">Sem ação ${actNone}</span>`);
+    if(actOther) chips.push(`<span class="week-chip">Outros ${actOther}</span>`);
+    actEl.innerHTML = chips.join('') || '<span class="week-chip">Sem ações</span>';
+  }
+  const wd = $('#weekDayTotal'); if(wd) wd.textContent = total;
 
   const curKey = cur.year * 100 + cur.week;
   const wKey = w.year * 100 + w.week;
@@ -10795,6 +11050,82 @@ function bind(){
   $('#btnPrevWeek').addEventListener('click', ()=> shiftWeek(-1));
   $('#btnNextWeek').addEventListener('click', ()=> shiftWeek(1));
   $('#btnCurWeek').addEventListener('click', ()=>{ viewWeek = null; renderHistory(); });
+
+  // ===== meta semanal: editar =====
+  let goalDraft = weekGoal;
+  let goalModal = null, goalCustom = null, goalOpts = null;
+  const goalPresets = ['25', '50', '75', '100'];
+  function goalDraftSet(v){
+    goalDraft = v;
+    const isCustom = !goalPresets.includes(String(v));
+    if(goalOpts){
+      goalOpts.querySelectorAll('.goal-opt').forEach(b => {
+        const d = String(b.dataset.goal);
+        b.classList.toggle('on', d === String(v) || (isCustom && d === 'custom'));
+      });
+    }
+    if(goalCustom){
+      goalCustom.classList.toggle('on', isCustom);
+      if(isCustom) goalCustom.value = v;
+    }
+  }
+  function openGoalModal(){
+    if(!goalModal) goalModal = document.getElementById('goalModal');
+    goalDraft = weekGoal;
+    goalDraftSet(weekGoal);
+    if(goalModal) goalModal.hidden = false;
+  }
+  function closeGoalModal(){ if(goalModal) goalModal.hidden = true; }
+  function setupGoalModal(){
+    goalModal = document.getElementById('goalModal');
+    goalCustom = document.getElementById('goalCustom');
+    goalOpts = document.getElementById('goalOpts');
+    const edit = document.getElementById('btnEditGoal');
+    if(edit) edit.addEventListener('click', openGoalModal);
+    if(goalOpts){
+      goalOpts.addEventListener('click', (ev) => {
+        const b = ev.target.closest('.goal-opt');
+        if(!b) return;
+        const g = b.dataset.goal;
+        if(g === 'custom'){
+          goalDraftSet('custom');
+          if(goalCustom) goalCustom.focus();
+        } else {
+          goalDraftSet(parseInt(g, 10));
+        }
+      });
+    }
+    if(goalCustom){
+      goalCustom.addEventListener('input', () => {
+        const v = parseInt(goalCustom.value, 10);
+        if(Number.isFinite(v) && v >= 1 && v <= 999) goalDraft = v;
+      });
+    }
+    const cancel = document.getElementById('goalCancel');
+    if(cancel) cancel.addEventListener('click', closeGoalModal);
+    if(goalModal){
+      goalModal.addEventListener('click', (ev) => { if(ev.target === goalModal) closeGoalModal(); });
+    }
+    const save = document.getElementById('goalSave');
+    if(save){
+      save.addEventListener('click', () => {
+        let v = parseInt(goalDraft, 10);
+        if(goalCustom && goalCustom.classList.contains('on')) v = parseInt(goalCustom.value, 10);
+        if(!Number.isFinite(v) || v < 1 || v > 999){
+          toast('Digite uma meta entre 1 e 999');
+          return;
+        }
+        weekGoal = v;
+        saveWeekGoal(v);
+        closeGoalModal();
+        renderHistory();
+        renderHome();
+        toast('Meta atualizada: ' + v + ' por semana');
+      });
+    }
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setupGoalModal);
+  else setupGoalModal();
 
   const renderTrMode = () => {
     const m = trMode();
@@ -14850,5 +15181,24 @@ html.hist-travado .nx-sheet-backdrop,body.hist-travado .nx-sheet-backdrop{touch-
 }
 </style>
 
+<div class="goal-overlay" id="goalModal" hidden>
+  <div class="goal-sheet" role="dialog" aria-modal="true" aria-labelledby="goalTitle">
+    <div class="goal-handle"></div>
+    <h3 id="goalTitle">Meta da semana</h3>
+    <p>Quantos relatórios você quer fazer por semana?</p>
+    <div class="goal-opts" id="goalOpts">
+      <button class="goal-opt" type="button" data-goal="25">25</button>
+      <button class="goal-opt" type="button" data-goal="50">50</button>
+      <button class="goal-opt" type="button" data-goal="75">75</button>
+      <button class="goal-opt" type="button" data-goal="100">100</button>
+      <button class="goal-opt" type="button" data-goal="custom">Outro</button>
+    </div>
+    <input class="goal-custom" id="goalCustom" type="number" min="1" max="999" inputmode="numeric" placeholder="Digite a meta (1 a 999)">
+    <div class="goal-btns">
+      <button id="goalCancel" type="button">Cancelar</button>
+      <button id="goalSave" class="primary" type="button">Salvar meta</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
