@@ -5947,7 +5947,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.44';
+const CONTENT_VERSION = '4.45';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -5969,6 +5969,8 @@ function autoBackupBeforeSave(){
     if(meta && Date.now() - Date.parse(meta.at) < 86400000) return;
     const data = loadHistory();
     if(!Array.isArray(data) || !data.length) return;
+    // acima disso o JSON passa de ~600 KB; evita clonar/stringificar à toa
+    if(data.length > 4000) return;
 
     // 1 cópia só, e sem miniaturas (elas são regeneradas quando preciso)
     const limpo = data.map(function(e){
@@ -9053,14 +9055,19 @@ function renderHome(){
   }
 }
 
+let histViolSig = '';
 function fillHistViolations(){
   const sel = $('#histViolation');
   if(!sel) return;
   const current = sel.value;
   const names = [...new Set(loadHistory().map(e => cleanEnd(e.violation)).filter(Boolean))]
     .sort((a,b) => ptFor(a).localeCompare(ptFor(b), 'pt-BR'));
-  sel.innerHTML = '<option value="">Todas as violações</option>' +
-    names.map(n => `<option value="${esc(n)}">${esc(ptFor(n))}</option>`).join('');
+  const sig = names.join('\u0001');
+  if(sig !== histViolSig){
+    histViolSig = sig;
+    sel.innerHTML = '<option value="">Todas as violações</option>' +
+      names.map(n => `<option value="${esc(n)}">${esc(ptFor(n))}</option>`).join('');
+  }
   sel.value = names.indexOf(current) >= 0 ? current : '';
 }
 
@@ -9458,6 +9465,17 @@ function diagnosticarMiniatura(e){
   try{ dialogText(txt, 'Diagnóstico da miniatura'); }catch(err){ toast('diag: ' + txt); }
 }
 
+const histHayCache = new WeakMap();
+function histHay(e){
+  const sig = [e.id, e.streamer, e.date, e.time, e.violation, e.details, e.action].join('\u0001');
+  const c = histHayCache.get(e);
+  if(c && c.sig === sig) return c.hay;
+  const wk = weekOf(e.date);
+  const hay = normSearch([e.id, e.streamer, e.date, e.time, wk ? wk.week : '', e.violation, e.details, e.action].join(' '));
+  histHayCache.set(e, { sig: sig, hay: hay });
+  return hay;
+}
+
 function renderHistory(){
   const statsEl = $('#statsCard');
   if(statsEl && statsEl.open) renderStats();
@@ -9653,12 +9671,7 @@ const curKey = cur.year * 100 + cur.week;
   const filtered = [...h]
     .sort(cmpSort)
     .filter(e => {
-      if(q){
-        const wk = weekOf(e.date);
-        const hay = normSearch([e.id, e.streamer, e.date, e.time, wk ? wk.week : '', e.violation, e.details, e.action]
-          .join(' '));
-        if(!hay.includes(q)) return false;
-      }
+      if(q && !histHay(e).includes(q)) return false;
       if(fViol && cleanEnd(e.violation) !== fViol) return false;
       if(fSev && sevFor(e.violation) !== fSev) return false;
       if(fVideo === 'yes' && !hasAnyVideo(e)) return false;
@@ -9723,9 +9736,12 @@ const curKey = cur.year * 100 + cur.week;
       item.addEventListener('click', (ev) => {
         ev.preventDefault();
         const k = String(e.id);
-        if(histSelected.has(k)) histSelected.delete(k); else histSelected.add(k);
+        const on = !histSelected.has(k);
+        if(on) histSelected.add(k); else histSelected.delete(k);
+        item.classList.toggle('selected', on);
+        const check = item.querySelector('.hist-check');
+        if(check) check.textContent = on ? 'V' : '';
         updateHistSelBar();
-        renderHistory();
       });
     } else {
       item.addEventListener('click', (ev) => {
@@ -10740,10 +10756,20 @@ function organizeDriveOnce(force){
   }catch(err){}
 }
 
+let cloudStatusCache = { at: 0, st: null };
 function applyCloudStatuses(){
   if(!window.AndroidApp || typeof AndroidApp.cloudStatuses !== 'function') return false;
-  let st = {};
-  try{ st = JSON.parse(AndroidApp.cloudStatuses()); }catch(e){ return false; }
+  let st = null;
+  const now = Date.now();
+  if(cloudStatusCache.st && now - cloudStatusCache.at < 5000){
+    st = cloudStatusCache.st;
+  } else {
+    try{
+      st = JSON.parse(AndroidApp.cloudStatuses());
+      cloudStatusCache = { at: now, st: st };
+    }catch(e){ return false; }
+  }
+  if(!st || typeof st !== 'object') return false;
 
   const h = loadHistory();
   let changed = false;
@@ -10980,9 +11006,8 @@ function renderCustomRules(){
 function bind(){
   try{ localStorage.removeItem(DRAFT_KEY); }catch(e){}
 
-  $('#input').addEventListener('input', ()=>{
-    try{ localStorage.setItem(DRAFT_KEY, $('#input').value); }catch(e){}
-  });
+  // O rascunho é efêmero (removido no boot/troca de aba); não grava a cada tecla.
+
 
   $('#btnGenerate').addEventListener('click', generate);
   const homeNewVideo = $('#homeNewVideo');
@@ -11178,7 +11203,7 @@ function bind(){
   let histSearchTimer = null;
   $('#histSearch').addEventListener('input', ()=>{
     clearTimeout(histSearchTimer);
-    histSearchTimer = setTimeout(resetHistoryView, 220);
+    histSearchTimer = setTimeout(resetHistoryView, 150);
   });
   ['histViolation','histSeverity','histVideo','histPeriod'].forEach(id => {
     const el = document.getElementById(id);
@@ -11385,7 +11410,6 @@ function bind(){
   if(orgInput){
     try{ localStorage.removeItem(ORG_DRAFT_KEY); }catch(e){}
     orgInput.addEventListener('input', ()=>{
-      try{ localStorage.setItem(ORG_DRAFT_KEY, orgInput.value); }catch(e){}
       const wrap = $('#orgResultWrap'); if(wrap) wrap.style.display = 'none';
       const info = $('#orgInfo'); if(info) info.textContent = '';
     });
@@ -11397,7 +11421,6 @@ function bind(){
   if(btnOrgSample) btnOrgSample.addEventListener('click', ()=>{
     if(!orgInput) return;
     orgInput.value = orgSampleText();
-    try{ localStorage.setItem(ORG_DRAFT_KEY, orgInput.value); }catch(e){}
     organizeAndScroll();
     orgInput.focus();
   });
@@ -13706,13 +13729,12 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   function aplicarTraducaoInterno(){
     if(!TR.on || AN.tipo !== 2) return;
     var cards = document.querySelectorAll('#anLista .an-item');
+    var byId = {};
+    for(var j = 0; j < AN.itens.length; j++) byId[String(AN.itens[j].id)] = AN.itens[j];
     for(var i = 0; i < cards.length; i++){
       var card = cards[i];
       var id = card.getAttribute('data-anid');
-      var it = null;
-      for(var j = 0; j < AN.itens.length; j++){
-        if(String(AN.itens[j].id) === String(id)){ it = AN.itens[j]; break; }
-      }
+      var it = byId[String(id)] || null;
       if(!it) continue;
       var box = card.querySelector('.an-tit.novo');
       var b = box ? box.querySelector('b') : null;
@@ -14400,7 +14422,10 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       if(p){
         AN.itens = AN.itens.filter(function(x){ return Number(x.id) !== Number(p.it.id); });
         AN.total = Math.max(0, (AN.total || 1) - 1);
-        render();
+        const card = document.querySelector('#anLista .an-item[data-anid="' + p.it.id + '"]');
+        if(card) card.remove();
+        if(!document.querySelector('#anLista .an-item')) el('anVazio').hidden = false;
+        atualizarSelUI();
         el('anChip').textContent = AN.total + ' pendentes';
       }
       proximoBulk();
