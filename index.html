@@ -3913,6 +3913,31 @@ body #sec-analises .an-refresh.girando svg{animation:anGirar .8s cubic-bezier(.4
       #sec-analises .an-acts .an-ic{width:14px;height:14px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
       #sec-analises .an-ok{color:#8fe0b0!important;border-color:rgba(46,204,113,.4)!important;background:rgba(46,204,113,.1)!important}
       #sec-analises .an-bad{color:#ff9a9a!important;border-color:rgba(255,93,93,.4)!important;background:rgba(255,93,93,.1)!important}
+      /* aprovação em massa */
+      #sec-analises .an-selbtn{flex:0 0 auto;height:36px;padding:0 12px;font-size:11.5px;border-radius:999px}
+      #sec-analises .an-selbtn.on{background:rgba(46,204,113,.12)!important;border-color:rgba(46,204,113,.45)!important;color:#8fe0b0!important}
+      #sec-analises .an-selall{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:7px 10px;border:1px solid var(--line);background:var(--card2);border-radius:10px;font-size:11.5px;color:var(--dim)}
+      #sec-analises .an-selall[hidden]{display:none!important}
+      #sec-analises .an-selall input{width:16px;height:16px;accent-color:#2ecc71;margin:0}
+      #sec-analises .an-selall b{margin-left:auto;font-size:10.5px;color:var(--muted);font-weight:600}
+      #sec-analises .an-item{position:relative}
+      #sec-analises .an-item.an-sel .an-h,#sec-analises .an-item.an-sel .an-meta{padding-left:26px}
+      #sec-analises .an-check{position:absolute;left:10px;top:10px;z-index:2;width:22px;height:22px;border-radius:7px;border:1.5px solid #4a5a6c;background:rgba(8,13,19,.8);display:grid;place-items:center;cursor:pointer;padding:0}
+      #sec-analises .an-check svg{width:13px;height:13px;fill:none;stroke:#05200f;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+      #sec-analises .an-check.on{background:#2ecc71;border-color:#2ecc71}
+      #sec-analises .an-check.on svg{opacity:1}
+      #sec-analises.an-bulk-on .an-lista{padding-bottom:92px}
+      .an-bulkbar{position:fixed;left:12px;right:12px;bottom:78px;z-index:9990;background:#0f1821;border:1px solid rgba(46,204,113,.35);border-radius:14px;padding:9px 10px;display:flex;align-items:center;gap:9px;box-shadow:0 12px 30px rgba(0,0,0,.55)}
+      .an-bulkbar[hidden]{display:none!important}
+      .an-bulk-info{min-width:0}
+      .an-bulk-info b{display:block;font-size:12px;color:#dff7ea;white-space:nowrap}
+      .an-bulk-info small{display:block;font-size:10px;color:var(--muted);margin-top:1px;white-space:nowrap}
+      button.an-bulk-clear{margin-left:auto;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;outline:none!important;color:#8fa1b5!important;font-size:11px;text-decoration:underline;padding:4px 0!important;height:auto!important;min-width:0!important}
+      .an-bulk-go{height:38px!important;padding:0 14px!important;border-radius:10px!important;font-size:12px!important;font-weight:800!important}
+      .an-bulk-go.an-ok{color:#8fe0b0!important;border-color:rgba(46,204,113,.4)!important;background:rgba(46,204,113,.1)!important}
+      .an-bulk-item{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card2);border-radius:9px;padding:7px 9px;font-size:11.5px;margin-bottom:6px}
+      .an-bulk-item .id{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+      .an-bulk-item b{margin-left:auto;font-size:11.5px}
       #sec-analises .an-vacts button.an-rec{color:#8fa1b5;border-color:var(--line);background:var(--card2);opacity:.6;cursor:default}
       #sec-analises .an-item.an-diverge-card{border-left-color:var(--warn)!important}
       #sec-analises .an-diverge{margin-top:9px;border:1px solid rgba(255,176,32,.35);background:rgba(255,176,32,.07);border-radius:10px;padding:8px 9px}
@@ -4121,7 +4146,13 @@ body #sec-analises .an-refresh.girando svg{animation:anGirar .8s cubic-bezier(.4
         </div>
         <label class="an-tr" id="anTrWrap" hidden><span>Traduzir</span><span class="an-sw"><i></i></span></label>
         <button class="ghost an-refresh" id="anRecarregar" type="button" title="Recarregar" aria-label="Atualizar"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/></svg></button>
+        <button class="ghost an-selbtn" id="anSelMode" type="button" title="Selecionar vários">Selecionar</button>
       </div>
+      <label class="an-selall" id="anSelAllWrap" hidden>
+        <input type="checkbox" id="anSelAll">
+        <span>Selecionar todos</span>
+        <b id="anSelAllCount">0 pendentes</b>
+      </label>
       <button class="an-continuar" id="anContinuar" type="button" hidden>
         <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         Continuar de onde parei
@@ -4131,6 +4162,11 @@ body #sec-analises .an-refresh.girando svg{animation:anGirar .8s cubic-bezier(.4
       <div id="anFim" style="height:1px;margin:0"></div>
       <p class="hint" id="anFimMsg" hidden style="text-align:center;margin:10px 0">carregando mais…</p>
       <p class="hint" id="anVazio" hidden style="text-align:center;margin:14px 0">Nenhum item pendente nesse filtro.</p>
+      <div class="an-bulkbar" id="anBulkBar" hidden>
+        <div class="an-bulk-info"><b id="anBulkCount">0 selecionadas</b><small>toque em Aprovar para confirmar</small></div>
+        <button class="ghost an-bulk-clear" id="anBulkClear" type="button">limpar</button>
+        <button class="ghost an-ok an-bulk-go" id="anBulkGo" type="button">Aprovar</button>
+      </div>
     </div>
 
     <div class="an-overlay centro" id="anVer" hidden>
@@ -5911,7 +5947,7 @@ function buildTemplate(r){
 
 /* ============================ histórico ============================ */
 const APP_VERSION = '1.87';
-const CONTENT_VERSION = '4.42';
+const CONTENT_VERSION = '4.43';
 try{ window.CONTENT_VERSION = CONTENT_VERSION; }catch(e){}
 const HKEY = 'alii_history_v1';
 const DRAFT_KEY = 'alii_draft_v1';
@@ -13242,13 +13278,13 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 (function(){
   var TAM = 10;
   var VID_TAM = 100;
-  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, confirmando: null, confTentativa: 0, confTimer: null, avisoTimer: null, conferindoEnvio: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1, vidModo: 'fila', ordenado: false, ultimoVisto: null, continuarPendente: false, continuarTentativas: 0 };
+  var AN = { itens: [], motivos: null, filtro: -1, alvo: null, motivo: null, ocupado: false, aguardando: null, pendente: null, confirmando: null, confTentativa: 0, confTimer: null, avisoTimer: null, conferindoEnvio: null, pagina: 1, pedida: 1, total: 0, carregando: false, paginas: {}, contiguo: 0, carregadoEm: 0, tipo: 1, vidModo: 'fila', ordenado: false, ultimoVisto: null, continuarPendente: false, continuarTentativas: 0, selMode: false, sel: {}, bulk: null, bulkPendente: null };
 
   function el(id){ return document.getElementById(id); }
 
   // As camadas (ver/rejeitar/confirmar/aviso) precisam ficar no <body>:
   // dentro da aba elas herdam o posicionamento do painel e saem do lugar.
-  ['anAviso','anVer','anRej','anConf','anFoto','anSim','anVid','anVplay'].forEach(function(id){
+  ['anAviso','anVer','anRej','anConf','anFoto','anSim','anVid','anVplay','anBulkBar'].forEach(function(id){
     var n = el(id);
     if(n && n.parentNode !== document.body) document.body.appendChild(n);
   });
@@ -13450,6 +13486,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   function sairLocal(){
     AN.itens = []; AN.motivos = null; AN.pendente = null; AN.alvo = null;
+    AN.selMode = false; AN.sel = {}; AN.bulk = null; AN.bulkPendente = null;
     AN.carregadoEm = 0; AN.paginas = {}; AN.contiguo = 0;
     mostrar('anLoginBox');
     preencherCredenciais();
@@ -13524,6 +13561,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   function carregar(){
     AN.itens = [];
+    AN.sel = {};
     AN.paginas = {};
     AN.contiguo = 0;
     AN.alvoPaginas = 1;
@@ -13542,6 +13580,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     el('anLista').innerHTML = '<p class="hint">carregando…</p>';
     el('anVazio').hidden = true;
     atualizarContinuar();
+    atualizarSelUI();
     esperar('lista', 30000);
     enfileirar(1);
   }
@@ -13729,6 +13768,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       el('anChip').textContent = AN.itens.length + ' de ' + AN.total;
     }
     atualizarContinuar();
+    atualizarSelUI();
     if(AN.continuarPendente){
       var cardUltimo = acharCardUltimo();
       if(cardUltimo){
@@ -13745,6 +13785,8 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   }
 
   function cardHtml(it){
+    var selMode = !!AN.selMode && AN.tipo !== 3;
+    var sel = !!(selMode && AN.sel[it.id]);
     var g = it.gender === 2 ? 'Feminino' : (it.gender === 1 ? 'Masculino' : '—');
     var ehUltimo = !!(AN.tipo === 3 && AN.vidModo === 'fila' && AN.ultimoVisto && String(AN.ultimoVisto.id) === String(it.videoId));
     var corpo;
@@ -13785,12 +13827,13 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     }
     var ident = AN.tipo === 3 ? it.videoId : it.id;
     var extraClasse = (AN.tipo === 3 && Number(it.isDelete) === 1) ? ' an-apagado' : '';
+    if(selMode) extraClasse += ' an-sel';
     if(ehUltimo) extraClasse += ' an-destaque';
     if(it._diverge) extraClasse += ' an-diverge-card';
     var nomeTopo = AN.tipo === 3 ? ('user ' + (it.userId || '')) : (it.nickname || '');
     var metaTopo = AN.tipo === 3 ? ('vídeo ' + (it.videoId || '')) : (esc(it.guild || '—') + ' · ' + g);
     var acoes = '';
-    if(AN.tipo !== 3){
+    if(AN.tipo !== 3 && !selMode){
       acoes = '<div class="an-acts">'
         + '<button class="ghost" data-anver="' + it.id + '" type="button"><svg class="an-ic" viewBox="0 0 24 24"><path d="M2.5 12s3.6-6 9.5-6 9.5 6 9.5 6-3.6 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.6"/></svg>Ver</button>'
         + '<button class="ghost an-bad" data-anrej="' + it.id + '" type="button"><svg class="an-ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Rejeitar</button>'
@@ -13804,6 +13847,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       statusExtra = '<div class="an-diverge" style="border-color:rgba(255,176,32,.25);background:rgba(255,176,32,.04)"><b>Confirmação pendente</b><span>Toque em ↻ para conferir no painel.</span></div>';
     }
     return '<div class="an-item' + extraClasse + '" data-anid="' + ident + '" data-uid="' + (it.userId || '') + '">'
+      + (selMode ? '<button class="an-check' + (sel ? ' on' : '') + '" data-ancheck="' + it.id + '" type="button" aria-pressed="' + sel + '"><svg viewBox="0 0 24 24"><path d="m4 12.5 5 5L20 6.5"/></svg></button>' : '')
       + '<div class="an-h"><span class="an-id">#' + esc(ident) + '</span><span class="an-nome">' + esc(nomeTopo) + '</span><span class="an-hora">' + esc(it.quando) + '</span></div>'
       + '<div class="an-meta">' + metaTopo + '</div>'
       + corpo
@@ -13820,21 +13864,86 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     box.insertAdjacentHTML('beforeend', itens.map(cardHtml).join(''));
     el('anVazio').hidden = true;
     aplicarTraducao();
+    atualizarSelUI();
   }
 
   function render(){
     var box = el('anLista');
     box.innerHTML = '';
-    if(!AN.itens.length){ el('anVazio').hidden = false; atualizarContinuar(); return; }
+    if(!AN.itens.length){ el('anVazio').hidden = false; atualizarContinuar(); atualizarSelUI(); return; }
     el('anVazio').hidden = true;
     anexar(AN.itens);
     atualizarContinuar();
+    atualizarSelUI();
   }
 
   function porId(id){
     id = Number(id);
     for(var i = 0; i < AN.itens.length; i++) if(Number(AN.itens[i].id) === id) return AN.itens[i];
     return null;
+  }
+
+  // ---- seleção em massa (capa/título) ----
+  function selCount(){ return Object.keys(AN.sel || {}).length; }
+
+  function limparSelecao(){
+    AN.sel = {};
+    render();
+  }
+
+  function sairSelMode(){
+    AN.selMode = false;
+    AN.sel = {};
+    atualizarSelUI();
+    render();
+  }
+
+  function toggleSelMode(){
+    if(AN.tipo === 3) return;
+    AN.selMode = !AN.selMode;
+    AN.sel = {};
+    atualizarSelUI();
+    render();
+  }
+
+  function toggleSel(id){
+    if(!AN.selMode) return;
+    if(AN.sel[id]) delete AN.sel[id]; else AN.sel[id] = true;
+    render();
+  }
+
+  function selecionarTodos(on){
+    AN.sel = {};
+    if(on){
+      AN.itens.forEach(function(it){ AN.sel[it.id] = true; });
+    }
+    render();
+  }
+
+  function atualizarSelUI(){
+    var btn = el('anSelMode');
+    if(btn){
+      btn.style.display = (AN.tipo === 3) ? 'none' : '';
+      btn.textContent = AN.selMode ? 'Cancelar' : 'Selecionar';
+      btn.classList.toggle('on', !!AN.selMode);
+    }
+    var wrap = el('anSelAllWrap');
+    if(wrap) wrap.hidden = !(AN.selMode && AN.tipo !== 3);
+    var n = selCount();
+    var all = el('anSelAll');
+    if(all) all.checked = n > 0 && n === AN.itens.length;
+    var cnt = el('anSelAllCount');
+    if(cnt) cnt.textContent = AN.itens.length + (AN.itens.length === 1 ? ' pendente' : ' pendentes');
+    var bar = el('anBulkBar');
+    if(bar) bar.hidden = !(AN.selMode && n > 0);
+    var sec = el('sec-analises');
+    if(sec) sec.classList.toggle('an-bulk-on', !!(AN.selMode && n > 0));
+    var bc = el('anBulkCount');
+    if(bc){
+      bc.textContent = n + (AN.tipo === 2
+        ? (n === 1 ? ' título selecionado' : ' títulos selecionados')
+        : (n === 1 ? ' capa selecionada' : ' capas selecionadas'));
+    }
   }
 
   function ver(it){
@@ -14002,6 +14111,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
 
   function confirmar(it, state, motivo){
     if(!it) return;
+    AN.bulkPendente = null;
     if(state === 2){
       var orig = motivosDoTipo(AN.tipo)[motivo] || '';
       if(orig && !motivoVisivel(motivo)){
@@ -14051,6 +14161,8 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   }
 
   function enviar(){
+    if(AN.bulk) return;
+    if(AN.bulkPendente){ iniciarBulk(); return; }
     var p = AN.pendente;
     if(!p || AN.ocupado) return;
     AN.ocupado = true;
@@ -14063,6 +14175,76 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       return;
     }
     mandarDecisao(p);
+  }
+
+  function confirmarBulk(){
+    var ids = Object.keys(AN.sel || {});
+    if(!ids.length) return;
+    var itens = [];
+    ids.forEach(function(id){ var it = porId(id); if(it) itens.push(it); });
+    if(!itens.length) return;
+    var tipo = AN.tipo;
+    var coisa = tipo === 2 ? 'título' : 'capa';
+    AN.bulkPendente = { itens: itens, tipo: tipo };
+    AN.pendente = null;
+    var th = el('anConfThumb');
+    if(th){ th.hidden = true; th.innerHTML = ''; }
+    el('anConfTitulo').textContent = 'Aprovar ' + itens.length + ' ' + coisa + (itens.length === 1 ? '' : 's') + '?';
+    el('anConfSub').textContent = itens.length + ' item' + (itens.length === 1 ? '' : 's') + ' selecionado' + (itens.length === 1 ? '' : 's');
+    var corpo = '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">';
+    itens.forEach(function(it){
+      corpo += '<div class="an-bulk-item"><span class="id">#' + esc(it.id) + '</span><span>' + esc(it.nickname || '') + '</span><b>' + (tipo === 2 ? 'título' : 'capa') + '</b></div>';
+    });
+    corpo += '</div><p class="hint" style="margin:0">' + (tipo === 2 ? 'O título será aprovado no painel.' : 'A capa será aprovada no painel.') + '</p>';
+    el('anConfCorpo').innerHTML = corpo;
+    el('anConfOk').textContent = 'Confirmar aprovação';
+    el('anConfOk').classList.remove('an-bad');
+    el('anConfOk').classList.add('an-ok');
+    el('anConfOk').disabled = false;
+    el('anConf').hidden = false;
+  }
+
+  function iniciarBulk(){
+    var bp = AN.bulkPendente;
+    if(!bp || !bp.itens.length) return;
+    AN.bulkPendente = null;
+    AN.sel = {};
+    AN.bulk = { itens: bp.itens.slice(), tipo: bp.tipo, total: bp.itens.length, ok: 0, fail: 0, feitos: 0 };
+    AN.ocupado = true;
+    el('anConfOk').disabled = true;
+    el('anConfOk').textContent = 'Aprovando…';
+    var back = el('anConfVoltar');
+    if(back) back.disabled = true;
+    proximoBulk();
+  }
+
+  function proximoBulk(){
+    var b = AN.bulk;
+    if(!b) return;
+    if(!b.itens.length){ finalizarBulk(); return; }
+    var it = b.itens.shift();
+    b.feitos++;
+    AN.pendente = { it: it, state: 1, motivo: -1, tipo: b.tipo };
+    el('anConfSub').textContent = 'Aprovando ' + b.feitos + ' de ' + b.total + '…';
+    mandarDecisao(AN.pendente);
+  }
+
+  function finalizarBulk(){
+    var b = AN.bulk;
+    AN.bulk = null;
+    AN.pendente = null;
+    AN.confirmando = null;
+    AN.ocupado = false;
+    var back = el('anConfVoltar');
+    if(back) back.disabled = false;
+    fecharTudo();
+    render();
+    if(!b) return;
+    if(b.fail){
+      aviso(b.ok + ' aprovada' + (b.ok === 1 ? '' : 's') + ', ' + b.fail + ' falhou' + (b.fail === 1 ? '' : 'aram'), 'warn', 'As que falharam continuam pendentes.');
+    } else {
+      aviso(b.ok + ' aprovada' + (b.ok === 1 ? '' : 's'), 'ok', 'Confirmado no painel');
+    }
   }
 
   window.__anLogin = function(json){
@@ -14213,6 +14395,17 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     AN.pendente = null;
     clearTimeout(AN.confTimer);
     AN.ocupado = false;
+    if(AN.bulk){
+      AN.bulk.ok++;
+      if(p){
+        AN.itens = AN.itens.filter(function(x){ return Number(x.id) !== Number(p.it.id); });
+        AN.total = Math.max(0, (AN.total || 1) - 1);
+        render();
+        el('anChip').textContent = AN.total + ' pendentes';
+      }
+      proximoBulk();
+      return;
+    }
     if(p){
       AN.itens = AN.itens.filter(function(x){ return Number(x.id) !== Number(p.it.id); });
       AN.total = Math.max(0, (AN.total || 1) - 1);
@@ -14233,6 +14426,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     AN.confTentativa = 0;
     AN.pendente = null;
     AN.ocupado = false;
+    if(AN.bulk){ AN.bulk.fail++; proximoBulk(); return; }
     if(p){
       var it = acharItem(p);
       if(it){ it._pendente = true; render(); }
@@ -14267,6 +14461,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     var r = {}; try{ r = JSON.parse(json); }catch(e){}
     AN.ocupado = false;
     if(!r || !r.ok){
+      if(AN.bulk){ AN.bulk.fail++; proximoBulk(); return; }
       el('anConfOk').disabled = false;
       el('anConfOk').textContent = 'Confirmar';
       if(r && r.expirado){ fecharTudo(); acessoEncerrado(); }
@@ -14337,7 +14532,10 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if(el('anRec') && !el('anRec').hidden){ el('anRec').hidden = true; REC_CB = null; return true; }
     if(el('anSim') && !el('anSim').hidden){ el('anSim').hidden = true; SIM.cb = null; return true; }
     if(el('anFoto') && !el('anFoto').hidden){ fecharFoto(); return true; }
-    if(el('anConf') && !el('anConf').hidden){ el('anConf').hidden = true; AN.pendente = null; AN.conferindoEnvio = null; AN.ocupado = false; return true; }
+    if(el('anConf') && !el('anConf').hidden){
+      if(AN.bulk) return true;
+      el('anConf').hidden = true; AN.pendente = null; AN.conferindoEnvio = null; AN.ocupado = false; return true;
+    }
     if(el('anRej') && !el('anRej').hidden){ el('anRej').hidden = true; return true; }
     if(el('anVer') && !el('anVer').hidden){ el('anVer').hidden = true; return true; }
     return false;
@@ -14483,6 +14681,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       }
       return;
     }
+    if((b = alvo.closest('[data-ancheck]'))){ e.preventDefault(); toggleSel(b.getAttribute('data-ancheck')); return; }
     if((b = alvo.closest('[data-anver]'))){ e.preventDefault(); ver(porId(b.getAttribute('data-anver'))); return; }
     if((b = alvo.closest('[data-anrej]'))){ e.preventDefault(); abrirRejeitar(porId(b.getAttribute('data-anrej'))); return; }
     if((b = alvo.closest('[data-anpass]'))){ e.preventDefault(); confirmar(porId(b.getAttribute('data-anpass')), 1, -1); return; }
@@ -14504,6 +14703,8 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       if(vt) vt.style.display = (tp === 3) ? 'block' : 'none';
       if(tp === AN.tipo) return;
       AN.tipo = tp;
+      AN.selMode = false;
+      AN.sel = {};
       mostrarTraduzir();
       document.querySelectorAll('#sec-analises [data-antipo]').forEach(function(x){ x.classList.toggle('on', x === b); });
       carregar();
@@ -14512,6 +14713,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
     if((b = alvo.closest('[data-anfiltro]'))){
       e.preventDefault();
       AN.filtro = Number(b.getAttribute('data-anfiltro'));
+      AN.sel = {};
       document.querySelectorAll('#sec-analises [data-anfiltro]').forEach(function(x){ x.classList.toggle('on', x === b); });
       carregar();
       return;
@@ -14553,6 +14755,7 @@ Seus relatórios e vídeos continuam salvos.</span></div>
       rb.classList.add('girando');
       setTimeout(function(){ rb.classList.remove('girando'); }, 850);
     }
+    AN.sel = {};
     carregar();
   });
   ligar('anContinuar', continuarDeOndeParei);
@@ -14561,8 +14764,13 @@ Seus relatórios e vídeos continuam salvos.</span></div>
   ligar('anVerPass', function(){ var it = AN.alvo; el('anVer').hidden = true; confirmar(it, 1, -1); });
   ligar('anRejCancelar', function(){ el('anRej').hidden = true; });
   ligar('anRejEnviar', function(){ if(AN.motivo === null) return; var it = AN.alvo; el('anRej').hidden = true; confirmar(it, 2, AN.motivo); });
-  ligar('anConfVoltar', function(){ el('anConf').hidden = true; AN.pendente = null; });
+  ligar('anConfVoltar', function(){ if(AN.bulk) return; el('anConf').hidden = true; AN.pendente = null; AN.bulkPendente = null; });
   ligar('anConfOk', function(){ enviar(); });
+  ligar('anSelMode', toggleSelMode);
+  ligar('anBulkGo', confirmarBulk);
+  ligar('anBulkClear', limparSelecao);
+  var anSelAllEl = el('anSelAll');
+  if(anSelAllEl) anSelAllEl.addEventListener('change', function(){ selecionarTodos(anSelAllEl.checked); });
 
   var SIM = { cb: null };
 
